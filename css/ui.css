@@ -1,0 +1,65 @@
+.ui{
+	top:630px;
+	position: relative;
+	z-index: 20;
+	width: 960px;
+	height: 70px;
+	background-image: url(../images/ui/ui.png);
+}
+
+.skills{
+	-webkit-box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	top:10px;
+	height: 50px;
+	width: 50px;
+	display: inline-block;
+	position: absolute;
+}
+
+#skill0{
+	left:396px;
+}
+
+#skill1{
+	left:452px;
+}
+
+#skill2{
+	left:508px;
+}
+
+#skill3{
+	left:564px;
+}
+
+.spreadShotIcon{
+	background-image: url(../images/ui/spreadshot.png);
+}
+
+.penetratingShotIcon{
+	background-image: url(../images/ui/penetratingshots.png);
+}
+
+.homingShotIcon{
+	background-image: url(../images/ui/homingshots.png);
+}
+
+.sentryIcon{
+	background-image: url(../images/ui/sentry.png)
+}
+
+#hpBar{
+	display: inline-block;
+	position: absolute;
+	top:21px;
+	left: 189px;
+	height: 27px;
+	width: 200px;
+	background: -webkit-gradient(linear, 0 0, 0 100%, from(#ce2c28), to(#a02825));
+	background: -webkit-linear-gradient(#ce2c28, #a02825);
+	background: -moz-linear-gradient(#ce2c28, #a02825);
+	background: -o-linear-gradient(#ce2c28, #a02825);
+	background: linear-gradient(#ce2c28, #a02825);
+}
