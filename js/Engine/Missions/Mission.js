@@ -15,8 +15,7 @@
         $("<div id='fps'></div>").appendTo('#gameScreen');
         interactionManager.spawnPlayer();
         $(document).on('mousemove', interactionManager.movePlayerPlane);
-        $(document).on('mousedown', interactionManager.playerPlaneShootToggle);
-        $(document).on('mouseup', interactionManager.playerPlaneShootToggle);
+        $(document).bind('mouseup mousedown', interactionManager.handleMouseClick);
         $(document).on('dragstart', function (e) {
             e.preventDefault();
         });
