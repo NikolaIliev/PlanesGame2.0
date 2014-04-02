@@ -5,12 +5,12 @@
         this.image.id = "playerPlaneImage";
         this.image.src = 'images/planes/player.png';
         this.isShooting = false;
-        this.skills = [new BlackHole(this)];
+        this.skills = [new SpreadShot(this), new PiercingShot(this), new HomingShot(this), new StopTime(this)];
 
         this.bulletType = "player";
     },
     isShooting: null,
-    skills: null,
+    skills: [],
     shoot: function () {
         if (this.isShooting) {
             if (interactionManager.getEnemiesCount() > 0) {

@@ -8,9 +8,6 @@ var Game = {
 		window.setInterval(function () {
 		    Timer.increaseTimer();
 		}, 1000);
-		for(var i=0;i<6;i++){
-			Game.addSkill();
-		}
 	},
 
 	//Remove all contents of the main game window
@@ -30,20 +27,16 @@ var Game = {
 
 	//Star data
 	playerStars : 0,
-	starsToLevelUp : [2,3,4,5,5,5],
+	starsToLevelUp : [2,3,4,5,5,5,5],
 	currentLevel: 1,
 
 	//Skills
 	addSkill : function(){
 		var index = Math.floor(Math.random() * (this.allSkills.length));
-		if(this.allSkills[index]==undefined){
-			console.log("nada");
-			return;
-		}
 		this.unlockedSkills.push(this.allSkills.splice(index,1)[0]);
 		return this.unlockedSkills[this.unlockedSkills.length-1];
 	},
-	allSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray"],
+	allSkills : ["spreadshot","homingshot","penetratingshot","sentry"],
 	unlockedSkills :[]
 
 }

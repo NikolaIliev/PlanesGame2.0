@@ -100,15 +100,13 @@
         },
 
         spawnRandomEnemy = function () {
-            if (enemyPlanes.length <= 20) {
-                var rand = parseInt(Math.random() * 100) + 1; //[1, 100]
-                if (rand >= 90) {
-                    spawnKamikaze();
-                } else if (rand >= 80) {
-                    spawnSupplier();
-                } else {
-                    spawnFighter();
-                }
+            var rand = parseInt(Math.random() * 100) + 1; //[1, 100]
+            if (rand >= 90) {
+                spawnKamikaze();
+            } else if (rand >= 80) {
+                spawnSupplier();
+            } else {
+                spawnFighter();
             }
         },
 
@@ -116,7 +114,7 @@
             var newFighter = new EnemyFighter(getRandomLeftCoord(45), getRandomBottomCoordTopHalf(35),
                 fighterMaxHealth, fighterDamage, fighterMovementSpeed);
             newFighter.addToScreen();
-            enemyPlanes.push(newFighter);
+            enemyPlanes.push(newFighter);   
         },
 
         spawnSupplier = function () {
@@ -142,10 +140,28 @@
 
         movePlayerPlane = function (e) {
             //substracting a half of the non-game screen
-            var newCoords = convertEventCoordinates(e.clientX, e.clientY);
+            var newLeft, newBottom;
+            var nonGameScreenWidth = window.innerWidth - 960;
+            //newLeft
+            if (e.clientX > nonGameScreenWidth / 2 + 50) {
+                //if mouse is inside the game screen
+                if (e.clientX < (nonGameScreenWidth / 2 + 960) - 50) {
+                    newLeft = e.clientX - (nonGameScreenWidth / 2);
+                } else { //mouse is to the right of game screen
+                    newLeft = 960 - 50;
+                }
+            } else { //mouse is to the left of game screen
+                newLeft = 0 + 50;
+            }
+            //newBottom
+            if (e.clientY <= 700) {
+                newBottom = 700 - e.clientY - 50;
+            } else {
+                newBottom = 0;
+            }
 
-            newCoords.left -= 50; //adjust plane to cursor
-            playerPlane.updateCoords(newCoords.left, newCoords.bottom);
+            newLeft -= 50; //adjust plane to cursor
+            playerPlane.updateCoords(newLeft, newBottom);
             playerPlane.move();
         },
 
@@ -161,7 +177,7 @@
                         trackAccuracy(false);
                     }
                 }
-                else if ((type == 'all' || type == 'player') && bullets[i] instanceof PlayerBullet) {
+                else if ((type == 'all' || type == 'player' ) && bullets[i] instanceof PlayerBullet){
                     hitEnemyPlaneIndex = detectCollisionPlayerBullet(bullets[i]);
                     //if the bullet is piercing, make sure it doesn't hit the same target multiple times
                     if (hitEnemyPlaneIndex != -1
@@ -176,7 +192,7 @@
                     if (detectCollisionEnemyBulletWithPlayer(bullets[i])) { //bullet hit the player
                         bullets[i].handleCollision();
                         handleCollisionEnemy(bullets[i].owner);
-                    } else {
+                    } else { 
                         hitFriendlyPlaneIndex = detectCollisionEnemyBulletWithFriendlyPlane(bullets[i]);
                         if (hitFriendlyPlaneIndex != -1) { //bullet hit a friendly plane
                             bullets[i].handleCollision();
@@ -208,7 +224,7 @@
 
         moveHomingBullet = function (bullet) {
             var newLeftCoord, newBottomCoord;
-
+            
             if (enemyPlanes.length > 0) { //if there's at least one enemy on screen
                 if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
                     bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
@@ -225,7 +241,7 @@
                 newBottomCoord = bullet.bottomCoord + playerBulletsSpeed;
             }
 
-
+            
 
             bullet.updateCoords(newLeftCoord, newBottomCoord);
             bullet.move();
@@ -280,7 +296,7 @@
         moveKamikaze = function (kamikaze) {
             //speed * (1 - deg/90)
             var newLeft = kamikaze.leftCoord + kamikaze.orientationDeg / 90 * kamikaze.movementSpeed,
-                newBottom = (kamikaze.bottomCoord > playerPlane.bottomCoord) ?
+                newBottom = (kamikaze.bottomCoord > playerPlane.bottomCoord) ? 
                 (kamikaze.bottomCoord - (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))))
                 : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
             kamikaze.chasePlayer();
@@ -288,7 +304,7 @@
             kamikaze.move();
         },
 
-        handleMouseClick = function (e) {
+        playerPlaneShootToggle = function (e) {
             playerPlane.isShooting = e.type == "mousedown";
         },
 
@@ -494,7 +510,7 @@
         },
 
         increaseSpawnTime = function () {
-            enemySpawnFrequencyMs += 0.1;
+            enemySpawnFrequencyMs+=0.1;
         },
 
         abortMission = function () {
@@ -520,16 +536,16 @@
             })
             .appendTo("#gameScreen");
             window.setTimeout(function () {
-                //Finalize mission
-                abortMission();
-                //Clear screen, update the area and mission statuses
-                Visual.adjustCSSofGameScreen(false);
-                Game.clearScreen();
-                AreaManager.updateAreaStatus(starsWonForMission);
-                AreaManager.drawMap();
-                //Draw the win screen
-                Game.playerStars += starsWonForMission;
-                MissionManager.winScreen(starsWonForMission);
+                    //Finalize mission
+                    abortMission();
+                    //Clear screen, update the area and mission statuses
+                    Visual.adjustCSSofGameScreen(false);
+                    Game.clearScreen();
+                    AreaManager.updateAreaStatus(starsWonForMission);
+                    AreaManager.drawMap();
+                    //Draw the win screen
+                    Game.playerStars += starsWonForMission;
+                    MissionManager.winScreen(starsWonForMission);
             }, 1500);
         },
 
@@ -538,14 +554,14 @@
                 id: "effectScreen"
             })
            .appendTo("#gameScreen")
-            window.setTimeout(function () {
-                abortMission();
-                Visual.adjustCSSofGameScreen(false);
-                Game.clearScreen();
-                AreaManager.drawMap();
-                Game.errorMessage("Mission failed");
-            }, 1500);
-
+           window.setTimeout(function () {
+               abortMission();
+               Visual.adjustCSSofGameScreen(false);
+               Game.clearScreen();
+               AreaManager.drawMap();
+               Game.errorMessage("Mission failed");
+           }, 1500);
+            
         },
 
         getPlayerHealth = function () {
@@ -563,33 +579,6 @@
         getPlayerSkills = function () {
             return playerPlane.skills;
         },
-        setPlayerSkills = function(skillArray){
-            playerPlane.skills = [];
-            "spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray"
-            for(var i=0;i<skillArray.length;i++){
-                switch(skillArray[i]){
-                    case "spreadshot":
-                        playerPlane.skills.push(new SpreadShot(playerPlane));
-                        break;
-                    case "homingshot":
-                        playerPlane.skills.push(new HomingShot(playerPlane));
-                        break;
-                    case "penetratingshot":
-                        playerPlane.skills.push(new PiercingShot(playerPlane));
-                        break;
-                    case "sentry":
-                        playerPlane.skills.push(new Sentry(playerPlane));
-                        break;
-                    case "stoptime":
-                        playerPlane.skills.push(new StopTime(playerPlane));
-                        break;
-                    case "deathray":
-                        playerPlane.skills.push(new DeathRay(playerPlane));
-                        break;
-                }
-            }
-        },
-
 
         getEnemiesCount = function () {
             return enemyPlanes.length;
@@ -647,7 +636,7 @@
             trackRemainingHealth = function (currentHealth) {
                 if (arguments.length > 0) {
                     currentHealthPercentage = parseInt(currentHealth / playerPlane.maxHealth * 100);
-                    $("#hpBar").css("width", currentHealthPercentage * 2 + "px");
+                    $("#hpBar").css("width",currentHealthPercentage*2+"px");
                     if (currentHealthPercentage < minimumHealthPercentageReached) {
                         minimumHealthPercentageReached = currentHealthPercentage;
                     }
@@ -713,128 +702,7 @@
             }, 1000 / 60);
         },
 
-        handleDeathRay = function (left, bottom) {
-            animateDeathRay(left, bottom);
-            dealDamageDeathRay(left, bottom);
-        },
-
-        animateDeathRay = function (left, bottom) {
-            var deathRayDiv =
-                $('<div></div>')
-                .addClass('deathRayDiv')
-                .css({
-                    'height': (700 - bottom + 80) + 'px',
-                    'left': left + 22 + 'px',
-                    'bottom': bottom + 80 + 'px'
-                })
-                .appendTo('#gameScreen')
-                .animate({
-                    opacity: 0,
-                    left: '+=28',
-                    width: 0
-                }, function () {
-                    deathRayDiv.remove();
-                });
-
-        },
-
-        dealDamageDeathRay = function (left, bottom) {
-            var i, isHit, deathRayDamage = playerPlane.damage * 10;
-            for (i = 0; i < enemyPlanes.length; i++) {
-                isHit = (enemyPlanes[i].bottomCoord > bottom + 75) &&   //enemy is above the player
-                    ((enemyPlanes[i].leftCoord > (left + 22) && enemyPlanes[i].leftCoord < (left + 78)) || //enemy's left side has been hit
-                     ((enemyPlanes[i].leftCoord + 100) > (left + 22) && (enemyPlanes[i].leftCoord + 100) < (left + 78)) ||    //enemy's right side has been hit
-                     ((enemyPlanes[i].leftCoord < (left + 22)) && (enemyPlanes[i].leftCoord + 100) > (left + 78))); //enemy is hit in the middle
-
-                if (isHit) {
-                    if (enemyPlanes[i].currentHealth > deathRayDamage) {
-                        enemyPlanes[i].currentHealth -= deathRayDamage;
-                        enemyPlanes[i].updateHpBar();
-                    } else {
-                        enemyPlanes[i].currentHealth = 0;
-                        enemyPlanes[i].updateHpBar();
-                        enemyPlanes[i].die();
-                        enemyPlanes.splice(i, 1);
-                        i--;
-                        if (currentMission instanceof GauntletMission) {
-                            currentMission.incrementEnemiesKilled();
-                        }
-                    }
-                }
-            }
-        },
-
-        handleBlackHole = function () {
-            $("#gameScreen").css({
-                "cursor": "pointer"
-            });
-            $(document).unbind('mouseup mousedown', handleMouseClick);
-            $(document).unbind('mousemove', movePlayerPlane);
-            $(document).on('click', placeBlackHole);
-        },
-
-        placeBlackHole = function (e) {
-            //add black hole image
-            var convertedCoords = convertEventCoordinates(e.clientX, e.clientY);
-            moveEnemiesBlackHole(convertedCoords.left, convertedCoords.bottom);
-            window.setTimeout(function () {
-                $(document).bind('mouseup mousedown', handleMouseClick);
-                $(document).bind('mousemove', movePlayerPlane);
-                $(document).off('click', placeBlackHole);
-                $("#gameScreen").css({
-                    "cursor": "none"
-                });
-            }, 300);
-        },
-
-        moveEnemiesBlackHole = function (left, bottom) {
-            var i,
-                currentMoveEnemyPlaneFunction = moveEnemyPlane,
-                currentKamikazeMoveFunction = moveKamikaze,
-                animationLengthMs = 400;
-            moveEnemyPlane = function () { };
-            moveKamikaze = function () { };
-            for (i = 0; i < enemyPlanes.length; i++) {
-                $(enemyPlanes[i].div)
-                    .animate({
-                        left: left,
-                        bottom: bottom
-                    }, animationLengthMs);
-                enemyPlanes[i].leftCoord = left;
-                enemyPlanes[i].bottomCoord = bottom;
-            }
-            window.setTimeout(function () {
-                moveEnemyPlane = currentMoveEnemyPlaneFunction;
-                moveKamikaze = currentKamikazeMoveFunction;
-            }, animationLengthMs);
-        },
-
-        convertEventCoordinates = function (clientX, clientY) {
-            var converted = { left: 0, bottom: 0 };
-            var nonGameScreenWidth = window.innerWidth - 960;
-            //newLeft
-            if (clientX > nonGameScreenWidth / 2 + 50) {
-                //if mouse is inside the game screen
-                if (clientX < (nonGameScreenWidth / 2 + 960) - 50) {
-                    converted.left = clientX - (nonGameScreenWidth / 2);
-                } else { //mouse is to the right of game screen
-                    converted.left = 960 - 50;
-                }
-            } else { //mouse is to the left of game screen
-                converted.left = 0 + 50;
-            }
-            //newBottom
-            if (clientY <= 700) {
-                converted.bottom = 700 - clientY - 50;
-            } else {
-                converted.bottom = 0;
-            }
-
-            return converted;
-        },
-
         handleSkillUsage = function (keyPressed) {
-            if(playerPlane.skills[keyPressed]==undefined){return;}
             playerPlane.skills[keyPressed].use();
         };
 
@@ -851,21 +719,18 @@
         iterateEnemyPlanes: iterateEnemyPlanes,
         increaseSpawnTime: increaseSpawnTime,
         shootPlayerPlane: shootPlayerPlane,
-        handleMouseClick: handleMouseClick,
+        playerPlaneShootToggle: playerPlaneShootToggle,
         handleMissionWin: handleMissionWin,
         handleMissionLoss: handleMissionLoss,
         togglePause: togglePause,
         handleSkillUsage: handleSkillUsage,
         stopTimeOn: stopTimeOn,
         stopTimeOff: stopTimeOff,
-        handleDeathRay: handleDeathRay,
-        handleBlackHole: handleBlackHole,
 
         getPlayerHealth: getPlayerHealth,
         getPlayerLeftCoord: getPlayerLeftCoord,
         getPlayerBottomCoord: getPlayerBottomCoord,
         getPlayerSkills: getPlayerSkills,
-        setPlayerSkills: setPlayerSkills,
         getEnemiesCount: getEnemiesCount
     }
 })();

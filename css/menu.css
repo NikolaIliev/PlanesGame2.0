@@ -162,7 +162,7 @@
 	top:150px;
 	margin:auto;
 	width: 400px;
-	height: 380px;
+	height: 350px;
 }
 
 #closePrompt{
@@ -233,7 +233,7 @@
 	cursor: pointer;
 	box-shadow: 0px 0px 0px 5px rgba(0, 0, 0, 1);
 	margin-left: 140px;
-	margin-top: 25px;
+	margin-top: 5px;
 	border-radius: 5px;
 	display: inline-block;
 	padding: 5px;
@@ -293,18 +293,12 @@
 }
 
 .skillBox{
-	margin:3% 10% 3% 8%;
+	margin: 5px;
 	-webkit-box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
 	-moz-box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
 	box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
 	height: 180px;
-	width: 80%;
-}
-
-.loadoutScreen .skillIcon{
-	border-radius: 3px;
-	border:2px solid rgb(30,30,30);
-	margin: 5px 0px 0px 5px;
+	width: 380px;
 }
 
 .skillIcon{
@@ -313,8 +307,10 @@
 	width: 50px;
 }
 
-.loadoutScreen .skillIcon:hover{
-	border:2px solid #ffcb2f;
+.skillBox>.skillIcon{
+	border-radius: 3px;
+	border:2px solid rgb(30,30,30);
+	margin: 10px 0px 0px 10px;
 }
 
 .currentSkillBox{
@@ -329,6 +325,10 @@
 
 }
 
+.skillBox>.skillIcon:hover{
+	border:2px solid #ffcb2f;
+}
+
 .skillDescription{
 	font-size: 1.1em;
 	width: 220px;
@@ -339,17 +339,16 @@
 /*Other*/
 
 .errorMessage{
-	z-index: 250;
 	border:4px solid #8f3434;
 	text-align: center;
 	vertical-align: middle;
 	line-height: 50px;
 	padding: 5px;
 	position: absolute;
-	width: 300px;
+	width: 280px;
 	height: 50px;
 	background: #d83b3b;
 	border-radius: 15px;
 	top:300px;
-	left:330px;
+	left:300px;
 }

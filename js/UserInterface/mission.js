@@ -40,7 +40,7 @@ var MissionManager = {
 				else{
 					MissionManager.missionPrompt(area,thisMission);
 			    }
-
+			    
 
 			}).appendTo("#gameScreen");
 		}
@@ -161,7 +161,7 @@ var MissionManager = {
 			Game.playerStars -= Game.starsToLevelUp[Game.currentLevel-1];
 			Game.currentLevel++;
 			$("#ContentBox").text("You earned enough stars to level up! Your plane has been upgraded and you unlocked the following skill:");
-
+			
 			$("<div/>")
 			.addClass("promptText")
 			.appendTo("#GamePrompt");
@@ -191,7 +191,7 @@ var MissionManager = {
 			$("<div/>")
 			.addClass("skillIcon "+skillClass)
 			.appendTo(".promptText:odd");
-
+			
 			$("<div>"+skillDescription+"</div>")
 			.addClass("skillDescription")
 			.appendTo(".promptText:odd");

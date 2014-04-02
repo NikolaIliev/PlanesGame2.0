@@ -35,27 +35,19 @@
 }
 
 .spreadShotIcon{
-	background-image: url(../images/ui/spreadShotIcon.png);
+	background-image: url(../images/ui/spreadshot.png);
 }
 
 .penetratingShotIcon{
-	background-image: url(../images/ui/penetratingShotIcon.png);
+	background-image: url(../images/ui/penetratingshots.png);
 }
 
 .homingShotIcon{
-	background-image: url(../images/ui/homingShotIcon.png);
+	background-image: url(../images/ui/homingshots.png);
 }
 
 .sentryIcon{
-	background-image: url(../images/ui/sentryIcon.png)
-}
-
-.deathRayIcon{
-	background-image: url(../images/ui/deathRayIcon.png);
-}
-
-.stopTimeIcon{
-	background-image: url(../images/ui/stopTimeIcon.png);
+	background-image: url(../images/ui/sentry.png)
 }
 
 #hpBar{
