@@ -1,6 +1,6 @@
 .ui{
-	top:630px;
-	position: relative;
+	bottom:0px;
+	position: absolute;
 	z-index: 20;
 	width: 960px;
 	height: 70px;
@@ -35,19 +35,31 @@
 }
 
 .spreadShotIcon{
-	background-image: url(../images/ui/spreadshot.png);
+	background-image: url(../images/ui/spreadShotIcon.png);
 }
 
 .penetratingShotIcon{
-	background-image: url(../images/ui/penetratingshots.png);
+	background-image: url(../images/ui/penetratingShotIcon.png);
 }
 
 .homingShotIcon{
-	background-image: url(../images/ui/homingshots.png);
+	background-image: url(../images/ui/homingShotIcon.png);
 }
 
 .sentryIcon{
-	background-image: url(../images/ui/sentry.png)
+	background-image: url(../images/ui/sentryIcon.png)
+}
+
+.deathRayIcon{
+	background-image: url(../images/ui/deathRayIcon.png);
+}
+
+.stopTimeIcon{
+	background-image: url(../images/ui/stopTimeIcon.png);
+}
+
+.blackHoleIcon {
+    background-image: url(../images/ui/blackHoleIcon.png);
 }
 
 #hpBar{
@@ -62,4 +74,10 @@
 	background: -moz-linear-gradient(#ce2c28, #a02825);
 	background: -o-linear-gradient(#ce2c28, #a02825);
 	background: linear-gradient(#ce2c28, #a02825);
+}
+
+@media screen and (max-height: 700px){
+	.ui{
+		bottom:20px;
+	}
 }
