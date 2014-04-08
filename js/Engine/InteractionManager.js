@@ -117,7 +117,7 @@
                 } else if (rand >= 90) {
                     spawnKamikaze();
                 } else if (rand >= 85) {
-                    spawnSupplier();
+                    spawnFighter();
                 } else {
                     spawnFighter();
                 }
@@ -171,9 +171,12 @@
         },
 
         gauntletSpawnEnemies = function () {
-            var i;
-            for (i = 0; i < currentMission.enemiesSpawnedPerTaunt; i++) {
-                spawnRandomEnemy();
+            var nowMs = Date.now(), i;
+            if (nowMs - currentMission.lastTauntTimestamp > 1500) {
+                currentMission.lastTauntTimestamp = nowMs;
+                for (i = 0; i < currentMission.enemiesSpawnedPerTaunt; i++) {
+                    spawnRandomEnemy();
+                }
             }
         },
 
@@ -408,7 +411,8 @@
         detectCollisionEnemyBulletWithPlayer = function (bullet) {
             //returns true if the bullet has hit the player, or false otherwise
             var i, isHit;
-            isHit = bullet.leftCoord >= playerPlane.leftCoord
+            isHit = !playerPlane.isStealthed 
+                 && bullet.leftCoord >= playerPlane.leftCoord
                  && bullet.leftCoord <= playerPlane.leftCoord + 100
                  && bullet.bottomCoord >= playerPlane.bottomCoord
                  && bullet.bottomCoord <= playerPlane.bottomCoord + 80;
@@ -700,7 +704,6 @@
         },
         setPlayerSkills = function(skillArray){
             playerPlane.skills = [];
-            "spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray"
             for(var i=0;i<skillArray.length;i++){
                 switch(skillArray[i]){
                     case "spreadshot":
@@ -723,6 +726,9 @@
                         break;
                     case "blackhole":
                         playerPlane.skills.push(new BlackHole(playerPlane));
+                        break;
+                    case "stealth":
+                        playerPlane.skills.push(new Stealth(playerPlane));
                         break;
                     default:
                         throw new Error("Unrecognized skill type");
