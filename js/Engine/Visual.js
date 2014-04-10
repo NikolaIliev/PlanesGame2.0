@@ -21,11 +21,13 @@ var Visual = {
 
     //Makes the cursor invisible while game is active
     adjustCSSofGameScreen: function (isStartMission) {
+        var backgrounds = ["river","snow","desert"];
+
         if (isStartMission) {
             this.backgroundOffset = 0;
             $("#gameScreen").css({
                 "cursor": "none",
-                "background-image": "url(images/backgrounds/river.jpg)"
+                "background-image": "url(images/backgrounds/"+backgrounds[MissionManager.currentAreaIndex]+".jpg)"
             });
         }
         else {
@@ -52,6 +54,8 @@ var Visual = {
         }
         else if(mission instanceof GauntletMission){
             return "Kill 75 enemies. Press E to summon additional ones."
+        } else if (mission instanceof BossMission) {
+            return 'Defeat the boss.';
         }
         else{
             throw new Error("No such mission");
@@ -169,5 +173,3 @@ var Visual = {
     }
     
 };
-
-//Test comment
