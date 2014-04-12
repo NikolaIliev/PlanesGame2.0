@@ -17,6 +17,9 @@
         supplierDamage,
         kamikazeDamage,
         stormerDamage,
+        deathRayDamage,
+        radioactiveDamage,
+        radioactiveRadius,
         lastShotPlayerBulletTimestamp,
         lastFighterSpawnTimestamp,
         enemyPlanes,
@@ -52,6 +55,9 @@
             supplierDamage = 0;
             kamikazeDamage = parseInt(playerPlane.maxHealth / 3);
             stormerDamage = 3;
+            deathRayDamage = playerPlane.damage * 10;
+            radioactiveDamage = playerPlane.damage * 3;
+            radioactiveRadius = 500;
             enemySpawnFrequencyMs = null; //is set when a mission is started
             fighterDirectionChangeFrequencyMs = 1000;
             fighterShootFrequencyMs = 1500;
@@ -80,6 +86,8 @@
             boss.animateSpawn();
             window.setTimeout(function () {
                 self.handleBossIteration = handleBoss;
+                boss.skills.push(new BossSpreadShot(boss));
+                enemyPlanes.push(boss);
             }, 1500);
         },
 
@@ -184,9 +192,12 @@
             }, 1500);
         },
 
-        spawnStormCloud = function (left, bottom) {
+        spawnStormCloud = function (left, bottom, casterLeft, casterBottom, casterWidth) {
             var newStormCloud = new StormCloud(left, bottom);
-            newStormCloud.addToScreen();
+            newStormCloud.animateCast(casterLeft, casterBottom, casterWidth);
+            window.setTimeout(function () {
+                newStormCloud.addToScreen();
+            }, 300);
             hazards.push(newStormCloud);
         },
 
@@ -228,9 +239,6 @@
                         && (!(bullets[i] instanceof PiercingBullet) || bullets[i].enemiesHit.indexOf(enemyPlanes[hitEnemyPlaneIndex]) == -1)) {
                         handleCollisionPlayerBullet(bullets[i], hitEnemyPlaneIndex);
                         bullets[i].handleCollision(enemyPlanes[hitEnemyPlaneIndex]);
-                    } else if (boss && detectCollisionPlayerBulletWithBoss(bullets[i])){
-                        handleCollisionPlayerBulletWithBoss(bullets[i]);
-                        bullets[i].handleCollision(boss);
                     } else {
                         movePlayerBullet(bullets[i]);
                     }
@@ -271,46 +279,21 @@
 
         moveHomingBullet = function (bullet) {
             var newLeftCoord, newBottomCoord, loseTarget = false;
-            //if ((bullet.targetPlane instanceof BossPlane && bullet.targetPlane.isInQuarterPhase) //if there are no enemies, on screen, or the bullet's target is the boss and boss is in quarter phase => lose target
-            //    || enemyPlanes.length == 0) {
-            //    loseTarget = true;
-            //} else { //if there's at least one enemy on screen
-            //    if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
-            //        bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
-            //    }
-            //    bullet.chaseTarget();
-            //    newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-            //    newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
-            //        (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-            //        : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
-            //}
-
-            //if (loseTarget) {
-            //    //the bullets travel forward
-            //    bullet.removeTarget();
-            //    newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-            //    newBottomCoord = bullet.bottomCoord + playerBulletsSpeed;
-            //}
-
-
-
-            //bullet.updateCoords(newLeftCoord, newBottomCoord);
-            //bullet.move();
-
-            ///
-            if (enemyPlanes.length > 0 || (boss && !boss.isInQuarterPhase)) {
+            if (enemyPlanes.length > 1 || (boss && !boss.isInQuarterPhase)) {
                 if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
-                    if (enemyPlanes.length > 0) {
-                        bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
-                    } else {
+                    if (boss && !boss.isInQuarterPhase) {
                         bullet.targetPlane = boss;
+                    } else if (!boss || boss.isInQuarterPhase) {
+                        bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
                     }
                 }
-                bullet.chaseTarget();
-                newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-                newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
-                    (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                    : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
+                if (bullet.targetPlane && bullet.targetPlane.currentHealth > 0) {
+                    bullet.chaseTarget();
+                    newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
+                    newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
+                        (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                        : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
+                }
             } else {
                 bullet.removeTarget();
                 newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
@@ -323,7 +306,10 @@
 
         moveEnemyBullet = function (bullet) {
             var bulletSpeed = (bullet instanceof BossBullet) ? bossBulletsSpeed : fighterBulletsSpeed,
-                newLeftCoord = bullet.leftCoord - bullet.orientationDeg / 45 * bulletSpeed;
+                newLeftCoord = bullet.leftCoord - bullet.orientationDeg / 45 * bulletSpeed,
+                newBottomCoord = (bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
+                (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
             bullet.updateCoords(newLeftCoord, bullet.bottomCoord - bulletSpeed);
             bullet.move();
         },
@@ -443,7 +429,8 @@
             var nowMs = Date.now(), i;
             if (nowMs - supplier.lastSupplyTimestamp > supplierSupplyFrequencyMs) {
                 for (i = 0; i < enemyPlanes.length; i++) {
-                    if (enemyPlanes[i] instanceof EnemyFighter && distance(supplier, enemyPlanes[i]) < 250) {
+                    if (enemyPlanes[i] instanceof EnemyFighter
+                        && distanceBetweenTwoPoints(supplier.leftCoord, supplier.bottomCoord, enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord) < 250) {
                         supplier.supply(enemyPlanes[i]);
                     }
                 }
@@ -456,15 +443,6 @@
                 stormer.lastStormTimestamp = nowMs;
                 stormer.summonStorm();
             }
-        },
-
-        distance = function (gameObject1, gameObject2) {
-            //computes distance between two objects, using the pythagorean theorem
-            var leftCoordsDistance = Math.abs(gameObject1.leftCoord - gameObject2.leftCoord),
-                bottomCoordsDistance = Math.abs(gameObject1.bottomCoord - gameObject2.bottomCoord);
-            objectDistance = Math.sqrt(leftCoordsDistance * leftCoordsDistance + bottomCoordsDistance * bottomCoordsDistance);
-
-            return objectDistance;
         },
 
         detectCollisionEnemyBulletWithPlayer = function (bullet) {
@@ -556,6 +534,12 @@
                          && bullet.leftCoord <= enemyPlanes[i].leftCoord + 100
                          && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
                          && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + 75;
+                } else if (enemyPlanes[i] instanceof BossPlane) {
+                    isHit = !boss.isInvulnerable
+                         && bullet.leftCoord >= boss.leftCoord
+                         && bullet.leftCoord <= boss.leftCoord + 300
+                         && bullet.bottomCoord >= boss.bottomCoord
+                         && bullet.bottomCoord <= boss.bottomCoord + 240;
                 }
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
@@ -565,15 +549,15 @@
             return -1;
         },
 
-        detectCollisionPlayerBulletWithBoss = function (bullet) {
-            var isHit = !boss.isInvulnerable
-                         && bullet.leftCoord >= boss.leftCoord
-                         && bullet.leftCoord <= boss.leftCoord + 300
-                         && bullet.bottomCoord >= boss.bottomCoord
-                         && bullet.bottomCoord <= boss.bottomCoord + 240;
+        //detectCollisionPlayerBulletWithBoss = function (bullet) {
+        //    var isHit = !boss.isInvulnerable
+        //                 && bullet.leftCoord >= boss.leftCoord
+        //                 && bullet.leftCoord <= boss.leftCoord + 300
+        //                 && bullet.bottomCoord >= boss.bottomCoord
+        //                 && bullet.bottomCoord <= boss.bottomCoord + 240;
 
-            return isHit;
-        }
+        //    return isHit;
+        //}
 
         detectCollisionKamikaze = function (kamikaze) {
             var isHit = ((kamikaze.bottomCoord > playerPlane.bottomCoord &&
@@ -625,7 +609,7 @@
 
         handleCollisionPlayerBullet = function (bullet, hitEnemyPlaneIndex) {
             var ownerPlane = bullet.owner,
-                damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.75 : ownerPlane.damage;
+                damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.5 : ownerPlane.damage;
             if (enemyPlanes[hitEnemyPlaneIndex].currentHealth > damage) {
                 enemyPlanes[hitEnemyPlaneIndex].currentHealth -= damage;
                 enemyPlanes[hitEnemyPlaneIndex].updateHpBar();
@@ -643,7 +627,7 @@
 
         handleCollisionPlayerBulletWithBoss = function (bullet) {
             var ownerPlane = bullet.owner,
-                damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.75 : ownerPlane.damage;
+                damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.5 : ownerPlane.damage;
             if (boss.currentHealth > damage) {
                 boss.currentHealth -= damage;
                 boss.updateHpBar();
@@ -724,6 +708,14 @@
         },
 
         abortMission = function () {
+            if (boss) {
+                delete boss.skills; //prevents spamming of boss' skills after the mission is over
+                //removes the reference to all the boss' skills -> the skills themselves get picked up by the garbage collector
+                //as nothing is referencing them
+                //if the reference to the skills is not deleted, after the mission ends the boss object and all the bossSkill objects
+                //continue to exist as they're coupled (reference eachother) and all the skills continue to get used on cooldown
+                //(storm clouds continue to appear every 20 seconds, even on the area screen)
+            }
             setInitialValues();
         },
 
@@ -821,6 +813,9 @@
                     case "stealth":
                         playerPlane.skills.push(new Stealth(playerPlane));
                         break;
+                    case "radioactive":
+                        playerPlane.skills.push(new Radioactive(playerPlane));
+                        break;
                     default:
                         throw new Error("Unrecognized skill type");
                 }
@@ -830,6 +825,10 @@
 
         getEnemiesCount = function () {
             return enemyPlanes.length;
+        },
+
+        getCurrentMission = function () {
+            return currentMission;
         },
 
         togglePause = function () {
@@ -917,34 +916,96 @@
             }
         },
 
-    //trackEnemiesKilled = function (killCount) {
-    //    var enemiesKilled = 0, stars = 0;
+        distanceBetweenTwoPoints = function (x1, y1, x2, y2) {
+            return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)); 
+        },
 
-    //    trackEnemiesKilled = function (killCount) {
-    //        if (arguments.length > 0) { //if the func is called without arguments, the amount of stars earned will be returned + the vars will reset
-    //            //console.log("enemies killed: " + enemiesKilled);
-    //            enemiesKilled += killCount;
+        handleRadioactive = function (left, bottom) {
+            animateRadioactive(left, bottom);
+            dealDamageRadioactive(left, bottom);
+            if (boss && !boss.isInQuarterPhase) {
+                dealDamageRadioactiveToBoss(left, bottom);
+            }
+        },
 
-    //            if (enemiesKilled >= 60) {
-    //                stars = 3;
-    //            } else if (enemiesKilled >= 50) {
-    //                stars = 2;
-    //            } else if (enemiesKilled >= 45) {
-    //                stars = 1;
-    //            } else {
-    //                stars = 0;
-    //            }
+        animateRadioactive = function (left, bottom) {
+            var radioactiveDiv =
+                $('<div></div>')
+                .addClass('radioactiveDiv')
+                .css({
+                    'bottom': bottom + 40 + 'px',
+                    'left': left + 50 +'px'
+                })
+                .appendTo('#gameScreen')
+                .animate({
+                    bottom: bottom + 40 - radioactiveRadius/2, 
+                    left: left + 50 - radioactiveRadius/2, 
+                    width: radioactiveRadius + "px", 
+                    height: radioactiveRadius +"px", 
+                    opacity: 0
+                },
+                800,
+                function () {
+                    radioactiveDiv.remove();
+                });
 
-    //            return enemiesKilled;
-    //        } else {
-    //            enemiesKilled = 0;
-    //            return stars;
-    //        }
-    //    }
+        },
 
-    //    trackEnemiesKilled(killCount);
-    //},
+        dealDamageRadioactive = function (left, bottom) {
+            var i, isHit,
+            enemyPlaneHeight = 72,
+            enemyPlaneWidth = 90,
+            X = left + 50, //PlayerPlane Center X
+            Y = bottom + 40; //PlayerPlane Center Y
+            //enemy planes
+            for (i = 0; i < enemyPlanes.length; i++) {
+                isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < radioactiveRadius) && 
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlaneWidth, enemyPlanes[i].bottomCoord, X, Y)) < radioactiveRadius) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlaneWidth, enemyPlanes[i].bottomCoord + enemyPlaneHeight, X, Y)) < radioactiveRadius) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlaneHeight, X, Y)) < radioactiveRadius);
 
+                if (isHit) {
+                    if (enemyPlanes[i].currentHealth > radioactiveDamage) {
+                        enemyPlanes[i].currentHealth -= radioactiveDamage;
+                        enemyPlanes[i].updateHpBar();
+                    } else {
+                        enemyPlanes[i].currentHealth = 0;
+                        enemyPlanes[i].updateHpBar();
+                        enemyPlanes[i].die();
+                        enemyPlanes.splice(i, 1);
+                        i--;
+                        if (currentMission instanceof GauntletMission) {
+                            currentMission.incrementEnemiesKilled();
+                        }
+                    }
+                }
+            }
+            //boss
+        },
+
+        dealDamageRadioactiveToBoss = function (left, bottom) {
+            var isHit,
+            bossHeight = 240,
+            bossWidth = 300,
+            X = left + 50, //PlayerPlane Center X
+            Y = bottom + 40; //PlayerPlane Center Y
+
+            isHit = ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord, X, Y)) < radioactiveRadius) && 
+                    ((distanceBetweenTwoPoints(boss.leftCoord + bossWidth, boss.bottomCoord, X, Y)) < radioactiveRadius) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord + bossWidth, boss.bottomCoord + bossHeight, X, Y)) < radioactiveRadius) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + bossHeight, X, Y)) < radioactiveRadius);
+
+            if (isHit) {
+                if (boss.currentHealth > radioactiveDamage) {
+                    boss.currentHealth -= radioactiveDamage;
+                    boss.updateHpBar();
+                } else {
+                    boss.currentHealth = 0;
+                    boss.updateHpBar();
+                    boss.die();
+                }
+            }
+        },
         stopTimeOn = function (newMainLoop) {
             window.clearInterval(currentMission.mainLoopInterval);
             currentMission.mainLoopInterval = window.setInterval(function () {
@@ -962,6 +1023,12 @@
         handleDeathRay = function (left, bottom) {
             animateDeathRay(left, bottom);
             dealDamageDeathRay(left, bottom);
+            if (boss && !boss.isInQuarterPhase) {
+                dealDamageDeathRayToBoss(left, bottom);
+            }
+        },
+
+        handleBossDeathRay = function (castTime) {
         },
 
         animateDeathRay = function (left, bottom) {
@@ -985,7 +1052,8 @@
         },
 
         dealDamageDeathRay = function (left, bottom) {
-            var i, isHit, deathRayDamage = playerPlane.damage * 10;
+            var i, isHit;
+            //enemy planes
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = (enemyPlanes[i].bottomCoord > bottom + 75) &&   //enemy is above the player
                     ((enemyPlanes[i].leftCoord > (left + 22) && enemyPlanes[i].leftCoord < (left + 78)) || //enemy's left side has been hit
@@ -993,7 +1061,6 @@
                      ((enemyPlanes[i].leftCoord < (left + 22)) && (enemyPlanes[i].leftCoord + 100) > (left + 78))); //enemy is hit in the middle
 
                 if (isHit) {
-                    console.log('hit');
                     if (enemyPlanes[i].currentHealth > deathRayDamage) {
                         enemyPlanes[i].currentHealth -= deathRayDamage;
                         enemyPlanes[i].updateHpBar();
@@ -1007,6 +1074,24 @@
                             currentMission.incrementEnemiesKilled();
                         }
                     }
+                }
+            }
+            //boss
+        },
+
+        dealDamageDeathRayToBoss = function (left, bottom) {
+            var isHit = (boss.bottomCoord > bottom + 75) &&   //boss is above the player
+                   ((boss.leftCoord > (left + 22) && boss.leftCoord < (left + 78)) || //boss' left side has been hit
+                    ((boss.leftCoord + 300) > (left + 22) && (boss.leftCoord + 300) < (left + 78)) ||    //boss' right side has been hit
+                    ((boss.leftCoord < (left + 22)) && (boss.leftCoord + 300) > (left + 78))); //boss is hit in the middle
+            if (isHit) {
+                if (boss.currentHealth > deathRayDamage) {
+                    boss.currentHealth -= deathRayDamage;
+                    boss.updateHpBar();
+                } else {
+                    boss.currentHealth = 0;
+                    boss.updateHpBar();
+                    boss.die();
                 }
             }
         },
@@ -1037,6 +1122,22 @@
             }, 300);
         },
 
+        //moveBossBlackHole = function (left, bottom) {
+        //    var currentMoveEnemyPlaneFunction = moveEnemyPlane,
+        //        animationLengthMs = 400;
+        //    moveEnemyPlane = function () { };
+        //    $(boss.div)
+        //        .animate({
+        //            left: left,
+        //            bottom: bottom
+        //        }, animationLengthMs);
+        //    boss.leftCoord = left;
+        //    boss.bottomCoord = bottom;
+        //    window.setTimeout(function () {
+        //        moveEnemyPlane = currentMoveEnemyPlaneFunction;
+        //    }, animationLengthMs);
+        //},
+
         moveEnemiesBlackHole = function (left, bottom) {
             var i,
                 currentMoveEnemyPlaneFunction = moveEnemyPlane,
@@ -1055,7 +1156,6 @@
             }
             window.setTimeout(function () {
                 moveEnemyPlane = currentMoveEnemyPlaneFunction;
-                moveKamikaze = currentKamikazeMoveFunction;
             }, animationLengthMs);
         },
 
@@ -1090,22 +1190,31 @@
             if (!boss.reached75Percent && boss.healthPercentage <= 75) { //boss reached 75% hp, enter reinforcements phase
                 boss.reached75Percent = true;
                 boss.enterQuarterPhase();
+                boss.phase75Percent();
                 window.setTimeout(function () {
-                    interactionManager.handleBossQuarterPhase();
+                    if (currentMission) {
+                        interactionManager.handleBossQuarterPhase();
+                    }
                 }, 3000);
             }
             if (!boss.reached50Percent && boss.healthPercentage <= 50) {
                 boss.reached50Percent = true;
                 boss.enterQuarterPhase();
+                boss.phase50Percent();
                 window.setTimeout(function () {
-                    interactionManager.handleBossQuarterPhase();
+                    if (currentMission) {
+                        interactionManager.handleBossQuarterPhase();
+                    }
                 }, 3000);
             }
             if (!boss.reached25Percent && boss.healthPercentage <= 25) {
                 boss.reached25Percent = true;
                 boss.enterQuarterPhase();
+                boss.phase25Percent();
                 window.setTimeout(function () {
-                    interactionManager.handleBossQuarterPhase();
+                    if (currentMission) {
+                        interactionManager.handleBossQuarterPhase();
+                    }
                 }, 3000);
             }
             if (boss.finishedSpawningReinforcements && enemyPlanes.length <= 1) { //all but 1 of the adds have been killed, resume boss fight
@@ -1119,7 +1228,9 @@
                 spawnFighter();
             }
             window.setTimeout(function () {
-                boss.finishedSpawningReinforcements = true;
+                if (boss) {
+                    boss.finishedSpawningReinforcements = true;
+                }
             }, 1500);
         },
 
@@ -1152,6 +1263,8 @@
         stopTimeOn: stopTimeOn,
         stopTimeOff: stopTimeOff,
         handleDeathRay: handleDeathRay,
+        handleRadioactive: handleRadioactive, //new 
+        handleBossDeathRay: handleBossDeathRay,
         handleBlackHole: handleBlackHole,
         spawnStormCloud: spawnStormCloud,
         handleBossIteration: handleBossIteration,
@@ -1163,6 +1276,7 @@
         getPlayerBottomCoord: getPlayerBottomCoord,
         getPlayerSkills: getPlayerSkills,
         setPlayerSkills: setPlayerSkills,
-        getEnemiesCount: getEnemiesCount
+        getEnemiesCount: getEnemiesCount,
+        getCurrentMission: getCurrentMission
     }
 })();

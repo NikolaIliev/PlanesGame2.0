@@ -9,6 +9,7 @@ function Mission(primary,secondary){
 
 var MissionManager = {
 	//Contains primary and secondary mission types
+    //
     primary : ["survival", "domination", "gauntlet"],
     //primary: ["boss"],
 	secondary: ["remainingHealth", "accuracy"],
