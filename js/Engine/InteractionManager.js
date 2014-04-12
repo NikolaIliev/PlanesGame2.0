@@ -84,9 +84,11 @@
             boss = new BossPlane(getRandomLeftCoord(150), getRandomBottomCoordTopHalf(120));
             boss.addToScreen();
             boss.animateSpawn();
+            boss.skills.push(new BossSpreadShot(boss));
+            boss.skills.push(new BossSummonStormClouds(boss));
             window.setTimeout(function () {
                 self.handleBossIteration = handleBoss;
-                boss.skills.push(new BossSpreadShot(boss));
+                boss.skills[0].unlock(); //unlocks spread shot
                 enemyPlanes.push(boss);
             }, 1500);
         },
@@ -278,22 +280,36 @@
         },
 
         moveHomingBullet = function (bullet) {
-            var newLeftCoord, newBottomCoord, loseTarget = false;
-            if (enemyPlanes.length > 1 || (boss && !boss.isInQuarterPhase)) {
-                if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
-                    if (boss && !boss.isInQuarterPhase) {
-                        bullet.targetPlane = boss;
-                    } else if (!boss || boss.isInQuarterPhase) {
-                        bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
-                    }
+            var newLeftCoord, newBottomCoord;
+            //if (enemyPlanes.length > 1 || (boss && !boss.isInQuarterPhase)) {
+            //    if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
+            //        if (boss && !boss.isInQuarterPhase) {
+            //            bullet.targetPlane = boss;
+            //        } else if (!boss || boss.isInQuarterPhase) {
+            //            bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
+            //        }
+            //    }
+            //    if (bullet.targetPlane && bullet.targetPlane.currentHealth > 0) {
+            //        bullet.chaseTarget();
+            //        newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
+            //        newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
+            //            (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+            //            : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
+            //    }
+            //} else {
+            //    bullet.removeTarget();
+            //    newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
+            //    newBottomCoord = bullet.bottomCoord + playerBulletsSpeed;
+            //}
+            if (enemyPlanes.length > 0) {
+                if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0 || (boss && bullet.targetPlane == boss && boss.isInQuarterPhase)) {
+                    bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
                 }
-                if (bullet.targetPlane && bullet.targetPlane.currentHealth > 0) {
-                    bullet.chaseTarget();
-                    newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-                    newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
-                        (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                        : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
-                }
+                bullet.chaseTarget();
+                newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
+                newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
+                    (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                    : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
             } else {
                 bullet.removeTarget();
                 newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
@@ -1184,6 +1200,7 @@
         },
 
         handleBossIteration = function () {
+            var bossIndex;
             moveEnemyPlane(boss);
             shootBoss();
             boss.updateHealthPercentage();
@@ -1191,6 +1208,8 @@
                 boss.reached75Percent = true;
                 boss.enterQuarterPhase();
                 boss.phase75Percent();
+                bossIndex = enemyPlanes.indexOf(boss);
+                enemyPlanes.splice(bossIndex, 1);
                 window.setTimeout(function () {
                     if (currentMission) {
                         interactionManager.handleBossQuarterPhase();
@@ -1198,27 +1217,38 @@
                 }, 3000);
             }
             if (!boss.reached50Percent && boss.healthPercentage <= 50) {
+                var bossIndex;
                 boss.reached50Percent = true;
                 boss.enterQuarterPhase();
                 boss.phase50Percent();
+                bossIndex = enemyPlanes.indexOf(boss);
+                enemyPlanes.splice(bossIndex, 1);
                 window.setTimeout(function () {
                     if (currentMission) {
                         interactionManager.handleBossQuarterPhase();
+                        boss.skills.splice(0, 1);
                     }
                 }, 3000);
             }
             if (!boss.reached25Percent && boss.healthPercentage <= 25) {
+                var bossIndex;
                 boss.reached25Percent = true;
                 boss.enterQuarterPhase();
                 boss.phase25Percent();
+                bossIndex = enemyPlanes.indexOf(boss);
+                enemyPlanes.splice(bossIndex, 1);
                 window.setTimeout(function () {
                     if (currentMission) {
                         interactionManager.handleBossQuarterPhase();
+                        boss.skills.splice(0, 1);
                     }
                 }, 3000);
             }
-            if (boss.finishedSpawningReinforcements && enemyPlanes.length <= 1) { //all but 1 of the adds have been killed, resume boss fight
+            if (boss.finishedSpawningReinforcements && enemyPlanes.length <= 3) { //all but 3 of the adds have been killed, resume boss fight
                 boss.leaveQuarterPhase();
+                window.setTimeout(function () {
+                    enemyPlanes.push(boss);
+                }, 3000);
             }
         },
 
@@ -1235,8 +1265,9 @@
         },
 
         handleSkillUsage = function (keyPressed) {
-            if (playerPlane.skills[keyPressed] == undefined) { return; }
-            playerPlane.skills[keyPressed].use();
+            if (playerPlane.skills[keyPressed]) {
+                playerPlane.skills[keyPressed].use();
+            }
         };
 
     return {
@@ -1263,7 +1294,7 @@
         stopTimeOn: stopTimeOn,
         stopTimeOff: stopTimeOff,
         handleDeathRay: handleDeathRay,
-        handleRadioactive: handleRadioactive, //new 
+        handleRadioactive: handleRadioactive,
         handleBossDeathRay: handleBossDeathRay,
         handleBlackHole: handleBlackHole,
         spawnStormCloud: spawnStormCloud,

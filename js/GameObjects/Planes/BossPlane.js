@@ -140,16 +140,16 @@
     },
 
     phase75Percent: function () {
-        this.skills.push(new BossSummonStormClouds(this));
+        this.skills[1].unlock(); //unlock summon storm clouds
     },
 
     phase50Percent: function () {
-        this.skills.shift().detach();
+        this.skills[0].lock();
     },
 
     phase25Percent: function () {
         this.moveAtDirection = this.moveAtDirectionChase;
-        this.skills.shift().detach();
+        this.skills[0].lock();
     }
 });
 
