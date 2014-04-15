@@ -1,17 +1,19 @@
 ﻿BossPlane = EnemyChasePlane.extend({
     init: function (left, bottom) {
-        this._super(left, bottom, 500, 5, 3);
+        this._super(left, bottom, 700, 7, 3);
         var self = this;
         this.castBar = document.createElement('div');
         $(this.castBar)
             .toggleClass('castBarBoss')
             .appendTo(this.div);
         this.image.src = 'images/planes/boss.png';
+		this.width = 300;
+		this.height = 240;
         this.lastShootTimestamp = -1;
         this.shootFrequency = 500;
         this.isCasting = false;
         this.bulletType = 'boss';
-        this.skills = [];
+        this.skills = [new BossSpreadShot(this), new BossDeathRays(this), new BossSummonStormClouds(this)];
         this.healthPercentage = 100;
         this.reached75Percent = false;
         this.reached50Percent = false;
@@ -19,6 +21,8 @@
         this.isInvulnerable = false;
         this.isInQuarterPhase = false;
         this.finishedSpawningReinforcements = false;
+        this.normalShootFunction = this.shoot;
+        this.thirdPhaseDeathRays = []; //array of jQuery objects of death ray divs; this is used for optimization purposes
     },
 
     castBar: null,
@@ -30,8 +34,10 @@
     reached75Percent: null,
     reached50Percent: null,
     reached25Percent: null,
-    quarterPhaseHealthRegenInterval: null,
     finishedSpawningReinforcements: null,
+    thirdPhaseBulletDegrees: null,
+    normalShootFunction: null,
+    secondPhaseStats: null,
 
     updateHealthPercentage: function () {
         this.healthPercentage = Math.ceil(this.currentHealth / this.maxHealth * 100);
@@ -69,9 +75,17 @@
         }
     },
 
-    moveAtDirectionChase: function () {
-        if (!this.isCasting) {
+    moveThirdPhase: function () {
+        if (!this.isInQuarterPhase) {
             this.chasePlayer();
+        }
+    },
+
+    moveFourthPhase: function () {
+        if (!this.isInQuarterPhase) {
+            this.chasePlayer();
+        }
+        if (!this.isCasting) {
             if (this.movingRight && this.leftCoord < (960 - 300)) {
                 this.leftCoord += this.movementSpeed;
             } else if (!this.movingRight && this.leftCoord > 3) {
@@ -87,8 +101,42 @@
     },
 
     shoot: function () {
-        if (!this.isCasting) {
+        if (!this.isCasting && !this.isInQuarterPhase) {
             interactionManager.spawnBullet("boss", this.leftCoord + 150 + Math.ceil(this.orientationDeg * 5 / 3), this.bottomCoord + Math.abs(this.orientationDeg * 4 / 3) , -this.orientationDeg, this);
+        }
+    },
+
+    shootSecondPhase: function () {
+        if (!this.secondPhaseStats) {
+            this.secondPhaseStats = {
+                bulletsPerShot: 1,
+                arcDegree: 8,
+                shootCount: 0
+            }
+        }
+        if (!this.isCasting && !this.isInQuarterPhase) {
+            if (this.secondPhaseStats.bulletsPerShot == 1) {
+                interactionManager.spawnBullet("boss", this.leftCoord + 150 + Math.ceil(this.orientationDeg * 5 / 3), this.bottomCoord + Math.abs(this.orientationDeg * 4 / 3), -this.orientationDeg, this);
+            } else {
+                for (i = 0; i < this.secondPhaseStats.bulletsPerShot; i++) {
+                    interactionManager.spawnBullet(this.bulletType, this.leftCoord + 145, this.bottomCoord, -(this.secondPhaseStats.arcDegree / 2) + (i * (this.secondPhaseStats.arcDegree / (this.secondPhaseStats.bulletsPerShot - 1))), this);
+                }
+            }
+            this.secondPhaseStats.shootCount++;
+            if (this.secondPhaseStats.shootCount % 3 == 0 && this.secondPhaseStats.arcDegree < 60) { //every third shot , the amount of bullets increases
+                this.secondPhaseStats.bulletsPerShot += 2;
+                this.secondPhaseStats.arcDegree += 4;
+            }
+        }
+    },
+
+    shootThirdPhase: function () {
+        if (!this.isCasting && !this.isInQuarterPhase) {
+            interactionManager.spawnBullet("boss", this.leftCoord + 150 + Math.ceil(this.orientationDeg * 5 / 3), this.bottomCoord + Math.abs(this.orientationDeg * 4 / 3), -this.orientationDeg, this);
+            this.thirdPhaseDeathRays.push(interactionManager.createAndSkewBossDeathRay(-this.orientationDeg));
+            if (this.thirdPhaseDeathRays.length >= 3) { //after shooting 5 bullets, the plane shoots 5 death rays, each in the same place as one of the 5 shot bullets
+                this.skills[0].use();
+            }
         }
     },
 
@@ -104,15 +152,6 @@
         }, {
             step: function (now, fx) {
                 $(this).css('-webkit-transform', 'scale(' + now + ', ' + now + ')');
-            },
-            complete: function () {
-                self.quarterPhaseHealthRegenInterval = window.setInterval(function () {
-                    if (self.currentHealth <= self.maxHealth - 5) {
-                        self.currentHealth += 2;
-                    } else {
-                        self.currentHealth = self.maxHealth;
-                    }
-                }, 1000);
             },
             duration: 3000
         });
@@ -136,21 +175,19 @@
             },
             duration: 3000
         });
-        window.clearInterval(this.quarterPhaseHealthRegenInterval);
     },
 
     phase75Percent: function () {
-        this.skills[1].unlock(); //unlock summon storm clouds
+        this.skills[0].lock();
     },
 
     phase50Percent: function () {
-        this.skills[0].lock();
+        this.moveAtDirection = this.moveThirdPhase;
     },
 
     phase25Percent: function () {
-        this.moveAtDirection = this.moveAtDirectionChase;
+        this.moveAtDirection = this.moveFourthPhase;
         this.skills[0].lock();
+        this.skills[1].unlock();
     }
 });
-
-//TODO: remove boss from enemyPlanes array during quarter phase, add him after quarter phase is done

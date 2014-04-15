@@ -1,10 +1,12 @@
 ﻿DominationMission = Mission.extend({
-    init: function () {
+    init: function (areaIndex) {
         var enemySpawnFrequencyMs = 600;
         this._super(enemySpawnFrequencyMs);
+        this.areaIndex = areaIndex;
         this.currentDominationStartTime = this.startTime;
     },
 
+    areaIndex: null,
     currentDominationStartTime: null,
 
     checkDominating: function () {
@@ -12,7 +14,7 @@
     },
 
     resetDominationStartTime: function () {
-        this.currentDominationStartTime = Timer.current;
+        this.currentDominationStartTime = interactionManager.getSeconds();
     },
 
     mainLoop: function () {
@@ -25,7 +27,7 @@
 
     checkWinConditions: function () {
         //A domination mission is 'won' if the player manages to dominate his enemies for (30) seconds;
-        var win = (Timer.current - this.currentDominationStartTime) >= 30;
+        var win = (interactionManager.getSeconds() - this.currentDominationStartTime) >= 30;
         return win;
     },
 
