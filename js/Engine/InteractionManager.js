@@ -330,26 +330,6 @@
 
         moveHomingBullet = function (bullet) {
             var newLeftCoord, newBottomCoord;
-            //if (enemyPlanes.length > 1 || (boss && !boss.isInQuarterPhase)) {
-            //    if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0) {
-            //        if (boss && !boss.isInQuarterPhase) {
-            //            bullet.targetPlane = boss;
-            //        } else if (!boss || boss.isInQuarterPhase) {
-            //            bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
-            //        }
-            //    }
-            //    if (bullet.targetPlane && bullet.targetPlane.currentHealth > 0) {
-            //        bullet.chaseTarget();
-            //        newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-            //        newBottomCoord = (bullet.bottomCoord > bullet.targetPlane.bottomCoord + 40) ?
-            //            (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-            //            : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
-            //    }
-            //} else {
-            //    bullet.removeTarget();
-            //    newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
-            //    newBottomCoord = bullet.bottomCoord + playerBulletsSpeed;
-            //}
             if (enemyPlanes.length > 0) {
                 if (bullet.targetPlane == undefined || bullet.targetPlane.currentHealth == 0 || (boss && bullet.targetPlane == boss && boss.isInQuarterPhase)) {
                     bullet.targetPlane = enemyPlanes[parseInt(Math.random() * enemyPlanes.length)];
@@ -600,11 +580,35 @@
                          && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
                          && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + 75;
                 } else if (enemyPlanes[i] instanceof BossPlane) {
-                    isHit = !boss.isInvulnerable
-                         && bullet.leftCoord >= boss.leftCoord
-                         && bullet.leftCoord <= boss.leftCoord + 300
-                         && bullet.bottomCoord >= boss.bottomCoord
-                         && bullet.bottomCoord <= boss.bottomCoord + 240;
+                    isHit = !boss.isInvulnerable && (
+                         //left wing
+                         (bullet.leftCoord >= boss.leftCoord
+                             && bullet.leftCoord <= boss.leftCoord + 75
+                             && bullet.bottomCoord >= boss.bottomCoord + 90
+                             && bullet.bottomCoord <= boss.bottomCoord + 240)
+                         //between left wing and cockpit
+                         ||
+                            (bullet.leftCoord >= boss.leftCoord + 75
+                             && bullet.leftCoord <= boss.leftCoord + 110
+                             && bullet.bottomCoord >= boss.bottomCoord + 65
+                             && bullet.bottomCoord <= boss.bottomCoord + 240)
+                         //cockpit
+                         || (bullet.leftCoord >= boss.leftCoord + 110
+                             && bullet.leftCoord <= boss.leftCoord + 185
+                             && bullet.bottomCoord >= boss.bottomCoord + 30
+                             && bullet.bottomCoord <= boss.bottomCoord + 240)
+                         //between cockpit and right wing
+                         ||
+                            (bullet.leftCoord >= boss.leftCoord + 185
+                             && bullet.leftCoord <= boss.leftCoord + 220
+                             && bullet.bottomCoord >= boss.bottomCoord + 65
+                             && bullet.bottomCoord <= boss.bottomCoord + 240)
+                         //right wing
+                         || (bullet.leftCoord >= boss.leftCoord + 220
+                             && bullet.leftCoord <= boss.leftCoord + 300
+                             && bullet.bottomCoord >= boss.bottomCoord + 90
+                             && bullet.bottomCoord <= boss.bottomCoord + 240)
+                    );
                 }
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
@@ -748,7 +752,7 @@
                     currentMission.startMission();
                     break;
                 case "boss":
-                    currentMission = new BossMission();
+                    currentMission = new BossMission(areaIndex);
                     currentMission.startMission();
                     break;
                 default:
@@ -788,6 +792,7 @@
         handleMissionWin = function () {
             var starsWonRemainingHealth = trackRemainingHealth(),
                 starsWonAccuracy = trackAccuracy(),
+                starsWonUsedSkills = trackUsedSkills(),
                 starsWonForMission;
             switch (secondaryObjectiveType) {
                 case "remainingHealth":
@@ -795,6 +800,9 @@
                     break;
                 case "accuracy":
                     starsWonForMission = starsWonAccuracy;
+                    break;
+                case 'usedSkills':
+                    starsWonForMission = starsWonUsedSkills;
                     break;
                 default:
                     break;
@@ -950,7 +958,11 @@
                     return stars;
                 }
             }
-            trackAccuracy(isHit);
+            if (isHit) {
+                return trackAccuracy(isHit);
+            } else {
+                return trackAccuracy();
+            }
         },
 
         trackRemainingHealth = function (currentHealth) {
@@ -984,10 +996,47 @@
             }
 
             if (currentHealth) {
-                trackRemainingHealth(currentHealth);
+                return trackRemainingHealth(currentHealth);
             } else {
-                trackRemainingHealth();
+                return trackRemainingHealth();
             }
+        },
+
+        trackUsedSkills = function (skillName) {
+            var skillUseCount = 0, stars = 0;
+
+            trackUsedSkills = function (skillName) {
+                if (arguments.length > 0) {
+                    skillUseCount++;
+                    if (secondaryObjectiveType == "usedSkills") {
+                        Visual.crossOutSecondaries(skillUseCount);
+                    }
+
+                    return skillUseCount;
+                } else { //if called without an argument, the function will return the amount of stars won and will reset the used variables
+                    if (skillUseCount < 5) {
+                        stars = 3; //currently at 3 stars
+                    } else if (skillUseCount < 7) {
+                        stars = 2; //currently at 2 stars
+                    } else if (skillUseCount < 9) {
+                        stars = 1; //currently at 1 star
+                    } else {
+                        stars = 0;
+                    }
+                    skillUseCount = 0;
+                    return stars;
+                }
+            }
+
+            if (skillName) {
+                return trackUsedSkills(skillName);
+            } else {
+                return trackUsedSkills();
+            }
+        },
+
+        trackUsedSkillsExposed = function (skillName) {
+            trackUsedSkills(skillName);
         },
 
         distanceBetweenTwoPoints = function (x1, y1, x2, y2) {
@@ -1018,7 +1067,7 @@
                     bottom: bottom + 40 - radioactiveRadius/2, 
                     left: left + 50 - radioactiveRadius/2, 
                     width: radioactiveRadius + "px", 
-                    height: radioactiveRadius +"px", 
+                    height: radioactiveRadius + "px", 
                     opacity: 0
                 },
                 800,
@@ -1610,6 +1659,7 @@
         spawnStormCloud: spawnStormCloud,
         handleBossIteration: handleBossIteration,
         isTimeStopped: isTimeStopped,
+        trackUsedSkillsExposed: trackUsedSkillsExposed,
 
         getTime: getTime,
         getSeconds: getSeconds,
