@@ -1,8 +1,9 @@
-﻿var interactionManager = (function () {
+﻿ var interactionManager = (function () {
     var playerPlane = new PlayerPlane(),
         boss,
         bullets,
         hazards,
+        pickups,
         playerBulletsSpeed,
         fighterBulletsSpeed,
         bossBulletsSpeed,
@@ -21,6 +22,7 @@
         bossDeathRayDamage,
         radioactiveDamage,
         radioactiveRadius,
+        healingBulletHealPoints,
         lastShotPlayerBulletTimestamp,
         lastFighterSpawnTimestamp,
         enemyPlanes,
@@ -34,6 +36,7 @@
         currentMission,
         secondaryObjectiveType,
         timeIsStopped,
+        rocketPathArray,
         Timer = {
             //Counts how many seconds have passed since the start of the game
             current: 0,
@@ -54,7 +57,6 @@
             }
         },
         startTimer = function () {
-            $('<div id="timer"></div>').appendTo('#gameSection');
             window.setInterval(function () {
                 Timer.increaseTimer();
                 Timer.updateTimerDiv();
@@ -67,6 +69,8 @@
             timeIsStopped = false;
             bullets = [];
             hazards = [];
+            pickups = [];
+            rocketPathArray = [];
             playerBulletsSpeed = 10;
             fighterBulletsSpeed = 7;
             bossBulletsSpeed = 12;
@@ -87,6 +91,7 @@
             bossDeathRayDamage = 10;
             radioactiveDamage = playerPlane.damage * 3;
             radioactiveRadius = 400;
+            healingBulletHealPoints = 1;
             enemySpawnFrequencyMs = null; //set when the mission starts
             fighterDirectionChangeFrequencyMs = 1000;
             fighterShootFrequencyMs = 1500;
@@ -141,13 +146,16 @@
         },
 
         spawnSentry = function (left, bottom) {
-            var sentryTargetIndex = parseInt(Math.random() * enemyPlanes.length),
-                sentryTarget = enemyPlanes[sentryTargetIndex],
-                sentry = new SentryPlane(left, bottom, sentryMaxHealth, sentryDamage, sentryTarget);
-
+            var sentry = new SentryPlane(left, bottom, sentryMaxHealth, sentryDamage);
             friendlyPlanes.push(sentry);
             sentry.addToScreen();
 
+        },
+
+        spawnRocket = function (left, bottom) {
+            var rocket = new GuidedRocket(left, bottom, 0, playerPlane);
+            bullets.push(rocket);
+            rocket.addToScreen();
         },
 
         spawnBullet = function (type, left, bottom, orientationDeg, owner) {
@@ -169,6 +177,9 @@
                     break;
                 case "boss":
                     newBullet = new BossBullet(left, bottom, orientationDeg, owner);
+                    break;
+                case "healing":
+                    newBullet = new HealingBullet(left, bottom, orientationDeg, owner);
                     break;
                 default:
                     break;
@@ -251,6 +262,14 @@
             hazards.push(newStormCloud);
         },
 
+        spawnHealingOrb = function (left, bottom) {
+            if (pickups.length < 3) { //no more than 3 pickups can be on the screen at once
+                var healingOrb = new HealingOrb(left, bottom);
+                pickups.push(healingOrb);
+                healingOrb.addToScreen();
+            }
+        },
+
         gauntletSpawnEnemies = function () {
             var nowMs = Date.now(), i;
             if (nowMs - currentMission.lastTauntTimestamp > 1500) {
@@ -271,12 +290,26 @@
             playerPlane.move();
         },
 
+        rotateSentries = function (direction) {
+            var i,
+                dir = (direction == 'right') ? 3 : -3;
+            for (i = 0; i < friendlyPlanes.length; i++) {
+                if (friendlyPlanes[i] instanceof SentryPlane) {
+                    if (friendlyPlanes[i].orientationDeg + dir >= -90 && friendlyPlanes[i].orientationDeg + dir <= 90) {
+                        friendlyPlanes[i].orientationDeg += dir;
+                        friendlyPlanes[i].rotate();
+                    }
+                }
+            }
+        },
+
         iterateBullets = function (type) { //types: 'all', 'player', 'enemy'
             var i, toBeDestroyed = false, hitEnemyPlaneIndex, hitFriendlyPlaneIndex;
             for (i = 0; i < bullets.length; i++) {
                 toBeDestroyed = false;
                 //if out of the screen, flag the bullet for removal
-                if (bullets[i].bottomCoord < 0 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947) {
+                if (bullets[i].bottomCoord < 0 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947
+                    || (bullets[i] instanceof GuidedRocket && rocketPathArray.length == 0)) {
                     bullets[i].toBeSpliced = true;
                     bullets[i].die();
                     if (bullets[i] instanceof PlayerBullet) {
@@ -291,7 +324,7 @@
                         handleCollisionPlayerBullet(bullets[i], hitEnemyPlaneIndex);
                         bullets[i].handleCollision(enemyPlanes[hitEnemyPlaneIndex]);
                     } else {
-                        movePlayerBullet(bullets[i]);
+                        movePlayerBullet(bullets[i]);  
                     }
                 }
                 else if ((type == 'all' || type == 'enemy') && bullets[i] instanceof EnemyBullet) {
@@ -320,10 +353,15 @@
         movePlayerBullet = function (bullet) {
             if (bullet instanceof HomingBullet) {
                 moveHomingBullet(bullet);
+            } else if (bullet instanceof GuidedRocket) {
+                moveGuidedRocket(bullet);
             } else {
-                var newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 45 * playerBulletsSpeed; //if the degree is (45) or (-45), the bullet
+                var newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 45 * playerBulletsSpeed, //if the degree is (45) or (-45), the bullet
+                    newBottomCoord = parseInt((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ?
+                (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                : (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
                 //will travel diagonally at (playerBulletsSpeed) speed
-                bullet.updateCoords(newLeftCoord, bullet.bottomCoord + playerBulletsSpeed);
+                bullet.updateCoords(newLeftCoord, newBottomCoord);
                 bullet.move();
             }
         },
@@ -341,7 +379,7 @@
                     : (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
             } else {
                 bullet.removeTarget();
-                newLeftCoord = newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
+                newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 90 * playerBulletsSpeed;
                 newBottomCoord = bullet.bottomCoord + playerBulletsSpeed;
             }
 
@@ -351,12 +389,14 @@
 
         moveEnemyBullet = function (bullet) {
             var bulletSpeed = (bullet instanceof BossBullet) ? bossBulletsSpeed : fighterBulletsSpeed,
-                newLeftCoord = bullet.leftCoord - bullet.orientationDeg / 45 * bulletSpeed,
-                newBottomCoord = (bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
+                newLeftCoord = parseInt(bullet.leftCoord - bullet.orientationDeg / 45 * bulletSpeed),
+                newBottomCoord = parseInt((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
                 (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))));
-            bullet.updateCoords(newLeftCoord, bullet.bottomCoord - bulletSpeed);
-            bullet.move();
+                : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
+            if (newLeftCoord != bullet.leftCoord || newBottomCoord != bullet.bottomCoord) {
+                bullet.updateCoords(newLeftCoord, newBottomCoord);
+                bullet.move();
+            }
         },
 
         iterateFriendlyPlanes = function () {
@@ -364,10 +404,17 @@
             for (i = 0; i < friendlyPlanes.length; i++) {
                 if (friendlyPlanes[i] instanceof SentryPlane) {
                     shootSentry(friendlyPlanes[i]);
+                } else if (friendlyPlanes[i] instanceof ReinforcementPlane) {
+                    if (rocketPathArray.length) {
+                        moveReinforcementPlane(friendlyPlanes[i]);
+                    } else {
+                        friendlyPlanes[i].die();
+                        friendlyPlanes.splice(i, 1);
+                        i--;
+                    }
                 }
             }
         },
-
         iterateEnemyPlanes = function () {
             var i;
             for (i = 0; i < enemyPlanes.length; i++) {
@@ -399,6 +446,20 @@
                 }
                 if (detectCollisionStormCloudPlayer(hazards[i])) {
                     handleCollisionStormCloudPlayer(hazards[i]);
+                }
+            }
+        },
+
+        iteratePickups = function () {
+            var i;
+            for (i = 0; i < pickups.length; i++) {
+                if (pickups[i] instanceof HealingOrb) {
+                    if (isPointInsideObject(pickups[i].leftCoord + pickups[i].width / 2, pickups[i].bottomCoord + pickups[i].height / 2, playerPlane)) {
+                        pickups[i].heal(playerPlane);
+                        pickups[i].die();
+                        pickups.splice(i, 1);
+                        i--;
+                    }
                 }
             }
         },
@@ -495,9 +556,9 @@
             var i, isHit;
             isHit = !playerPlane.isStealthed 
                  && bullet.leftCoord >= playerPlane.leftCoord
-                 && bullet.leftCoord <= playerPlane.leftCoord + 100
+                 && bullet.leftCoord <= playerPlane.leftCoord + playerPlane.width
                  && bullet.bottomCoord >= playerPlane.bottomCoord
-                 && bullet.bottomCoord <= playerPlane.bottomCoord + 80;
+                 && bullet.bottomCoord <= playerPlane.bottomCoord + playerPlane.height;
             return isHit;
         },
 
@@ -506,9 +567,9 @@
             for (i = 0; i < friendlyPlanes.length; i++) {
                 if (friendlyPlanes[i] instanceof SentryPlane) {
                     isHit = bullet.leftCoord >= friendlyPlanes[i].leftCoord
-                         && bullet.leftCoord <= friendlyPlanes[i].leftCoord + 100
+                         && bullet.leftCoord <= friendlyPlanes[i].leftCoord + playerPlane.width
                          && bullet.bottomCoord >= friendlyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= friendlyPlanes[i].bottomCoord + 75;
+                         && bullet.bottomCoord <= friendlyPlanes[i].bottomCoord + playerPlane.height;
                 }
 
                 if (isHit) {
@@ -559,59 +620,80 @@
                         stormCloud.leftCoord + 80 < playerPlane.leftCoord + 100);
 
             return isHit;
-        }
+        },
+
+        isPointInsideBoss = function (left, bottom) {
+            var isIn = !boss.isInvulnerable && (
+                //left wing
+                (left >= boss.leftCoord
+                    && left <= boss.leftCoord + 75
+                    && bottom >= boss.bottomCoord + 90
+                    && bottom <= boss.bottomCoord + 240)
+                //between left wing and cockpit
+                ||
+                (left >= boss.leftCoord + 75
+                    && left <= boss.leftCoord + 110
+                    && bottom >= boss.bottomCoord + 65
+                    && bottom <= boss.bottomCoord + 240)
+                //cockpit
+                || (left >= boss.leftCoord + 110
+                    && left <= boss.leftCoord + 185
+                    && bottom >= boss.bottomCoord + 30
+                    && bottom <= boss.bottomCoord + 240)
+                //between cockpit and right wing
+                ||
+                (left >= boss.leftCoord + 185
+                    && left <= boss.leftCoord + 220
+                    && bottom >= boss.bottomCoord + 65
+                    && bottom <= boss.bottomCoord + 240)
+                //right wing
+                || (left >= boss.leftCoord + 220
+                    && left <= boss.leftCoord + 300
+                    && bottom >= boss.bottomCoord + 90
+                    && bottom <= boss.bottomCoord + 240)
+            );
+
+            return isIn;
+        },
+		isPointInsideObject = function (x,y, obj){
+			isIn = ((x >= obj.leftCoord && x <= (obj.leftCoord + obj.width)) &&
+				(y >= obj.bottomCoord && y <= (obj.bottomCoord + obj.height)))
+			return isIn;
+		},
 
         detectCollisionPlayerBullet = function (bullet) {
-            var i, isHit;
+            var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
-                if (enemyPlanes[i] instanceof EnemyFighter) {
-                    isHit = bullet.leftCoord >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + 90
+                if (enemyPlanes[i] instanceof BossPlane) {
+                    isHit = isPointInsideBoss(bullet.leftCoord, bullet.bottomCoord)
+                         || isPointInsideBoss(bullet.leftCoord + bullet.width, bullet.bottomCoord)
+                         || isPointInsideBoss(bullet.leftCoord, bullet.bottomCoord + bullet.height)
+                         || isPointInsideBoss(bullet.leftCoord + bullet.width, bullet.bottomCoord + bullet.height);
+                } else {
+                    isHit = (bullet.leftCoord >= enemyPlanes[i].leftCoord
+                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
                          && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + 70;
-                } else if (enemyPlanes[i] instanceof EnemySupplier) {
-                    isHit = bullet.leftCoord >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + 100
+                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
+                    || (bullet.leftCoord + bullet.width >= enemyPlanes[i].leftCoord
+                         && bullet.leftCoord + bullet.width <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
                          && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + 80;
-                } else if (enemyPlanes[i] instanceof EnemyKamikaze || enemyPlanes[i] instanceof EnemyStormer) {
-                    isHit = bullet.leftCoord >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + 100
-                         && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + 75;
-                } else if (enemyPlanes[i] instanceof BossPlane) {
-                    isHit = !boss.isInvulnerable && (
-                         //left wing
-                         (bullet.leftCoord >= boss.leftCoord
-                             && bullet.leftCoord <= boss.leftCoord + 75
-                             && bullet.bottomCoord >= boss.bottomCoord + 90
-                             && bullet.bottomCoord <= boss.bottomCoord + 240)
-                         //between left wing and cockpit
-                         ||
-                            (bullet.leftCoord >= boss.leftCoord + 75
-                             && bullet.leftCoord <= boss.leftCoord + 110
-                             && bullet.bottomCoord >= boss.bottomCoord + 65
-                             && bullet.bottomCoord <= boss.bottomCoord + 240)
-                         //cockpit
-                         || (bullet.leftCoord >= boss.leftCoord + 110
-                             && bullet.leftCoord <= boss.leftCoord + 185
-                             && bullet.bottomCoord >= boss.bottomCoord + 30
-                             && bullet.bottomCoord <= boss.bottomCoord + 240)
-                         //between cockpit and right wing
-                         ||
-                            (bullet.leftCoord >= boss.leftCoord + 185
-                             && bullet.leftCoord <= boss.leftCoord + 220
-                             && bullet.bottomCoord >= boss.bottomCoord + 65
-                             && bullet.bottomCoord <= boss.bottomCoord + 240)
-                         //right wing
-                         || (bullet.leftCoord >= boss.leftCoord + 220
-                             && bullet.leftCoord <= boss.leftCoord + 300
-                             && bullet.bottomCoord >= boss.bottomCoord + 90
-                             && bullet.bottomCoord <= boss.bottomCoord + 240)
-                    );
+                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
+                    || (bullet.leftCoord >= enemyPlanes[i].leftCoord
+                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
+                         && bullet.bottomCoord + bullet.height >= enemyPlanes[i].bottomCoord
+                         && bullet.bottomCoord + bullet.height <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
+                    || (bullet.leftCoord + bullet.width >= enemyPlanes[i].leftCoord
+                         && bullet.leftCoord + bullet.width <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
+                         && bullet.bottomCoord + bullet.height >= enemyPlanes[i].bottomCoord
+                         && bullet.bottomCoord + bullet.height <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height);
                 }
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
+                } else if (bullet instanceof PiercingBullet) {
+                    indexEnemiesHit = bullet.enemiesHit.indexOf(enemyPlanes[i]);
+                    if (bullet.enemiesHit.indexOf(enemyPlanes[i]) != -1) {
+                        bullet.enemiesHit.splice(indexEnemiesHit, 1);
+                    }
                 }
             }
             //bullet didn't hit anything, return -1
@@ -630,14 +712,14 @@
 
         detectCollisionKamikaze = function (kamikaze) {
             var isHit = ((kamikaze.bottomCoord > playerPlane.bottomCoord &&
-                kamikaze.bottomCoord < playerPlane.bottomCoord + 80) ||
+                kamikaze.bottomCoord < playerPlane.bottomCoord + playerPlane.height) ||
                 ((kamikaze.bottomCoord + 75) > playerPlane.bottomCoord &&
-                (kamikaze.bottomCoord + 75) < playerPlane.bottomCoord + 80))
+                (kamikaze.bottomCoord + 75) < playerPlane.bottomCoord + playerPlane.height))
             &&
                 ((kamikaze.leftCoord > playerPlane.leftCoord &&
-                kamikaze.leftCoord < playerPlane.leftCoord + 100) ||
-                (kamikaze.leftCoord + 100 > playerPlane.leftCoord &&
-                kamikaze.leftCoord + 100 < playerPlane.leftCoord + 100));
+                kamikaze.leftCoord < playerPlane.leftCoord + playerPlane.width) ||
+                (kamikaze.leftCoord + kamikaze.width > playerPlane.leftCoord &&
+                kamikaze.leftCoord + 100 < playerPlane.leftCoord + playerPlane.width));
 
             return isHit;
         },
@@ -667,18 +749,32 @@
             var nowMs = Date.now();
             if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-                if (playerPlane.currentHealth > stormerDamage) {
-                    playerPlane.currentHealth -= stormerDamage;
-                } else {
-                    playerPlane.currentHealth = 0;
-                }
-                trackRemainingHealth(playerPlane.currentHealth);
+				if (playerPlane.currentHealth > stormerDamage) {
+                   playerPlane.currentHealth -= stormerDamage;
+				} else {
+					playerPlane.currentHealth = 0;
+				}
+				playerPlane.updateHpBar();
+				trackRemainingHealth(playerPlane.currentHealth);
             }
         },
 
         handleCollisionPlayerBullet = function (bullet, hitEnemyPlaneIndex) {
             var ownerPlane = bullet.owner,
                 damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.5 : ownerPlane.damage;
+            if (bullet instanceof GuidedRocket) {
+                damage = 5;
+            }
+
+            if(bullet instanceof HealingBullet){
+                if(playerPlane.maxHealth >= (playerPlane.currentHealth + healingBulletHealPoints)){
+                    playerPlane.currentHealth += healingBulletHealPoints;
+                } else {
+                    playerPlane.currentHealth = playerPlane.maxHealth;
+                }
+                playerPlane.updateHpBar();
+            }
+
             if (enemyPlanes[hitEnemyPlaneIndex].currentHealth > damage) {
                 enemyPlanes[hitEnemyPlaneIndex].currentHealth -= damage;
                 enemyPlanes[hitEnemyPlaneIndex].updateHpBar();
@@ -706,28 +802,35 @@
                 boss.die();
             }
             trackAccuracy(true);
-        }
+        },
 
         handleCollisionEnemy = function (hitter) {
-            if (playerPlane.currentHealth > hitter.damage) {
-                playerPlane.currentHealth -= hitter.damage;
-            } else {
-                playerPlane.currentHealth = 0;
-            }
-            trackRemainingHealth(playerPlane.currentHealth);
+			if(playerPlane.absorbationShieldStrenght == 0){
+				if (playerPlane.currentHealth > hitter.damage) {
+						playerPlane.currentHealth -= hitter.damage;
+					} else {
+						playerPlane.currentHealth = 0;
+					}
+				playerPlane.updateHpBar();
+				trackRemainingHealth(playerPlane.currentHealth);
+			}else{
+				playerPlane.absorbationShieldStrenght--;
+				if(playerPlane.absorbationShieldStrenght == 0){
+					$('#playerShield').remove();
+				}
+			}
         },
 
         handleCollisionEnemyWithFriendlyPlane = function (hitter, friendlyIndex) {
             var friendly = friendlyPlanes[friendlyIndex];
             if (friendly.currentHealth > hitter.damage) {
                 friendly.currentHealth -= hitter.damage;
-                friendly.updateHpBar();
             } else {
                 friendly.currentHealth = 0;
-                friendly.updateHpBar();
                 friendly.die();
                 friendlyPlanes.splice(friendlyIndex, 1);
             }
+            friendly.updateHpBar();
         },
 
         launchMission = function (missionIndex, areaIndex) {
@@ -898,12 +1001,20 @@
                     case "radioactive":
                         playerPlane.skills.push(new Radioactive(playerPlane));
                         break;
+                    case "healingshot":
+                        playerPlane.skills.push(new HealingShot(playerPlane));
+                        break;
+                    case 'guidedrocket':
+                        playerPlane.skills.push(new SummonGuidedRocket(playerPlane));
+                        break;
+					case 'shield':
+                        playerPlane.skills.push(new Shield(playerPlane));
+                        break;
                     default:
                         throw new Error("Unrecognized skill type");
                 }
             }
         },
-
 
         getEnemiesCount = function () {
             return enemyPlanes.length;
@@ -971,7 +1082,6 @@
             trackRemainingHealth = function (currentHealth) {
                 if (arguments.length > 0) {
                     currentHealthPercentage = parseInt(currentHealth / playerPlane.maxHealth * 100);
-                    $("#hpBar").css("width", currentHealthPercentage * 2 + "px");
                     if (currentHealthPercentage < minimumHealthPercentageReached) {
                         minimumHealthPercentageReached = currentHealthPercentage;
                     }
@@ -1059,13 +1169,13 @@
                 $('<div></div>')
                 .addClass('radioactiveDiv')
                 .css({
-                    'bottom': bottom + 40 + 'px',
-                    'left': left + 50 +'px'
+                    'bottom': bottom + playerPlane.height/2 + 'px',
+                    'left': left + playerPlane.width/2 +'px'
                 })
                 .appendTo('#gameScreen')
                 .animate({
-                    bottom: bottom + 40 - radioactiveRadius/2, 
-                    left: left + 50 - radioactiveRadius/2, 
+                    bottom: bottom + playerPlane.height/2 - radioactiveRadius/2, 
+                    left: left + playerPlane.width/2 - radioactiveRadius/2, 
                     width: radioactiveRadius + "px", 
                     height: radioactiveRadius + "px", 
                     opacity: 0
@@ -1079,16 +1189,14 @@
 
         dealDamageRadioactive = function (left, bottom) {
             var i, isHit,
-            enemyPlaneHeight = 72,
-            enemyPlaneWidth = 90,
-            X = left + 50, //PlayerPlane Center X
-            Y = bottom + 40; //PlayerPlane Center Y
+            X = left + playerPlane.width/2, //PlayerPlane Center X
+            Y = bottom + playerPlane.height/2; //PlayerPlane Center Y
             //enemy planes
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius-100)) && 
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlaneWidth, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlaneWidth, enemyPlanes[i].bottomCoord + enemyPlaneHeight, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlaneHeight, X, Y)) < (radioactiveRadius-100));
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius-100)) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius-100));
 
                 if (isHit) {
                     if (enemyPlanes[i].currentHealth > radioactiveDamage) {
@@ -1111,15 +1219,13 @@
 
         dealDamageRadioactiveToBoss = function (left, bottom) {
             var isHit,
-            bossHeight = 240,
-            bossWidth = 300,
             X = left + 50, //PlayerPlane Center X
             Y = bottom + 40; //PlayerPlane Center Y
 
             isHit = ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord, X, Y)) < (radioactiveRadius-100)) && 
-                    ((distanceBetweenTwoPoints(boss.leftCoord + bossWidth, boss.bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord + bossWidth, boss.bottomCoord + bossHeight, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + bossHeight, X, Y)) < (radioactiveRadius-100));
+                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius-100)) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius-100));
 
             if (isHit) {
                 if (boss.currentHealth > radioactiveDamage) {
@@ -1161,9 +1267,9 @@
                 $('<div></div>')
                 .addClass('deathRayDiv')
                 .css({
-                    'height': (700 - bottom + 80) + 'px',
+                    'height': (700 - bottom + playerPlane.height) + 'px',
                     'left': left + 22 + 'px',
-                    'bottom': bottom + 80 + 'px'
+                    'bottom': bottom + playerPlane.height + 'px'
                 })
                 .appendTo('#gameScreen')
                 .animate({
@@ -1254,7 +1360,9 @@
                     'left': rayLeft + 'px',
                     'top': rayTop + 'px',
                     'height': rayHeight + 'px',
-                    '-webkit-transform': 'skewX(' + -orientationDeg + 'deg)'
+                    '-webkit-transform': 'skewX(' + -orientationDeg + 'deg)',
+					'-ms-transform': 'skewX(' + -orientationDeg + 'deg)',
+					'transform': 'skewX(' + -orientationDeg + 'deg)'
                 })
                 .appendTo('#gameScreen');
             return deathRay;
@@ -1370,9 +1478,7 @@
                 return a * x + b;
             };
             function reverseVectorFunction(y, a, b) { //input y, get x
-                if (a == 0) {
-                    return;
-                }
+                //a is never 0, as the skew degree is never 0, division is safe
                 return (y - b) / a;
             };
 
@@ -1398,12 +1504,19 @@
             isHit = isHitByLeft || isHitByRight;
 
             if (isHit) {
-                if (playerPlane.currentHealth > bossDeathRayDamage) {
-                    playerPlane.currentHealth -= bossDeathRayDamage;
-                } else {
-                    playerPlane.currentHealth = 0;
-                }
-                trackRemainingHealth(playerPlane.currentHealth);
+				if(playerPlane.absorbationShieldStrenght == 0){
+				    if (playerPlane.currentHealth > bossDeathRayDamage) {
+						playerPlane.currentHealth -= bossDeathRayDamage;
+					} else {
+						playerPlane.currentHealth = 0;
+					}
+					playerPlane.updateHpBar();
+					trackRemainingHealth(playerPlane.currentHealth);
+				} else {
+					playerPlane.absorbationShieldStrenght = 0;
+					$('#playerShield').remove();
+				}
+
             }
         },
 
@@ -1471,6 +1584,63 @@
             }, animationLengthMs);
         },
 
+        handleGuidedRocket = function () {
+            var rocketPath = new Array();
+            $("#gameScreen").css({
+                "cursor": "pointer"
+            });
+            $(document).unbind('mouseup mousedown', handleMouseClick);
+            $(document).unbind('mousemove', movePlayerPlane);
+            $(document).on('mousedown', initiateRocketPathDrawing);
+            $(document).on('mouseup', finishRocketPathDrawing);
+        },
+
+        initiateRocketPathDrawing = function () {
+            $(document).on('mousemove', drawRocketPath);
+        },
+
+        finishRocketPathDrawing = function () {
+            rocketPathArray.splice(99, rocketPathArray.length - 99); //remove all but the first 100 entries
+            $(document).off('mousemove', drawRocketPath);
+            $(document).off('mousedown', initiateRocketPathDrawing);
+            $(document).off('mouseup', finishRocketPathDrawing);
+            window.setTimeout(function () {
+                $("#gameScreen").css({
+                    "cursor": "none"
+                });
+                $(document).on('mousemove', movePlayerPlane);
+                $(document).bind('mouseup mousedown', handleMouseClick);
+                if (rocketPathArray.length > 0) {
+                    spawnRocket(rocketPathArray[0].left, rocketPathArray[0].bottom);
+                }
+            }, 300);
+        },
+
+        drawRocketPath = function (e) {
+            var converted = convertEventCoordinates(e.clientX, e.clientY),
+                lastCoordsInPath = rocketPathArray[rocketPathArray.length - 1];
+            if (!lastCoordsInPath || distanceBetweenTwoPoints(converted.left, converted.bottom, lastCoordsInPath.left, lastCoordsInPath.bottom) > 20) {
+                rocketPathArray.push(converted);
+                if (rocketPathArray.length >= 1000) {
+                    finishRocketPathDrawing();
+                }
+            }
+        },
+
+        moveGuidedRocket = function (rocket) {
+            var newLeft, newBottom, coords;
+            if (rocketPathArray.length > 0) {
+                rocket.chaseTarget(rocketPathArray[0].left, rocketPathArray[0].bottom);
+                coords = rocketPathArray.shift();
+                newLeft = rocket.leftCoord + rocket.orientationDeg / 90 * rocket.movementSpeed;
+                newBottom = (rocket.bottomCoord > coords.bottom) ?
+                    (rocket.bottomCoord - (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))))
+                    : (rocket.bottomCoord + (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))));
+                rocket.updateCoords(coords.left, coords.bottom);
+                rocket.move();
+            }
+        },
+
         convertEventCoordinates = function (clientX, clientY) {
             var converted = { left: 0, bottom: 0 };
             var nonGameScreenWidth = window.innerWidth - 960;
@@ -1486,11 +1656,16 @@
                 converted.left = 0 + 50;
             }
             //newBottom
-            if (clientY <= 700) {
+            if (clientY <= 570) {
                 converted.bottom = 700 - clientY - 50;
+                //$('#gameScreen').css('cursor', 'none');
             } else {
-                converted.bottom = 0;
+                //$('#gameScreen').css('cursor', 'default');
+                converted.bottom = 80;
             }
+
+            converted.left = parseInt(converted.left);
+            converted.bottom = parseInt(converted.bottom);
 
             return converted;
         },
@@ -1510,14 +1685,15 @@
                 converted.left = 0 + 50;
             }
             //newBottom
-            if (clientY >= 350 && clientY <= 700) {
+            if (clientY >= 350 && clientY <= 570) {
                 converted.bottom = 700 - clientY - 50;
                 $('#gameScreen').css('cursor', 'none');
-            } else if (clientY > 700) {
-                converted.bottom = 0;
+            } else if (clientY > 570) {
+                converted.bottom = 80;
+                $('#gameScreen').css('cursor', 'default');
             } else {
                 converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'initial');
+                $('#gameScreen').css('cursor', 'default');
             }
 
             return converted;
@@ -1636,12 +1812,14 @@
         spawnSentry: spawnSentry,
         spawnBullet: spawnBullet,
         spawnEnemy: spawnEnemy,
+        spawnHealingOrb: spawnHealingOrb,
         gauntletSpawnEnemies: gauntletSpawnEnemies, 
         movePlayerPlane: movePlayerPlane,
         iterateBullets: iterateBullets,
         iterateFriendlyPlanes: iterateFriendlyPlanes,
         iterateEnemyPlanes: iterateEnemyPlanes,
         iterateHazards: iterateHazards,
+        iteratePickups: iteratePickups,
         increaseSpawnTime: increaseSpawnTime,
         shootPlayerPlane: shootPlayerPlane,
         handleMouseClick: handleMouseClick,
@@ -1660,6 +1838,8 @@
         handleBossIteration: handleBossIteration,
         isTimeStopped: isTimeStopped,
         trackUsedSkillsExposed: trackUsedSkillsExposed,
+        handleGuidedRocket: handleGuidedRocket,
+        rotateSentries: rotateSentries,
 
         getTime: getTime,
         getSeconds: getSeconds,

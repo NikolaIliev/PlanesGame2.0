@@ -15,21 +15,23 @@
 	margin-left: 25px;
 }
 .mainMissionName{
+	position:absolute;
+	left:650px;
+	top:15px;
+	width:300px;
 	text-shadow: 0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1);
 	font-weight: bolder;
 	font-size: 0.9em;
+}
+
+b{
+	font-size: 1.5em;
 }
 
 #fps{
 	position: absolute;
 	top:10px;
 	right:10px;
-}
-
-#timer {
-    position: absolute;
-    top: 20px;
-    right: 15px;
 }
 
 .ui{
@@ -102,6 +104,17 @@
 
 .radioactiveIcon {
     background-image: url(../images/ui/radioactiveIcon.png);
+}
+
+.healingShotIcon {
+    background-image: url(../images/ui/healingShotIcon.png);
+}
+
+.guidedRocketIcon {
+    background-image: url(../images/ui/guidedRocketIcon.png);
+}
+.shieldIcon {
+    background-image: url(../images/ui/shieldIcon.png);
 }
 
 #hpBar{

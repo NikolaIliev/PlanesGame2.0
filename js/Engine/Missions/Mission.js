@@ -15,7 +15,6 @@
         Game.clearScreen();
         Visual.adjustCSSofGameScreen(true);
         Visual.drawUI(self);
-        $('<div id="fps"></div>').appendTo('#gameScreen');
         interactionManager.spawnPlayer();
         $(document).on('mousemove', interactionManager.movePlayerPlane);
         $(document).on('mousedown', interactionManager.handleMouseClick);
@@ -27,8 +26,10 @@
             e.preventDefault();
         });
         $(document).on('keypress', function (e) {
-            if (e.keyCode == 112) {//p
-                interactionManager.togglePause();
+            if (e.keyCode == 97) { //a
+                interactionManager.rotateSentries('left');
+            } else if (e.keyCode == 100) { //d
+                interactionManager.rotateSentries('right');
             } else if (e.keyCode >= 49 && e.keyCode <= 52) { //1-4 key was pressed
                 interactionManager.handleSkillUsage(e.keyCode - 49);
             }
@@ -44,9 +45,11 @@
         interactionManager.iterateFriendlyPlanes();
         interactionManager.iterateEnemyPlanes();
         interactionManager.iterateHazards();
+        interactionManager.iteratePickups();
         interactionManager.shootPlayerPlane();
         interactionManager.spawnEnemy();
         Visual.iterateBackground();
+        this.updatePrimaryStatus();
 
         if (self.checkWinConditions()) {
             interactionManager.handleMissionWin();
@@ -63,5 +66,6 @@
         window.clearInterval(this.mainLoopInterval);
     },
     checkWinConditions: function () { },
-    checkLossConditions: function () { }
+    checkLossConditions: function () { },
+    updatePrimaryStatus: function() { }
 });
