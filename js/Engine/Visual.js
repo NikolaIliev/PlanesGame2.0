@@ -12,11 +12,6 @@ var Visual = {
         .on("click", function () {
             Game.init();
         });
-
-        $("<div>Instructions</div>")
-        .addClass("introButton")
-        .appendTo("#introScreen");
-
         $("<div>Leaderboard</div>")
        .addClass("introButton")
        .appendTo("#introScreen")
@@ -48,25 +43,7 @@ var Visual = {
     //Moves the background
     iterateBackground: function () {
         this.backgroundOffset++;
-        document.getElementById("gameScreen").style.backgroundPositionY = this.backgroundOffset + "px";
-    },
-
-    //Gives text for the primary mission Description
-    returnPrimaryDescription: function (mission) {
-        if (mission instanceof SurvivalMission) {
-            return "Survive in the battlefield for 45 seconds"
-        }
-        else if (mission instanceof DominationMission) {
-            return "Don't let more than 7 enemies spawn for 30 seconds"
-        }
-        else if (mission instanceof GauntletMission) {
-            return "Kill 75 enemies. Press E to summon additional ones."
-        } else if (mission instanceof BossMission) {
-            return 'Defeat the boss.';
-        }
-        else {
-            throw new Error("No such mission");
-        }
+        $('#gameScreen').css('backgroundPosition', 'right 0px top ' + this.backgroundOffset + 'px');
     },
 
 
@@ -138,6 +115,7 @@ var Visual = {
         .addClass("missionList")
         .appendTo("#gameScreen");
 
+        if(!(mission instanceof BossMission)){
         for (var i = 0; i < 3; i++) {
             $("<li/>")
             .attr("id", "listItem" + i)
@@ -146,12 +124,26 @@ var Visual = {
         }
 
         this.setSecondaryDescriptions();
-
+        }
 
         $("<div/>")
         .addClass("ui")
         .appendTo("#gameScreen");
 
+         //Places the primary mission
+        $("<div/>")
+        .addClass("mainMissionName")
+        .appendTo(".ui");
+
+        $('<div id="fps"></div>')
+        .appendTo('.ui');
+
+        //Draw timer
+        $('<div id="timer">' + interactionManager.getTime() + '</div>')
+        .addClass("inGame")
+        .appendTo('.ui');
+
+        //Draws the HP bar
         $("<div/>", {
             id: "hpBar"
         })
@@ -169,11 +161,6 @@ var Visual = {
                 $("#skill" + i).addClass(skillArray[i].icon);
             }
         }
-        //Places the primary mission
-        $("<span/>")
-      .addClass("mainMissionName")
-      .appendTo(".ui")
-      .text(this.returnPrimaryDescription(mission));
 
     },
 
@@ -212,7 +199,7 @@ var Visual = {
         for (var i = 0; i < 15; i++) {
             if (topArray[i]) {
                 var tableRow = $("<tr/>");
-
+                $("<td/>").addClass("positionCell").text(i+1).appendTo(tableRow);
                 $("<td/>").addClass("nicknameCell").text(topArray[i].nickname).appendTo(tableRow);
                 $("<td/>").addClass("scoreCell").text(topArray[i].score).appendTo(tableRow);
                 tableRow.appendTo(".leaderboard")

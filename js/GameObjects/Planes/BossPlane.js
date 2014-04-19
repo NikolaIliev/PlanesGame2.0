@@ -54,8 +54,12 @@
 
         if (this.bottomCoord > playerBottom) {
             this.div.style['-webkit-transform'] = 'rotate(' + (-this.orientationDeg) + 'deg)';
+			this.div.style['-moz-transform'] = 'rotate(' + (-this.orientationDeg) + 'deg)';
+			this.div.style['transform'] = 'rotate(' + (-this.orientationDeg) + 'deg)';
         } else {
             this.div.style['-webkit-transform'] = 'rotate(' + (180 + this.orientationDeg) + 'deg)';
+			this.div.style['-moz-transform'] = 'rotate(' + (180 + this.orientationDeg) + 'deg)';
+			this.div.style['transform'] = 'rotate(' + (180 + this.orientationDeg) + 'deg)';
         }
     },
 
@@ -102,7 +106,7 @@
 
     shoot: function () {
         if (!this.isCasting && !this.isInQuarterPhase) {
-            interactionManager.spawnBullet("boss", this.leftCoord + 150 + Math.ceil(this.orientationDeg * 5 / 3), this.bottomCoord + Math.abs(this.orientationDeg * 4 / 3) , -this.orientationDeg, this);
+            interactionManager.spawnBullet("boss", this.leftCoord + (this.width / 2) + Math.ceil(this.orientationDeg * 5 / 3), this.bottomCoord + Math.abs(this.orientationDeg * 4 / 3) , -this.orientationDeg, this);
         }
     },
 
@@ -152,6 +156,8 @@
         }, {
             step: function (now, fx) {
                 $(this).css('-webkit-transform', 'scale(' + now + ', ' + now + ')');
+				$(this).css('-moz-transform', 'scale(' + now + ', ' + now + ')');
+				$(this).css('transform', 'scale(' + now + ', ' + now + ')');
             },
             duration: 3000
         });
@@ -165,6 +171,8 @@
         }, {
             step: function (now, fx) {
                 $(this).css('-webkit-transform', 'scale(' + now + ', ' + now + ')');
+				$(this).css('-moz-transform', 'scale(' + now + ', ' + now + ')');
+				$(this).css('transform', 'scale(' + now + ', ' + now + ')');
             },
             complete: function () {
                 self.isCasting = false;

@@ -301,6 +301,27 @@
 	border:4px inset #46873f;
 }
 
+#timer {
+	text-shadow:0px 0px 6px black,0px 0px 6px black;
+    position: absolute;
+    font-size: 2.3em;
+}
+
+#timer.inMap{
+	padding:5px 5px 20px 5px;
+	background-color:#43494b;
+	left:400px;
+	bottom:0px;
+	border:4px outset #505658;
+	border-radius: 10px 10px 0px 0px;
+	width:100px;
+}
+
+#timer.inGame{
+	top:10px;
+	left:20px;
+}
+
 /*Loadout*/
 
 .loadoutButton{
@@ -345,7 +366,7 @@
 	-webkit-box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
 	-moz-box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
 	box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.4);
-	height: 180px;
+	height: 200px;
 	width: 80%;
 }
 
@@ -453,7 +474,7 @@ td{
 }
 
 .nicknameCell{
-	width:375px;
+	width:325px;
 }
 
 tr:nth-child(even)>.nicknameCell{
@@ -470,6 +491,18 @@ tr:nth-child(even)>.scoreCell{
 
 tr:nth-child(odd)>.scoreCell{
 	background-color:#362a19;
+}
+
+tr:nth-child(1)>.nicknameCell{
+	background-color:#eaa500;
+}
+
+tr:nth-child(2)>.nicknameCell{
+	background-color:#636363;
+}
+
+tr:nth-child(3)>.nicknameCell{
+	background-color:#bd4b00;
 }
 
 .leaderboardText{
@@ -498,5 +531,9 @@ tr:nth-child(odd)>.scoreCell{
 @media screen and (max-height: 700px){
 	.loadoutButton{
 		bottom:40px;
+	}
+
+	#timer.inMap{
+	padding-bottom:40px;
 	}
 }
