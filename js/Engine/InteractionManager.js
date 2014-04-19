@@ -199,7 +199,7 @@
 
         spawnRandomEnemy = function () {
             var areaIndex = currentMission.areaIndex;
-            if (enemyPlanes.length <= 15) {
+            if (enemyPlanes.length <= 10) {
                 var rand = parseInt(Math.random() * 100) + 1; //[1, 100]
                 if (rand >= 95 && areaIndex >= 2) {
                     spawnStormer();
@@ -287,7 +287,7 @@
 
             newCoords.left -= 50; //adjust plane to cursor
             playerPlane.updateCoords(newCoords.left, newCoords.bottom);
-            playerPlane.move();
+            //playerPlane.move();
         },
 
         rotateSentries = function (direction) {
@@ -362,7 +362,7 @@
                 : (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
                 //will travel diagonally at (playerBulletsSpeed) speed
                 bullet.updateCoords(newLeftCoord, newBottomCoord);
-                bullet.move();
+                //bullet.move();
             }
         },
 
@@ -384,18 +384,18 @@
             }
 
             bullet.updateCoords(newLeftCoord, newBottomCoord);
-            bullet.move();
+            //bullet.move();
         },
 
         moveEnemyBullet = function (bullet) {
             var bulletSpeed = (bullet instanceof BossBullet) ? bossBulletsSpeed : fighterBulletsSpeed,
-                newLeftCoord = parseInt(bullet.leftCoord - bullet.orientationDeg / 45 * bulletSpeed),
-                newBottomCoord = parseInt((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
+                newLeftCoord = bullet.leftCoord - (bullet.orientationDeg / 45 * bulletSpeed),
+                newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
                 (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
                 : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
             if (newLeftCoord != bullet.leftCoord || newBottomCoord != bullet.bottomCoord) {
                 bullet.updateCoords(newLeftCoord, newBottomCoord);
-                bullet.move();
+                //bullet.move();
             }
         },
 
@@ -467,7 +467,7 @@
         moveEnemyPlane = function (enemyPlane) {
             var nowMs = Date.now();
             enemyPlane.moveAtDirection();
-            enemyPlane.move();
+            //enemyPlane.move();
 
             if (nowMs - enemyPlane.lastDirectionChangeTimestamp > fighterDirectionChangeFrequencyMs) {
                 enemyPlane.lastDirectionChangeTimestamp = nowMs;
@@ -483,7 +483,7 @@
                 : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
             kamikaze.chasePlayer();
             kamikaze.updateCoords(newLeft, newBottom);
-            kamikaze.move();
+            //kamikaze.move();
         },
 
         handleMouseClick = function (e) {
@@ -661,6 +661,7 @@
 			return isIn;
 		},
 
+
         detectCollisionPlayerBullet = function (bullet) {
             var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
@@ -670,22 +671,10 @@
                          || isPointInsideBoss(bullet.leftCoord, bullet.bottomCoord + bullet.height)
                          || isPointInsideBoss(bullet.leftCoord + bullet.width, bullet.bottomCoord + bullet.height);
                 } else {
-                    isHit = (bullet.leftCoord >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
-                         && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
-                    || (bullet.leftCoord + bullet.width >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord + bullet.width <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
-                         && bullet.bottomCoord >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
-                    || (bullet.leftCoord >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
-                         && bullet.bottomCoord + bullet.height >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord + bullet.height <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height)
-                    || (bullet.leftCoord + bullet.width >= enemyPlanes[i].leftCoord
-                         && bullet.leftCoord + bullet.width <= enemyPlanes[i].leftCoord + enemyPlanes[i].width
-                         && bullet.bottomCoord + bullet.height >= enemyPlanes[i].bottomCoord
-                         && bullet.bottomCoord + bullet.height <= enemyPlanes[i].bottomCoord + enemyPlanes[i].height);
+                    isHit = isPointInsideObject(bullet.leftCoord, bullet.bottomCoord, enemyPlanes[i])
+                    || isPointInsideObject(bullet.leftCoord + bullet.width, bullet.bottomCoord, enemyPlanes[i])
+                    || isPointInsideObject(bullet.leftCoord, bullet.bottomCoord + bullet.height, enemyPlanes[i])
+                    || isPointInsideObject(bullet.leftCoord + bullet.width, bullet.bottomCoord + bullet.height, enemyPlanes[i]);
                 }
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
@@ -1570,21 +1559,27 @@
             var i,
                 currentMoveEnemyPlaneFunction = moveEnemyPlane,
                 currentKamikazeMoveFunction = moveKamikaze,
-                animationLengthMs = 400;
+                animationLengthMs = 400,
+                planes = enemyPlanes;
             moveEnemyPlane = function () { };
             moveKamikaze = function () { };
             for (i = 0; i < enemyPlanes.length; i++) {
+                enemyPlanes[i].readyToMove = false;
                 $(enemyPlanes[i].div)
                     .animate({
                         left: left,
                         bottom: bottom
                     }, animationLengthMs);
+                
                 enemyPlanes[i].leftCoord = left;
                 enemyPlanes[i].bottomCoord = bottom;
             }
             window.setTimeout(function () {
                 moveEnemyPlane = currentMoveEnemyPlaneFunction;
                 moveKamikaze = currentKamikazeMoveFunction;
+                for (i = 0; i < enemyPlanes.length; i++) {
+                    enemyPlanes[i].readyToMove = true;
+                }
             }, animationLengthMs);
         },
 
@@ -1641,7 +1636,7 @@
                     (rocket.bottomCoord - (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))))
                     : (rocket.bottomCoord + (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))));
                 rocket.updateCoords(coords.left, coords.bottom);
-                rocket.move();
+                //rocket.move();
             }
         },
 
@@ -1805,6 +1800,17 @@
             return timeIsStopped;
         },
 
+        redrawGameObjects = function () {
+            var i;
+            playerPlane.move();
+            for (i = 0; i < enemyPlanes.length; i++) {
+                enemyPlanes[i].move();
+            }
+            for (i = 0; i < bullets.length; i++) {
+                bullets[i].move();
+            }
+        },
+
         handleSkillUsage = function (keyPressed) {
             if (playerPlane.skills[keyPressed]) {
                 playerPlane.skills[keyPressed].use();
@@ -1848,6 +1854,7 @@
         trackUsedSkillsExposed: trackUsedSkillsExposed,
         handleGuidedRocket: handleGuidedRocket,
         rotateSentries: rotateSentries,
+        redrawGameObjects: redrawGameObjects,
 
         getTime: getTime,
         getSeconds: getSeconds,
