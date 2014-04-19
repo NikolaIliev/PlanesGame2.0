@@ -7,7 +7,7 @@ var Game = {
 		AreaManager.areas[0].active = true;
 		MissionManager.generateMissions();
 		AreaManager.drawMap();
-		for(var i=0;i<12;i++){
+		for(var i=0;i<9;i++){
 			Game.addSkill();
 		}
 	},
@@ -42,7 +42,7 @@ var Game = {
 		this.unlockedSkills.push(this.allSkills.splice(index,1)[0]);
 		return this.unlockedSkills[this.unlockedSkills.length-1];
 	},
-	allSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray", "blackhole", "stealth", "radioactive", "healingshot", 'guidedrocket', 'shield'],
+	allSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray", "blackhole", "stealth", "radioactive"],
 	unlockedSkills :[],
 }
 
@@ -60,10 +60,4 @@ var Test = {
 		},
 	}
 
-window.addEventListener("load", function () {
-    Visual.drawIntroScreen();
-    if (!requestAnimationFrame) {
-        window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame
-        || window.oRequestAnimationFrame || window.msRequestAnimationFrame;
-    }
-});
+window.addEventListener("load", Visual.drawIntroScreen, false);  

@@ -46,10 +46,6 @@ var AreaManager = {
 			Loadout.drawLoadoutScreen();
 		})
 		.appendTo("#gameScreen");
-
-		//Draw the timer
-		 $('<div id="timer">' + interactionManager.getTime() + '</div>').addClass("inMap").appendTo('#gameScreen');
-
 		//Creates the three areas
 		for(var i=0;i<AreaManager.areas.length;i++){
 			var tempArea = document.createElement("div");

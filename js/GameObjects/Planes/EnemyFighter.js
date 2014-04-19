@@ -9,7 +9,6 @@ EnemyFighter = EnemyPlane.extend({
         this.changeDirection();
         this.lastShootTimestamp = -1;
         this.skills = [new SpreadShot(this)];
-        this.healingOrbSpawnChance = 10;
     },
     
     lastShootTimestamp: null,
