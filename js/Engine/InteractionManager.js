@@ -64,6 +64,7 @@
             startTimer = function () { };
         },
         setInitialValues = function () {
+            playerPlane.absorptionShieldStrength = 0;
             boss = null;
             playerPlane.isShooting = false;
             timeIsStopped = false;
@@ -189,7 +190,6 @@
         },
 
         spawnEnemy = function () {
-            //80% chance to spawn fighter, 10% chance to spawn supplier, 10% chance to spawn kamikaze
             var nowMs = Date.now();
             if (nowMs - lastEnemySpawnTimestamp > enemySpawnFrequencyMs) {
                 lastEnemySpawnTimestamp = nowMs;
@@ -199,7 +199,7 @@
 
         spawnRandomEnemy = function () {
             var areaIndex = currentMission.areaIndex;
-            if (enemyPlanes.length <= 20) {
+            if (enemyPlanes.length <= 15) {
                 var rand = parseInt(Math.random() * 100) + 1; //[1, 100]
                 if (rand >= 95 && areaIndex >= 2) {
                     spawnStormer();
@@ -263,7 +263,7 @@
         },
 
         spawnHealingOrb = function (left, bottom) {
-            if (pickups.length < 3) { //no more than 3 pickups can be on the screen at once
+            if (!(currentMission instanceof BossMission) && pickups.length < 3) { //no more than 3 pickups can be on the screen at once
                 var healingOrb = new HealingOrb(left, bottom);
                 pickups.push(healingOrb);
                 healingOrb.addToScreen();
@@ -805,7 +805,7 @@
         },
 
         handleCollisionEnemy = function (hitter) {
-			if(playerPlane.absorbationShieldStrenght == 0){
+            if (playerPlane.absorptionShieldStrength == 0) {
 				if (playerPlane.currentHealth > hitter.damage) {
 						playerPlane.currentHealth -= hitter.damage;
 					} else {
@@ -814,8 +814,8 @@
 				playerPlane.updateHpBar();
 				trackRemainingHealth(playerPlane.currentHealth);
 			}else{
-				playerPlane.absorbationShieldStrenght--;
-				if(playerPlane.absorbationShieldStrenght == 0){
+                playerPlane.absorptionShieldStrength--;
+                if (playerPlane.absorptionShieldStrength == 0) {
 					$('#playerShield').remove();
 				}
 			}
@@ -881,6 +881,7 @@
         },
 
         abortMission = function () {
+            var i;
             if (boss) {
                 delete boss.skills; //prevents spamming of boss' skills after the mission is over
                 //removes the reference to all the boss' skills -> the skills themselves get picked up by the garbage collector
@@ -888,6 +889,9 @@
                 //if the reference to the skills is not deleted, after the mission ends the boss object and all the bossSkill objects
                 //continue to exist as they're coupled (reference eachother) and all the skills continue to get used on cooldown
                 //(storm clouds continue to appear every 20 seconds, even on the area screen)
+            }
+            for (i = 0; i < playerPlane.skills.length; i++) {
+                playerPlane.skills[i].makeAvailable();
             }
             setInitialValues();
         },
@@ -1504,7 +1508,7 @@
             isHit = isHitByLeft || isHitByRight;
 
             if (isHit) {
-				if(playerPlane.absorbationShieldStrenght == 0){
+                if (playerPlane.absorptionShieldStrength == 0) {
 				    if (playerPlane.currentHealth > bossDeathRayDamage) {
 						playerPlane.currentHealth -= bossDeathRayDamage;
 					} else {
@@ -1513,7 +1517,7 @@
 					playerPlane.updateHpBar();
 					trackRemainingHealth(playerPlane.currentHealth);
 				} else {
-					playerPlane.absorbationShieldStrenght = 0;
+                    playerPlane.absorptionShieldStrength = 0;
 					$('#playerShield').remove();
 				}
 
@@ -1658,9 +1662,13 @@
             //newBottom
             if (clientY <= 570) {
                 converted.bottom = 700 - clientY - 50;
-                //$('#gameScreen').css('cursor', 'none');
+                if ($('#gameScreen').css('cursor') == 'default') {
+                    $('#gameScreen').css('cursor', 'none');
+                }
             } else {
-                //$('#gameScreen').css('cursor', 'default');
+                if ($('#gameScreen').css('cursor') == 'none') {
+                    $('#gameScreen').css('cursor', 'default');
+                }
                 converted.bottom = 80;
             }
 
