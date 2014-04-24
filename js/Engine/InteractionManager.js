@@ -28,8 +28,6 @@
         enemyPlanes,
         friendlyPlanes,
         enemySpawnFrequencyMs,
-        fighterShootFrequencyMs,
-        sentryShootFrequencyMs,
         stormerStormFrequencyMs,
         stormCloudDamageFrequencyMs,
         fighterDirectionChangeFrequencyMs,
@@ -40,6 +38,7 @@
         Timer = {
             //Counts how many seconds have passed since the start of the game
             current: 0,
+            finalTime : null,
             increaseTimer: function () {
                 this.current++;
             },
@@ -95,8 +94,6 @@
             healingBulletHealPoints = 1;
             enemySpawnFrequencyMs = null; //set when the mission starts
             fighterDirectionChangeFrequencyMs = 1000;
-            fighterShootFrequencyMs = 1500;
-            sentryShootFrequencyMs = 150;
             supplierSupplyFrequencyMs = 1500;
             stormerStormFrequencyMs = 2000;
             stormCloudDamageFrequencyMs = 500;
@@ -107,8 +104,7 @@
             currentMission = null;
         },
 
-        setScalingValues = function () {
-            var areaIndex = currentMission.areaIndex;
+        setScalingValues = function (areaIndex) {
             //health
             fighterMaxHealth = Scaling.getValue(areaIndex, 'fighterMaxHealth');
             kamikazeMaxHealth = Scaling.getValue(areaIndex, 'kamikazeMaxHealth');
@@ -330,7 +326,7 @@
                     }
                 }
                 else if ((type == 'all' || type == 'enemy') && bullets[i] instanceof EnemyBullet) {
-                    if (detectCollisionEnemyBulletWithPlayer(bullets[i])) { //bullet hit the player
+                    if (!playerPlane.isStealthed && detectCollision(bullets[i], playerPlane)) { //bullet hit the player
                         bullets[i].handleCollision();
                         handleCollisionEnemy(bullets[i].owner);
                     } else {
@@ -392,12 +388,19 @@
         moveEnemyBullet = function (bullet) {
             var bulletSpeed = (bullet instanceof BossBullet) ? bossBulletsSpeed : fighterBulletsSpeed,
                 newLeftCoord = bullet.leftCoord - (bullet.orientationDeg / 45 * bulletSpeed),
-                newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
-                (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
+                newBottomCoord;
             if (newLeftCoord != bullet.leftCoord || newBottomCoord != bullet.bottomCoord) {
-                bullet.updateCoords(newLeftCoord, newBottomCoord);
-                //bullet.move();
+                if (bullet instanceof BossBullet && boss.currentPhase >= 3) {
+                    bullet.updateCoords(newLeftCoord, bullet.bottomCoord - bulletSpeed);
+                }
+                else {
+                    newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
+                        (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                      : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
+
+
+                    bullet.updateCoords(newLeftCoord, newBottomCoord);
+                }
             }
         },
 
@@ -405,7 +408,7 @@
             var i;
             for (i = 0; i < friendlyPlanes.length; i++) {
                 if (friendlyPlanes[i] instanceof SentryPlane) {
-                    shootSentry(friendlyPlanes[i]);
+                    friendlyPlanes[i].shoot();
                 } else if (friendlyPlanes[i] instanceof ReinforcementPlane) {
                     if (rocketPathArray.length) {
                         moveReinforcementPlane(friendlyPlanes[i]);
@@ -422,13 +425,13 @@
             for (i = 0; i < enemyPlanes.length; i++) {
                 if (enemyPlanes[i] instanceof EnemyFighter) {
                     moveEnemyPlane(enemyPlanes[i]);
-                    shootFighter(enemyPlanes[i]);
+                    enemyPlanes[i].shoot();
                 } else if (enemyPlanes[i] instanceof EnemySupplier) {
                     moveEnemyPlane(enemyPlanes[i]);
                     supplySupplier(enemyPlanes[i]);
                 } else if (enemyPlanes[i] instanceof EnemyKamikaze) {
                     moveKamikaze(enemyPlanes[i]);
-                    if (detectCollisionKamikaze(enemyPlanes[i])) {
+                    if (detectCollision(playerPlane, enemyPlanes[i])) {
                         handleCollisionKamikaze(enemyPlanes[i]);
                         enemyPlanes.splice(i, 1);
                         i++;
@@ -493,44 +496,7 @@
         },
 
         shootPlayerPlane = function () {
-            var nowMs = Date.now();
-            if (nowMs - lastShotPlayerBulletTimestamp > 120) {
-                lastShotPlayerBulletTimestamp = nowMs;
-                playerPlane.shoot();
-            }
-        },
-
-        shootSentry = function (sentry) {
-            var nowMs = Date.now();
-            if (nowMs - sentry.lastShootTimestamp > sentryShootFrequencyMs) {
-                sentry.lastShootTimestamp = nowMs;
-                sentry.shoot();
-            }
-        },
-
-    //shootEnemyPlanes = function () {
-    //    var i;
-    //    for (i = 0; i < enemyPlanes.length; i++) {
-    //        if (enemyPlanes[i] instanceof EnemyFighter) {
-    //            shootFighter(enemyPlanes[i]);
-    //        }
-    //    }
-    //},
-
-        shootFighter = function (fighter) {
-            var nowMs = Date.now();
-            if (nowMs - fighter.lastShootTimestamp > fighterShootFrequencyMs) {
-                fighter.lastShootTimestamp = nowMs;
-                fighter.shoot();
-            }
-        },
-
-        shootBoss = function () {
-            var nowMs = Date.now();
-            if (nowMs - boss.lastShootTimestamp > boss.shootFrequency) {
-                boss.lastShootTimestamp = nowMs;
-                boss.shoot();
-            }
+            playerPlane.shoot();
         },
 
         supplySupplier = function (supplier) {
@@ -554,27 +520,12 @@
             }
         },
 
-        detectCollisionEnemyBulletWithPlayer = function (bullet) {
-            //returns true if the bullet has hit the player, or false otherwise
-            var i, isHit;
-            isHit = !playerPlane.isStealthed 
-                 && bullet.leftCoord >= playerPlane.leftCoord
-                 && bullet.leftCoord <= playerPlane.leftCoord + playerPlane.width
-                 && bullet.bottomCoord >= playerPlane.bottomCoord
-                 && bullet.bottomCoord <= playerPlane.bottomCoord + playerPlane.height;
-            return isHit;
-        },
-
         detectCollisionEnemyBulletWithFriendlyPlane = function (bullet) {
             var i, isHit;
             for (i = 0; i < friendlyPlanes.length; i++) {
                 if (friendlyPlanes[i] instanceof SentryPlane) {
-                    isHit = bullet.leftCoord >= friendlyPlanes[i].leftCoord
-                         && bullet.leftCoord <= friendlyPlanes[i].leftCoord + playerPlane.width
-                         && bullet.bottomCoord >= friendlyPlanes[i].bottomCoord
-                         && bullet.bottomCoord <= friendlyPlanes[i].bottomCoord + playerPlane.height;
+                    isHit = detectCollision(bullet, friendlyPlanes[i]);
                 }
-
                 if (isHit) {
                     return i;
                 }
@@ -664,21 +615,27 @@
 			return isIn;
 		},
 
+        detectCollision = function (obj1, obj2) {
+            var collision;
+            if (obj2 instanceof BossPlane) {
+                collision = isPointInsideBoss(obj1.leftCoord, obj1.bottomCoord)
+                            || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord)
+                            || isPointInsideBoss(obj1.leftCoord, obj1.bottomCoord + obj1.height)
+                            || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height);
+            } else {
+                collision = isPointInsideObject(obj1.leftCoord, obj1.bottomCoord, obj2)
+                            || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord, obj2)
+                            || isPointInsideObject(obj1.leftCoord, obj1.bottomCoord + obj1.height, obj2)
+                            || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height, obj2);
+            }
+
+            return collision;
+        },
 
         detectCollisionPlayerBullet = function (bullet) {
             var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
-                if (enemyPlanes[i] instanceof BossPlane) {
-                    isHit = isPointInsideBoss(bullet.leftCoord, bullet.bottomCoord)
-                         || isPointInsideBoss(bullet.leftCoord + bullet.width, bullet.bottomCoord)
-                         || isPointInsideBoss(bullet.leftCoord, bullet.bottomCoord + bullet.height)
-                         || isPointInsideBoss(bullet.leftCoord + bullet.width, bullet.bottomCoord + bullet.height);
-                } else {
-                    isHit = isPointInsideObject(bullet.leftCoord, bullet.bottomCoord, enemyPlanes[i])
-                    || isPointInsideObject(bullet.leftCoord + bullet.width, bullet.bottomCoord, enemyPlanes[i])
-                    || isPointInsideObject(bullet.leftCoord, bullet.bottomCoord + bullet.height, enemyPlanes[i])
-                    || isPointInsideObject(bullet.leftCoord + bullet.width, bullet.bottomCoord + bullet.height, enemyPlanes[i]);
-                }
+                isHit = detectCollision(bullet, enemyPlanes[i]);
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
                 } else if (bullet instanceof PiercingBullet) {
@@ -692,30 +649,6 @@
             return -1;
         },
 
-        //detectCollisionPlayerBulletWithBoss = function (bullet) {
-        //    var isHit = !boss.isInvulnerable
-        //                 && bullet.leftCoord >= boss.leftCoord
-        //                 && bullet.leftCoord <= boss.leftCoord + 300
-        //                 && bullet.bottomCoord >= boss.bottomCoord
-        //                 && bullet.bottomCoord <= boss.bottomCoord + 240;
-
-        //    return isHit;
-        //}
-
-        detectCollisionKamikaze = function (kamikaze) {
-            var isHit = ((kamikaze.bottomCoord > playerPlane.bottomCoord &&
-                kamikaze.bottomCoord < playerPlane.bottomCoord + playerPlane.height) ||
-                ((kamikaze.bottomCoord + 75) > playerPlane.bottomCoord &&
-                (kamikaze.bottomCoord + 75) < playerPlane.bottomCoord + playerPlane.height))
-            &&
-                ((kamikaze.leftCoord > playerPlane.leftCoord &&
-                kamikaze.leftCoord < playerPlane.leftCoord + playerPlane.width) ||
-                (kamikaze.leftCoord + kamikaze.width > playerPlane.leftCoord &&
-                kamikaze.leftCoord + 100 < playerPlane.leftCoord + playerPlane.width));
-
-            return isHit;
-        },
-
         handleCollisionKamikaze = function (kamikaze) {
             kamikaze.die();
 
@@ -726,12 +659,8 @@
             var nowMs = Date.now();
             if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-                if (friendlyPlanes[hitPlaneIndex].currentHealth > stormerDamage) {
-                    friendlyPlanes[hitPlaneIndex].currentHealth -= stormerDamage;
-                    friendlyPlanes[hitPlaneIndex].updateHpBar();
-                } else {
-                    friendlyPlanes[hitPlaneIndex].currentHealth = 0;
-                    friendlyPlanes[hitPlaneIndex].updateHpBar();
+                friendlyPlanes[hitPlaneIndex].takeDamage(stormerDamage);
+                if(friendlyPlanes[hitPlaneIndex].currentHealth == 0){
                     friendlyPlanes[hitPlaneIndex].die();
                 }
             }
@@ -741,12 +670,7 @@
             var nowMs = Date.now();
             if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-				if (playerPlane.currentHealth > stormerDamage) {
-                   playerPlane.currentHealth -= stormerDamage;
-				} else {
-					playerPlane.currentHealth = 0;
-				}
-				playerPlane.updateHpBar();
+                playerPlane.takeDamage(stormerDamage);
 				trackRemainingHealth(playerPlane.currentHealth);
             }
         },
@@ -759,20 +683,10 @@
             }
 
             if(bullet instanceof HealingBullet){
-                if(playerPlane.maxHealth >= (playerPlane.currentHealth + healingBulletHealPoints)){
-                    playerPlane.currentHealth += healingBulletHealPoints;
-                } else {
-                    playerPlane.currentHealth = playerPlane.maxHealth;
-                }
-                playerPlane.updateHpBar();
+                playerPlane.receiveHeal(healingBulletHealPoints);
             }
-
-            if (enemyPlanes[hitEnemyPlaneIndex].currentHealth > damage) {
-                enemyPlanes[hitEnemyPlaneIndex].currentHealth -= damage;
-                enemyPlanes[hitEnemyPlaneIndex].updateHpBar();
-            } else {
-                enemyPlanes[hitEnemyPlaneIndex].currentHealth = 0;
-                enemyPlanes[hitEnemyPlaneIndex].updateHpBar();
+            enemyPlanes[hitEnemyPlaneIndex].takeDamage(damage);
+            if(enemyPlanes[hitEnemyPlaneIndex].currentHealth == 0){
                 enemyPlanes[hitEnemyPlaneIndex].die();
                 enemyPlanes.splice(hitEnemyPlaneIndex, 1);
                 if (currentMission instanceof GauntletMission) {
@@ -785,12 +699,8 @@
         handleCollisionPlayerBulletWithBoss = function (bullet) {
             var ownerPlane = bullet.owner,
                 damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.5 : ownerPlane.damage;
-            if (boss.currentHealth > damage) {
-                boss.currentHealth -= damage;
-                boss.updateHpBar();
-            } else {
-                boss.currentHealth = 0;
-                boss.updateHpBar();
+            boss.takeDamage(damage);
+            if(boss.currentHealth == 0){
                 boss.die();
             }
             trackAccuracy(true);
@@ -798,35 +708,41 @@
 
         handleCollisionEnemy = function (hitter) {
             if (playerPlane.absorptionShieldStrength == 0) {
-				if (playerPlane.currentHealth > hitter.damage) {
-						playerPlane.currentHealth -= hitter.damage;
-					} else {
-						playerPlane.currentHealth = 0;
-					}
-				playerPlane.updateHpBar();
+                playerPlane.takeDamage(hitter.damage);
 				trackRemainingHealth(playerPlane.currentHealth);
-			}else{
+			} else {
                 playerPlane.absorptionShieldStrength--;
                 if (playerPlane.absorptionShieldStrength == 0) {
 					$('#playerShield').remove();
 				}
 			}
         },
+        handleAbsorbCollisionEnemyBullets = function(hitter){
+            playerPlane.receiveHeal(1);
+        },
+
+        handleAbsorbBullets = function (duration){
+            $(playerPlane.div).css('background-image', 'url(images/planes/playerAbsorbingBullets.png)');
+            var tempHandleCollisionEnemy =  handleCollisionEnemy;
+            handleCollisionEnemy = handleAbsorbCollisionEnemyBullets;
+            window.setTimeout(function () {
+                handleCollisionEnemy = tempHandleCollisionEnemy;
+                 $(playerPlane.div).css('background-image', 'url(images/planes/player.png)');
+            }, duration);
+        },
 
         handleCollisionEnemyWithFriendlyPlane = function (hitter, friendlyIndex) {
             var friendly = friendlyPlanes[friendlyIndex];
-            if (friendly.currentHealth > hitter.damage) {
-                friendly.currentHealth -= hitter.damage;
-            } else {
-                friendly.currentHealth = 0;
+            friendly.takeDamage(hitter.damage);
+            if(friendly.currentHealth == 0){
                 friendly.die();
                 friendlyPlanes.splice(friendlyIndex, 1);
             }
-            friendly.updateHpBar();
         },
 
         launchMission = function (missionIndex, areaIndex) {
             setInitialValues();
+            setScalingValues(areaIndex);
             missionType = AreaManager.areas[areaIndex].missions[missionIndex].primary;
             secondaryObjectiveType = AreaManager.areas[areaIndex].missions[missionIndex].secondary;
             //Set the current mission position
@@ -853,7 +769,6 @@
                 default:
                     throw new Error("Unrecognized mission type: " + missionType);
             }
-            setScalingValues();
             enemySpawnFrequencyMs = currentMission.enemySpawnFrequencyMs;
         },
 
@@ -916,11 +831,16 @@
                 //Clear screen, update the area and mission statuses
                 Visual.adjustCSSofGameScreen(false);
                 Game.clearScreen();
-                AreaManager.updateAreaStatus(starsWonForMission);
-                AreaManager.drawMap();
                 //Draw the win screen
-                Game.playerStars += starsWonForMission;
-                MissionManager.winScreen(starsWonForMission);
+                if(MissionManager.currentAreaIndex == 3){ //boss mission
+                    setVictoryTime();
+                    Visual.drawVictoryScreen();
+                } else {
+                    AreaManager.updateAreaStatus(starsWonForMission);
+                    AreaManager.drawMap();
+                    Game.playerStars += starsWonForMission;
+                    MissionManager.winScreen(starsWonForMission);
+                }
             }, 1500);
         },
 
@@ -947,6 +867,14 @@
             return Timer.current;
         },
 
+        setVictoryTime = function(){
+            Timer.finalTime = Timer.current;
+        },
+
+        getVictoryTime = function(){
+            return Timer.finalTime;
+        },
+
         getPlayerHealth = function () {
             return playerPlane.currentHealth;
         },
@@ -971,40 +899,43 @@
             for (var i = 0; i < skillArray.length; i++) {
                 switch (skillArray[i]) {
                     case "spreadshot":
-                        playerPlane.skills.push(new SpreadShot(playerPlane));
+                        playerPlane.skills.push(new SpreadShot(playerPlane, i));
                         break;
                     case "homingshot":
-                        playerPlane.skills.push(new HomingShot(playerPlane));
+                        playerPlane.skills.push(new HomingShot(playerPlane, i));
                         break;
                     case "penetratingshot":
-                        playerPlane.skills.push(new PiercingShot(playerPlane));
+                        playerPlane.skills.push(new PiercingShot(playerPlane, i));
                         break;
                     case "sentry":
-                        playerPlane.skills.push(new Sentry(playerPlane));
+                        playerPlane.skills.push(new Sentry(playerPlane, i));
                         break;
                     case "stoptime":
-                        playerPlane.skills.push(new StopTime(playerPlane));
+                        playerPlane.skills.push(new StopTime(playerPlane, i));
                         break;
                     case "deathray":
-                        playerPlane.skills.push(new DeathRay(playerPlane));
+                        playerPlane.skills.push(new DeathRay(playerPlane, i));
                         break;
                     case "blackhole":
-                        playerPlane.skills.push(new BlackHole(playerPlane));
+                        playerPlane.skills.push(new BlackHole(playerPlane, i));
                         break;
                     case "stealth":
-                        playerPlane.skills.push(new Stealth(playerPlane));
+                        playerPlane.skills.push(new Stealth(playerPlane, i));
                         break;
                     case "radioactive":
-                        playerPlane.skills.push(new Radioactive(playerPlane));
+                        playerPlane.skills.push(new Radioactive(playerPlane, i));
                         break;
                     case "healingshot":
-                        playerPlane.skills.push(new HealingShot(playerPlane));
+                        playerPlane.skills.push(new HealingShot(playerPlane, i));
                         break;
                     case 'guidedrocket':
-                        playerPlane.skills.push(new SummonGuidedRocket(playerPlane));
+                        playerPlane.skills.push(new SummonGuidedRocket(playerPlane, i));
                         break;
 					case 'shield':
-                        playerPlane.skills.push(new Shield(playerPlane));
+                        playerPlane.skills.push(new Shield(playerPlane, i));
+                        break;
+                    case 'absorbbullets':
+                        playerPlane.skills.push(new AbsorbBullets(playerPlane, i));
                         break;
                     default:
                         throw new Error("Unrecognized skill type");
@@ -1195,18 +1126,14 @@
                     ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius-100));
 
                 if (isHit) {
-                    if (enemyPlanes[i].currentHealth > radioactiveDamage) {
-                        enemyPlanes[i].currentHealth -= radioactiveDamage;
-                        enemyPlanes[i].updateHpBar();
-                    } else {
-                        enemyPlanes[i].currentHealth = 0;
-                        enemyPlanes[i].updateHpBar();
+                    enemyPlanes[i].takeDamage(radioactiveDamage);
+                    if(enemyPlanes[i].currentHealth == 0){
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
                         if (currentMission instanceof GauntletMission) {
                             currentMission.incrementEnemiesKilled();
-                        }
+                        } 
                     }
                 }
             }
@@ -1224,12 +1151,8 @@
                     ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius-100));
 
             if (isHit) {
-                if (boss.currentHealth > radioactiveDamage) {
-                    boss.currentHealth -= radioactiveDamage;
-                    boss.updateHpBar();
-                } else {
-                    boss.currentHealth = 0;
-                    boss.updateHpBar();
+                boss.takeDamage(radioactiveDamage);
+                if(boss.currentHealth == 0){
                     boss.die();
                 }
             }
@@ -1288,18 +1211,14 @@
                      ((enemyPlanes[i].leftCoord < (left + 22)) && (enemyPlanes[i].leftCoord + 100) > (left + 78))); //enemy is hit in the middle
 
                 if (isHit) {
-                    if (enemyPlanes[i].currentHealth > deathRayDamage) {
-                        enemyPlanes[i].currentHealth -= deathRayDamage;
-                        enemyPlanes[i].updateHpBar();
-                    } else {
-                        enemyPlanes[i].currentHealth = 0;
-                        enemyPlanes[i].updateHpBar();
+                    enemyPlanes[i].takeDamage(deathRayDamage);
+                    if(enemyPlanes[i].currentHealth == 0){
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
                         if (currentMission instanceof GauntletMission) {
                             currentMission.incrementEnemiesKilled();
-                        }
+                        } 
                     }
                 }
             }
@@ -1312,12 +1231,8 @@
                     ((boss.leftCoord + 300) > (left + 22) && (boss.leftCoord + 300) < (left + 78)) ||    //boss' right side has been hit
                     ((boss.leftCoord < (left + 22)) && (boss.leftCoord + 300) > (left + 78))); //boss is hit in the middle
             if (isHit) {
-                if (boss.currentHealth > deathRayDamage) {
-                    boss.currentHealth -= deathRayDamage;
-                    boss.updateHpBar();
-                } else {
-                    boss.currentHealth = 0;
-                    boss.updateHpBar();
+                boss.takeDamage(deathRayDamage);
+                if(boss.currentHealth == 0){
                     boss.die();
                 }
             }
@@ -1501,12 +1416,7 @@
 
             if (isHit) {
                 if (playerPlane.absorptionShieldStrength == 0) {
-				    if (playerPlane.currentHealth > bossDeathRayDamage) {
-						playerPlane.currentHealth -= bossDeathRayDamage;
-					} else {
-						playerPlane.currentHealth = 0;
-					}
-					playerPlane.updateHpBar();
+                    playerPlane.takeDamage(bossDeathRayDamage);
 					trackRemainingHealth(playerPlane.currentHealth);
 				} else {
                     playerPlane.absorptionShieldStrength = 0;
@@ -1541,22 +1451,6 @@
                 });
             }, 300);
         },
-
-        //moveBossBlackHole = function (left, bottom) {
-        //    var currentMoveEnemyPlaneFunction = moveEnemyPlane,
-        //        animationLengthMs = 400;
-        //    moveEnemyPlane = function () { };
-        //    $(boss.div)
-        //        .animate({
-        //            left: left,
-        //            bottom: bottom
-        //        }, animationLengthMs);
-        //    boss.leftCoord = left;
-        //    boss.bottomCoord = bottom;
-        //    window.setTimeout(function () {
-        //        moveEnemyPlane = currentMoveEnemyPlaneFunction;
-        //    }, animationLengthMs);
-        //},
 
         moveEnemiesBlackHole = function (left, bottom) {
             var i,
@@ -1607,13 +1501,15 @@
             $(document).off('mousedown', initiateRocketPathDrawing);
             $(document).off('mouseup', finishRocketPathDrawing);
             window.setTimeout(function () {
-                $("#gameScreen").css({
-                    "cursor": "none"
-                });
-                $(document).on('mousemove', movePlayerPlane);
-                $(document).bind('mouseup mousedown', handleMouseClick);
-                if (rocketPathArray.length > 0) {
-                    spawnRocket(rocketPathArray[0].left, rocketPathArray[0].bottom);
+                if (currentMission) {
+                    $("#gameScreen").css({
+                        "cursor": "none"
+                    });
+                    $(document).on('mousemove', movePlayerPlane);
+                    $(document).bind('mouseup mousedown', handleMouseClick);
+                    if (rocketPathArray.length > 0) {
+                        spawnRocket(rocketPathArray[0].left, rocketPathArray[0].bottom);
+                    }
                 }
             }, 300);
         },
@@ -1705,50 +1601,51 @@
             return converted;
         },
 
+        isPlayerShooting = function () {
+            return playerPlane.isShooting;
+        },
+
         handleBossIteration = function () {
-            var bossIndex;
+            var bossIndex, handleFunction;
             moveEnemyPlane(boss);
-            shootBoss();
+            boss.shoot();
             boss.updateHealthPercentage();
-            if (!boss.reached75Percent && boss.healthPercentage <= 75) { //boss reached 75% hp, enter reinforcements phase
-                boss.reached75Percent = true;
+            if (boss.healthPercentage <= 75 && boss.currentPhase == 1 ||
+                boss.healthPercentage <= 50 && boss.currentPhase == 2 ||
+                boss.healthPercentage <= 25 && boss.currentPhase == 3) {
+                var bossIndex;
                 boss.enterQuarterPhase();
-                boss.phase75Percent();
                 bossIndex = enemyPlanes.indexOf(boss);
                 enemyPlanes.splice(bossIndex, 1);
+                switch (boss.currentPhase) {
+                    case 2:
+                        boss.phase75Percent();
+                        handleFunction = handleBoss75Phase;
+                        break;
+                    case 3:
+                        boss.phase50Percent();
+                        handleFunction = handleBoss50Phase;
+                        break;
+                    case 4:
+                        boss.phase25Percent();
+                        handleFunction = handleBoss25Phase;
+                        break;
+                    default:
+                        throw new Error('Unrecognized boss phase');
+                }
+
                 window.setTimeout(function () {
-                    if (currentMission) {
-                        handleBoss75Phase();
+                    handleFunction();
+                    if (boss.currentPhase == 2 || boss.currentPhase == 4) {
                         boss.skills.splice(0, 1);
                     }
                 }, 3000);
-            }
-            if (!boss.reached50Percent && boss.healthPercentage <= 50) {
-                var bossIndex;
-                boss.reached50Percent = true;
-                boss.enterQuarterPhase();
-                boss.phase50Percent();
-                bossIndex = enemyPlanes.indexOf(boss);
-                enemyPlanes.splice(bossIndex, 1);
+
                 window.setTimeout(function () {
-                    if (currentMission) {
-                        handleBoss50Phase();
+                    if (boss) {
+                        boss.finishedSpawningReinforcements = true;
                     }
-                }, 3000);
-            }
-            if (!boss.reached25Percent && boss.healthPercentage <= 25) {
-                var bossIndex;
-                boss.reached25Percent = true;
-                boss.enterQuarterPhase();
-                boss.phase25Percent();
-                bossIndex = enemyPlanes.indexOf(boss);
-                enemyPlanes.splice(bossIndex, 1);
-                window.setTimeout(function () {
-                    if (currentMission) {
-                        handleBoss25Phase();
-                        boss.skills.splice(0, 1);
-                    }
-                }, 3000);
+                }, 5000);
             }
             if (boss.finishedSpawningReinforcements && enemyPlanes.length <= 3) { //all but 3 of the adds have been killed, resume boss fight
                 boss.leaveQuarterPhase();
@@ -1765,11 +1662,6 @@
                 spawnFighter();
             }
             spawnSupplier();
-            window.setTimeout(function () {
-                if (boss) {
-                    boss.finishedSpawningReinforcements = true;
-                }
-            }, 1500);
         },
 
         handleBoss50Phase = function () {
@@ -1778,11 +1670,6 @@
             for (i = 0; i < 10; i++) {
                 spawnKamikaze();
             }
-            window.setTimeout(function () {
-                if (boss) {
-                    boss.finishedSpawningReinforcements = true;
-                }
-            }, 1500);
         },
 
         handleBoss25Phase = function () {
@@ -1792,11 +1679,6 @@
                 spawnKamikaze();
                 spawnFighter();
             }
-            window.setTimeout(function () {
-                if (boss) {
-                    boss.finishedSpawningReinforcements = true;
-                }
-            }, 1500);
         },
 
         isTimeStopped = function () {
@@ -1848,6 +1730,7 @@
         stopTimeOff: stopTimeOff,
         handleDeathRay: handleDeathRay,
         handleRadioactive: handleRadioactive,
+        handleAbsorbBullets: handleAbsorbBullets,
         createAndSkewBossDeathRay: createAndSkewBossDeathRay,
         handleBossDeathRay: handleBossDeathRay,
         handleBlackHole: handleBlackHole,
@@ -1858,9 +1741,11 @@
         handleGuidedRocket: handleGuidedRocket,
         rotateSentries: rotateSentries,
         redrawGameObjects: redrawGameObjects,
+        isPlayerShooting: isPlayerShooting,
 
         getTime: getTime,
         getSeconds: getSeconds,
+        getVictoryTime: getVictoryTime,
         getPlayerHealth: getPlayerHealth,
         getBossHealth: getBossHealth,
         getPlayerLeftCoord: getPlayerLeftCoord,

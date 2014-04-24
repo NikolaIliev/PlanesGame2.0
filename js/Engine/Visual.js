@@ -12,13 +12,48 @@ var Visual = {
         .on("click", function () {
             Game.init();
         });
+        
         $("<div>Leaderboard</div>")
        .addClass("introButton")
        .appendTo("#introScreen")
        .on("click", function () {
            Test.generateScores();
        });
+
+        $("<div>Unlock Everything</div>")
+        .addClass("introButton")
+        .appendTo("#introScreen")
+        .on("click", function () {
+            Game.unlockEverything();
+        });
     },
+
+    drawVictoryScreen:function(){
+        $("<div/>")
+        .addClass("victoryScreen gameWindow")
+        .appendTo("#gameScreen");
+
+        $("<div/>")
+        .addClass("endGameArt")
+        .appendTo(".victoryScreen");
+
+        $("<div/>")
+        .addClass("scoreSubmissionBox")
+        .appendTo(".endGameArt");
+
+        $("<input/>")
+        .addClass("nameInput")
+        .appendTo(".scoreSubmissionBox")
+
+        $("<div>Submit</div>")
+        .addClass("submitButton")
+        .appendTo(".scoreSubmissionBox")
+        .on("click",function(){
+            Leaderboard.submitScore($(".nameInput").val(),interactionManager.getVictoryTime());
+            $(".victoryScreen").remove();
+        });
+    },
+
     backgroundOffset: 0,
 
     //Makes the cursor invisible while game is active
@@ -138,6 +173,9 @@ var Visual = {
         $('<div id="fps"></div>')
         .appendTo('.ui');
 
+        $('<div id="ips"></div>')
+        .appendTo('.ui');
+
         //Draw timer
         $('<div id="timer">' + interactionManager.getTime() + '</div>')
         .addClass("inGame")
@@ -171,6 +209,50 @@ var Visual = {
 
     activateIcon: function (icon) {
         $("." + icon).css("background-image", "url(images/UI/" + icon + ".png)");
+    },
+
+    animateDuration: function (icon, durationMs) {
+        $('<div></div>')
+            .css({
+                'position': 'absolute',
+                'bottom': 0,
+                'left': 0,
+                'width': 50,
+                'height': 50,
+                'background-color': 'green',
+                'opacity': 0.5
+            })
+            .appendTo($('.' + icon))
+            .animate({
+                'height': 0
+            }, {
+                duration: durationMs,
+                complete: function () {
+                    $(this).remove();
+                }
+            });
+    },
+
+    animateCooldown: function (icon, cooldownMs) {
+        $('<div></div>')
+            .css({
+                'position': 'absolute',
+                'bottom': 0,
+                'left': 0,
+                'width': 50,
+                'height': 0,
+                'background-color': 'red',
+                'opacity': 0.5
+            })
+            .appendTo($('.' + icon))
+            .animate({
+                'height': 50
+            }, {
+                duration: cooldownMs,
+                complete: function () {
+                    $(this).remove();
+                }
+            });
     },
 
     //Creates the black hole animation
@@ -225,7 +307,7 @@ var Visual = {
     },
 
     drawGameObjects: function () {
-        webkitRequestAnimationFrame(Visual.drawGameObjects);
+        requestAnimationFrame(Visual.drawGameObjects);
         $('#fps').text(fps.getFPS());
         if (interactionManager.getCurrentMission()) {
             Visual.iterateBackground();

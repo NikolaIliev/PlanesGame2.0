@@ -1,6 +1,6 @@
 ﻿AIPlane = Plane.extend({
-    init: function (left, bottom, maxHealth, damage, width, height) {
-        this._super(maxHealth, damage, width, height);
+    init: function (left, bottom, maxHealth, damage, shootFrequency, width, height) {
+        this._super(maxHealth, damage, shootFrequency, width, height);
         this.hpBar = document.createElement('div');
         this.hpBarEmpty = document.createElement('div');
         $(this.hpBar).appendTo(this.div);
@@ -10,10 +10,6 @@
     },
 
     hpBar: null,
-
-    updateHpBar: function () {
-        this.hpBar.style.width = parseInt(this.currentHealth / this.maxHealth * 100) + '%';
-    },
 
     animateSpawn: function () {
         var rand = parseInt(Math.random() * 2),

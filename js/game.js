@@ -1,5 +1,7 @@
 'use strict'
 var Game = {
+    allSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray", "blackhole", "stealth", "radioactive", "healingshot", 'guidedrocket', 'shield', 'absorbbullets'],
+    unlockedSkills :[],
 	//Initialization
     init: function () {
         interactionManager.startTimer();
@@ -8,9 +10,9 @@ var Game = {
 		MissionManager.generateMissions();
 		AreaManager.drawMap();
 		Visual.drawGameObjects();
-		for(var i=0;i<12;i++){
-			Game.addSkill();
-		}
+		//for(var i=0;i<13;i++){
+		//	Game.addSkill();
+		//}
 	},
 
 	//Remove all contents of the main game window
@@ -30,21 +32,29 @@ var Game = {
 
 	//Star data
 	playerStars : 0,
-	starsToLevelUp : [2,3,4,5,5,5],
+	starsToLevelUp : [1,2,3,3,3,3,3,3,3,3], //can unlock a total of 10 skills
 	currentLevel: 1,
 
 	//Skills
 	addSkill : function(){
 		var index = Math.floor(Math.random() * (this.allSkills.length));
 		if(this.allSkills[index]==undefined){
-			console.log("nada");
 			return;
 		}
 		this.unlockedSkills.push(this.allSkills.splice(index,1)[0]);
 		return this.unlockedSkills[this.unlockedSkills.length-1];
 	},
-	allSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray", "blackhole", "stealth", "radioactive", "healingshot", 'guidedrocket', 'shield'],
-	unlockedSkills :[],
+
+	unlockEverything: function () {
+	    var i;
+	    for (i = 0; i < 13; i++) {
+	        Game.addSkill();
+	    }
+	    AreaManager.areas[1].active = true;
+	    AreaManager.areas[2].active = true;
+	    AreaManager.areas[3].active = true;
+	}
+	
 }
 
 var Test = {

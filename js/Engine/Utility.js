@@ -49,12 +49,37 @@ var fps = {
     }
 };
 
+var ips = {
+    startTime: 0,
+    iterationNumber: 0,
+    getIPS: function () {
+        this.iterationNumber++;
+        var d = new Date().getTime(),
+			currentTime = (d - this.startTime) / 1000,
+			result = Math.floor((this.iterationNumber / currentTime));
+
+        if (currentTime > 1) {
+            this.startTime = new Date().getTime();
+            this.iterationNumber = 0;
+        }
+        return result;
+    }
+};
+
 function spreadShotEnemyShoot() {
-    interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, -15, this);
-    interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 0, this);
-    interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 15, this);
+    if (this.tryShoot()) {
+        interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, -15, this);
+        interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 0, this);
+        interactionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 15, this);
+    }
 };
 
 function degreeToRadian(deg) {
     return deg * Math.PI / 180;
 };
+
+var Leaderboard = {
+    submitScore:function(name,result){
+        console.log(name+" "+result);      
+    }
+}
