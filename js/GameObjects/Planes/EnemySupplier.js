@@ -10,7 +10,10 @@ EnemySupplier = EnemyPlane.extend({
         this.lastSupplyTimestamp = -1;
         this.healingOrbSpawnChance = 30;
         this.suppliedFighters = [];
+        this.supplyFrequencyMs = 1500;
     },
+    img: $('<img src="images/planes/supplier.png"/>')[0],
+    supplyFrequencyMs: null,
     lastSupplyTimestamp: null,
     suppliedFighters: null,
 

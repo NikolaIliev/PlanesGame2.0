@@ -1,4 +1,6 @@
 var Visual = {
+    backgroundImg: null,
+    backgroundPattern: null,
 
     drawIntroScreen: function () {
 
@@ -28,6 +30,7 @@ var Visual = {
         });
     },
 
+    //Draws the screen at the end of the game
     drawVictoryScreen:function(){
         $("<div/>")
         .addClass("victoryScreen gameWindow")
@@ -45,11 +48,16 @@ var Visual = {
         .addClass("nameInput")
         .appendTo(".scoreSubmissionBox")
 
+        //Used to submit the score. If the name entered doesnt exist or is over 15 characters, it won't post them.
         $("<div>Submit</div>")
         .addClass("submitButton")
         .appendTo(".scoreSubmissionBox")
         .on("click",function(){
-            Leaderboard.submitScore($(".nameInput").val(),interactionManager.getVictoryTime());
+            if($(".nameInput").val().length>15 ||$(".nameInput").val().length<1){ 
+                Game.errorMessage("Enter a name under fifteen characters");
+                return;
+            }
+            Leaderboard.submitScore($(".nameInput").val(), interactionManager.getVictoryTime());
             $(".victoryScreen").remove();
         });
     },
@@ -62,14 +70,17 @@ var Visual = {
 
         if (isStartMission) {
             this.backgroundOffset = 0;
-            $("#gameScreen").css({
-                "cursor": "none",
-                "background-image": "url(images/backgrounds/" + backgrounds[MissionManager.currentAreaIndex] + ".jpg)"
-            });
+            //$("#gameScreen").css({
+            //    "cursor": "none",
+            //    "background-image": "url(images/backgrounds/" + backgrounds[MissionManager.currentAreaIndex] + ".jpg)"
+            //});
+            this.backgroundImg = document.createElement('img');
+            this.backgroundImg.src = 'images/backgrounds/' + backgrounds[MissionManager.currentAreaIndex] + ".jpg";
+            //this.backgroundPattern = ctx.createPattern(this.backgroundImg, 'repeat-y');
         }
         else {
             $("#gameScreen").css({
-                "cursor": "default",
+                "cursor": "inherit",
                 "background-image": "none"
             });
         }
@@ -77,8 +88,17 @@ var Visual = {
 
     //Moves the background
     iterateBackground: function () {
+        var self = this;
         this.backgroundOffset++;
-        $('#gameScreen').css('backgroundPosition', 'right 0px top ' + this.backgroundOffset + 'px');
+        if (this.backgroundOffset >= 1400) {
+            ctx.drawImage(self.backgroundImg, 0, 700 - (this.backgroundOffset - 1400));
+        }
+        if (this.backgroundOffset >= 2100) {
+            this.backgroundOffset = 0;
+        }
+        ctx.drawImage(self.backgroundImg, 0, -this.backgroundOffset);
+        
+        //$('#gameScreen').css('backgroundPosition', 'right 0px top ' + this.backgroundOffset + 'px');
     },
 
 
@@ -282,7 +302,7 @@ var Visual = {
             if (topArray[i]) {
                 var tableRow = $("<tr/>");
                 $("<td/>").addClass("positionCell").text(i+1).appendTo(tableRow);
-                $("<td/>").addClass("nicknameCell").text(topArray[i].nickname).appendTo(tableRow);
+                $("<td/>").addClass("nicknameCell").text(topArray[i].player).appendTo(tableRow);
                 $("<td/>").addClass("scoreCell").text(topArray[i].score).appendTo(tableRow);
                 tableRow.appendTo(".leaderboard")
             }
@@ -310,8 +330,23 @@ var Visual = {
         requestAnimationFrame(Visual.drawGameObjects);
         $('#fps').text(fps.getFPS());
         if (interactionManager.getCurrentMission()) {
+            ctx.clearRect(0, 0, 960, 700);
             Visual.iterateBackground();
             interactionManager.redrawGameObjects();
         }
+    },
+
+    updateStarsTracker: function () {
+        var starsToLevelUp = interactionManager.getStarsToLevelUp(),
+            playerLevel = interactionManager.getPlayerLevel(),
+            starHtml = '<img src="images/map/starMini.png" />',
+            starsEarnedHtml =starHtml+ interactionManager.getPlayerStars() + ' earned',
+            starsToNextLevelHtml =  starHtml + ((starsToLevelUp[playerLevel - 1]) ?
+                starsToLevelUp[playerLevel - 1] : '-')
+        + ' needed';
+        $('<div></div>')
+        .addClass("starTracker")
+            .html(starsEarnedHtml + '<br/>' + starsToNextLevelHtml)
+            .appendTo('#gameScreen')
     }
 };

@@ -1,5 +1,7 @@
 ﻿ var interactionManager = (function () {
     var playerPlane = new PlayerPlane(),
+        starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
+        starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         boss,
         bullets,
         hazards,
@@ -28,9 +30,7 @@
         enemyPlanes,
         friendlyPlanes,
         enemySpawnFrequencyMs,
-        stormerStormFrequencyMs,
-        stormCloudDamageFrequencyMs,
-        fighterDirectionChangeFrequencyMs,
+        enemyDirectionChangeFrequencyMs,
         currentMission,
         secondaryObjectiveType,
         timeIsStopped,
@@ -72,31 +72,16 @@
             pickups = [];
             rocketPathArray = [];
             playerBulletsSpeed = 10;
-            fighterBulletsSpeed = 7;
             bossBulletsSpeed = 12;
-            fighterMovementSpeed = 4;
-            supplierMovementSpeed = 1;
-            kamikazeMovementSpeed = 2;
-            fighterMaxHealth = 3;
-            supplierMaxHealth = 5;
-            kamikazeMaxHealth = 10;
-            stormerMaxHealth = 2;
             sentryMaxHealth = parseInt(playerPlane.maxHealth / 4);
-            fighterDamage = 5;
             sentryDamage = playerPlane.damage / 3;
-            supplierDamage = 0;
-            kamikazeDamage = 33;
-            stormerDamage = 3;
             deathRayDamage = playerPlane.damage * 10;
             bossDeathRayDamage = 10;
             radioactiveDamage = playerPlane.damage * 3;
             radioactiveRadius = 400;
             healingBulletHealPoints = 1;
             enemySpawnFrequencyMs = null; //set when the mission starts
-            fighterDirectionChangeFrequencyMs = 1000;
-            supplierSupplyFrequencyMs = 1500;
-            stormerStormFrequencyMs = 2000;
-            stormCloudDamageFrequencyMs = 500;
+            enemyDirectionChangeFrequencyMs = 1000;
             enemyPlanes = [];
             friendlyPlanes = [];
             lastShotPlayerBulletTimestamp = -1;
@@ -437,7 +422,7 @@
                         i++;
                     }
                 } else if (enemyPlanes[i] instanceof EnemyStormer) {
-                    stormStormer(enemyPlanes[i]);
+                    enemyPlanes[i].trySummonStorm();
                 }
             }
         },
@@ -474,7 +459,7 @@
             enemyPlane.moveAtDirection();
             //enemyPlane.move();
 
-            if (nowMs - enemyPlane.lastDirectionChangeTimestamp > fighterDirectionChangeFrequencyMs) {
+            if (nowMs - enemyPlane.lastDirectionChangeTimestamp > enemyDirectionChangeFrequencyMs) {
                 enemyPlane.lastDirectionChangeTimestamp = nowMs;
                 enemyPlane.changeDirection();
             }
@@ -501,7 +486,7 @@
 
         supplySupplier = function (supplier) {
             var nowMs = Date.now(), i;
-            if (nowMs - supplier.lastSupplyTimestamp > supplierSupplyFrequencyMs) {
+            if (nowMs - supplier.lastSupplyTimestamp > supplier.supplyFrequencyMs) {
                 for (i = 0; i < enemyPlanes.length; i++) {
                     if (enemyPlanes[i] instanceof EnemyFighter
                         && distanceBetweenTwoPoints(supplier.leftCoord, supplier.bottomCoord, enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord) < 250
@@ -509,14 +494,6 @@
                         supplier.supply(enemyPlanes[i]);
                     }
                 }
-            }
-        },
-
-        stormStormer = function (stormer) {
-            var nowMs = Date.now();
-            if (nowMs - stormer.lastStormTimestamp > stormerStormFrequencyMs) {
-                stormer.lastStormTimestamp = nowMs;
-                stormer.summonStorm();
             }
         },
 
@@ -657,7 +634,7 @@
 
         handleCollisionStormCloudFriendlyPlane = function (stormCloud, hitPlaneIndex) {
             var nowMs = Date.now();
-            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
+            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
                 friendlyPlanes[hitPlaneIndex].takeDamage(stormerDamage);
                 if(friendlyPlanes[hitPlaneIndex].currentHealth == 0){
@@ -668,7 +645,7 @@
 
         handleCollisionStormCloudPlayer = function (stormCloud) {
             var nowMs = Date.now();
-            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
+            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
                 playerPlane.takeDamage(stormerDamage);
 				trackRemainingHealth(playerPlane.currentHealth);
@@ -838,8 +815,11 @@
                 } else {
                     AreaManager.updateAreaStatus(starsWonForMission);
                     AreaManager.drawMap();
-                    Game.playerStars += starsWonForMission;
+                    playerPlane.stars += starsWonForMission;
                     MissionManager.winScreen(starsWonForMission);
+                    if (!Game.allUnlocked) {
+                        Visual.updateStarsTracker();
+                    }
                 }
             }, 1500);
         },
@@ -869,6 +849,8 @@
 
         setVictoryTime = function(){
             Timer.finalTime = Timer.current;
+            Timer.finalTime = 3600 - Timer.finalTime;
+            console.log(Timer.finalTime)
         },
 
         getVictoryTime = function(){
@@ -877,6 +859,18 @@
 
         getPlayerHealth = function () {
             return playerPlane.currentHealth;
+        },
+
+        getPlayerStars = function () {
+            return playerPlane.stars;
+        },
+
+        getPlayerLevel = function () {
+            return playerPlane.level;
+        },
+
+        getStarsToLevelUp = function () {
+            return starsToLevelUpCopy;
         },
 
         getBossHealth = function () {
@@ -1428,7 +1422,7 @@
 
         handleBlackHole = function () {
             $("#gameScreen").css({
-                "cursor": "pointer"
+                "cursor": "url(images/ui/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1483,7 +1477,7 @@
         handleGuidedRocket = function () {
             var rocketPath = new Array();
             $("#gameScreen").css({
-                "cursor": "pointer"
+                "cursor": "url(images/ui/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1556,12 +1550,12 @@
             //newBottom
             if (clientY <= 570) {
                 converted.bottom = 700 - clientY - 50;
-                if ($('#gameScreen').css('cursor') == 'default') {
+                if ($('#gameScreen').css('cursor') != 'none') {
                     $('#gameScreen').css('cursor', 'none');
                 }
             } else {
                 if ($('#gameScreen').css('cursor') == 'none') {
-                    $('#gameScreen').css('cursor', 'default');
+                    $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
                 }
                 converted.bottom = 80;
             }
@@ -1592,10 +1586,10 @@
                 $('#gameScreen').css('cursor', 'none');
             } else if (clientY > 570) {
                 converted.bottom = 80;
-                $('#gameScreen').css('cursor', 'default');
+                $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
             } else {
                 converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'default');
+                $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
             }
 
             return converted;
@@ -1694,6 +1688,11 @@
             for (i = 0; i < bullets.length; i++) {
                 bullets[i].move();
             }
+
+        },
+
+        increasePlayerLevel = function () {
+            playerPlane.level++;
         },
 
         handleSkillUsage = function (keyPressed) {
@@ -1742,11 +1741,15 @@
         rotateSentries: rotateSentries,
         redrawGameObjects: redrawGameObjects,
         isPlayerShooting: isPlayerShooting,
+        increasePlayerLevel: increasePlayerLevel, //this is safe, plane level only determines how many stars are needed for the next skill unlock
 
         getTime: getTime,
         getSeconds: getSeconds,
         getVictoryTime: getVictoryTime,
         getPlayerHealth: getPlayerHealth,
+        getPlayerStars: getPlayerStars,
+        getPlayerLevel: getPlayerLevel,
+        getStarsToLevelUp: getStarsToLevelUp,
         getBossHealth: getBossHealth,
         getPlayerLeftCoord: getPlayerLeftCoord,
         getPlayerBottomCoord: getPlayerBottomCoord,
