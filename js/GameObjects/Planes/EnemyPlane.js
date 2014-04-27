@@ -4,16 +4,7 @@
         this.movementSpeed = movementSpeed;
         this.updateCoords(left, bottom);
         this.move();
-        this.div.className = 'enemyPlane';
-        this.hpBar.className = "hpBarEnemy";
-        $(this.hpBar)
-            .addClass('hpBarEnemy')
-            .css('top', this.height);
-        $(this.hpBarEmpty)
-            .addClass('hpBarEnemyEmpty')
-            .css('top', this.height);
         this.lastDirectionChangeTimestamp = -1;
-        $(this.hpBar).appendTo(this.div);
     },
     movingRight: null,
     movingUp: null,
@@ -54,7 +45,7 @@
     die: function () {
         this._super();
         if (parseInt(Math.random() * 100 + 1) <= this.healingOrbSpawnChance) {
-            interactionManager.spawnHealingOrb(this.leftCoord + (this.width / 2 - 20), this.bottomCoord + (this.height / 2 - 20));
+            InteractionManager.spawnHealingOrb(this.leftCoord + (this.width / 2 - 20), this.bottomCoord + (this.height / 2 - 20));
         }
     }
 });

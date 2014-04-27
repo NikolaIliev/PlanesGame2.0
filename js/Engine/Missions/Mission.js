@@ -2,7 +2,7 @@
     init: function (enemySpawnFrequencyMs, areaIndex) {
         this.enemySpawnFrequencyMs = enemySpawnFrequencyMs;
         this.areaIndex = areaIndex;
-        this.startTime = interactionManager.getSeconds();
+        this.startTime = InteractionManager.getSeconds();
     },
 
     areaIndex: null,
@@ -17,16 +17,16 @@
 
         Visual.adjustCSSofGameScreen(true);
         Visual.drawUI(self);
-        ctx = $('<canvas width="960" height="700"></canvas>')
+        ctx = $('<canvas width="960" height="700" id="gameCanvas"></canvas>')
                 .appendTo('#gameScreen')
         [0].getContext('2d');
         ctx.translate(0, 700);
         ctx.scale(1, -1);
         
-        interactionManager.spawnPlayer();
-        $(document).on('mousemove', interactionManager.movePlayerPlane);
-        $(document).on('mousedown', interactionManager.handleMouseClick);
-        $(document).on('mouseup', interactionManager.handleMouseClick);
+        InteractionManager.spawnPlayer();
+        $(document).on('mousemove', InteractionManager.movePlayerPlane);
+        $(document).on('mousedown', InteractionManager.handleMouseClick);
+        $(document).on('mouseup', InteractionManager.handleMouseClick);
         $(document).on('dragstart', function (e) {
             e.preventDefault();
         });
@@ -34,13 +34,12 @@
             e.preventDefault();
         });
         $(document).on('keypress', function (e) {
-            console.log(e.keyCode);
             if (e.charCode == 97) { //a
-                interactionManager.rotateSentries('left');
+                InteractionManager.rotateSentries('left');
             } else if (e.charCode == 100) { //d
-                interactionManager.rotateSentries('right');
+                InteractionManager.rotateSentries('right');
             } else if (e.charCode >= 49 && e.charCode <= 52) { //1-4 key was pressed
-                interactionManager.handleSkillUsage(e.charCode - 49);
+                InteractionManager.handleSkillUsage(e.charCode - 49);
             }
         });
         this.mainLoopInterval = window.setInterval(function () {
@@ -50,23 +49,23 @@
     mainLoop: function () {
         var self = this;
 
-        $('#ips').text(ips.getIPS());
-        interactionManager.iterateBullets('all');
-        interactionManager.iterateFriendlyPlanes();
-        interactionManager.iterateEnemyPlanes();
-        interactionManager.iterateHazards();
-        interactionManager.iteratePickups();
-        interactionManager.shootPlayerPlane();
-        interactionManager.spawnEnemy();
-        this.updatePrimaryStatus();
+        //$('#ips').text(ips.getIPS());
+        InteractionManager.iterateBullets('all');
+        InteractionManager.iterateFriendlyPlanes();
+        InteractionManager.iterateEnemyPlanes();
+        InteractionManager.iterateHazards();
+        InteractionManager.iteratePickups();
+        InteractionManager.shootPlayerPlane();
+        InteractionManager.spawnEnemy();
+        //this.updatePrimaryStatus();
 
         if (self.checkWinConditions()) {
-            interactionManager.handleMissionWin();
+            InteractionManager.handleMissionWin();
             self.endMission();
         }
 
         if (self.checkLossConditions()) {
-            interactionManager.handleMissionLoss();
+            InteractionManager.handleMissionLoss();
             self.endMission();
         }
     },

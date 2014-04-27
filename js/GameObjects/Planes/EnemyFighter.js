@@ -5,8 +5,6 @@ EnemyFighter = EnemyPlane.extend({
             width = 90,
             height = 72;
         this._super(left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height);
-        this.div.className = 'enemyFighterDiv';
-        $(this.div).css('background-image', 'url(images/planes/fighter.png)');
         this.bulletType = "fighter";
         this.changeDirection();
         this.skills = [new SpreadShot(this)];
@@ -17,7 +15,7 @@ EnemyFighter = EnemyPlane.extend({
 
     shoot: function () {
         if (this.tryShoot()) {
-            interactionManager.spawnBullet(this.bulletType, this.leftCoord + this.width / 2, this.bottomCoord, 0, this);
+            InteractionManager.spawnBullet(this.bulletType, this.leftCoord + this.width / 2, this.bottomCoord, 0, this);
         }
     },
 

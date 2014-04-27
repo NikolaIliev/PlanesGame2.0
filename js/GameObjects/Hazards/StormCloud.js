@@ -1,17 +1,18 @@
 ﻿StormCloud = Hazard.extend({
     init: function (left, bottom) {
         this._super(left, bottom, 80, 80);
-        this.div.className = 'stormCloudDiv';
         this.damageFrequencyMs = 500;
         this.lastDamageTickTimestamp = -1;
+        this.frameCount = 4;
     },
 
     damageFrequencyMs: null,
     lastDamageTickTimestamp: null,
+    img: $('<img src="images/planes/stormCloudFrames.png" />')[0],
 
     animateCast: function (casterLeft, casterBottom, casterWidth) {
         var self = this,
-            angle = getChaseAngle(casterLeft + casterWidth / 2, casterBottom, this.leftCoord + 40, this.bottomCoord + 40),
+            angle = Utility.getChaseAngle(casterLeft + casterWidth / 2, casterBottom, this.leftCoord + 40, this.bottomCoord + 40),
             castDiv;
         if (casterLeft < this.leftCoord) {
             angle *= -1;

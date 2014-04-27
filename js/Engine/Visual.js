@@ -19,7 +19,7 @@ var Visual = {
        .addClass("introButton")
        .appendTo("#introScreen")
        .on("click", function () {
-           Test.generateScores();
+           Leaderboard.getHighScoreAndDrawLeaderboard();
        });
 
         $("<div>Unlock Everything</div>")
@@ -57,7 +57,7 @@ var Visual = {
                 Game.errorMessage("Enter a name under fifteen characters");
                 return;
             }
-            Leaderboard.submitScore($(".nameInput").val(), interactionManager.getVictoryTime());
+            Leaderboard.submitScore($(".nameInput").val(), InteractionManager.getVictoryTime());
             $(".victoryScreen").remove();
         });
     },
@@ -111,7 +111,7 @@ var Visual = {
             return a <= b;
         };
         function comparer() { };
-        switch (interactionManager.getSecondaryMission()) {
+        switch (InteractionManager.getSecondaryMission()) {
             case "accuracy":
                 conditions = [25, 35, 50];
                 comparer = greaterThan;
@@ -139,7 +139,7 @@ var Visual = {
 
     setSecondaryDescriptions: function () {
         var conditions, i;
-        switch (interactionManager.getSecondaryMission()) {
+        switch (InteractionManager.getSecondaryMission()) {
             case "accuracy":
                 conditions = [25, 35, 50];
                 for (i = 0; i < conditions.length; i++) {
@@ -197,7 +197,7 @@ var Visual = {
         .appendTo('.ui');
 
         //Draw timer
-        $('<div id="timer">' + interactionManager.getTime() + '</div>')
+        $('<div id="timer">' + InteractionManager.getTime() + '</div>')
         .addClass("inGame")
         .appendTo('.ui');
 
@@ -206,7 +206,7 @@ var Visual = {
             id: "hpBar"
         })
         .appendTo(".ui");
-        var skillArray = interactionManager.getPlayerSkills();
+        var skillArray = InteractionManager.getPlayerSkills();
         for (var i = 0; i < 4; i++) {
             $("<div/>", {
                 id: "skill" + i
@@ -309,7 +309,7 @@ var Visual = {
         }
 
         //If called with the arguement false instead of a numeric player position, it will just make a close button;
-        if (playerPosition == false) {
+        if (!playerPosition) {
             $("<div id='closePrompt'>X<div/>")
                  .on("click", function () {
                      $("#GamePromptScreen").remove();
@@ -328,19 +328,20 @@ var Visual = {
 
     drawGameObjects: function () {
         requestAnimationFrame(Visual.drawGameObjects);
-        $('#fps').text(fps.getFPS());
-        if (interactionManager.getCurrentMission()) {
+        //$('#fps').text(fps.getFPS());
+        if (InteractionManager.getCurrentMission()) {
             ctx.clearRect(0, 0, 960, 700);
             Visual.iterateBackground();
-            interactionManager.redrawGameObjects();
+            CAnimations.iterate();
+            InteractionManager.redrawGameObjects();
         }
     },
 
     updateStarsTracker: function () {
-        var starsToLevelUp = interactionManager.getStarsToLevelUp(),
-            playerLevel = interactionManager.getPlayerLevel(),
+        var starsToLevelUp = InteractionManager.getStarsToLevelUp(),
+            playerLevel = InteractionManager.getPlayerLevel(),
             starHtml = '<img src="images/map/starMini.png" />',
-            starsEarnedHtml =starHtml+ interactionManager.getPlayerStars() + ' earned',
+            starsEarnedHtml =starHtml+ InteractionManager.getPlayerStars() + ' earned',
             starsToNextLevelHtml =  starHtml + ((starsToLevelUp[playerLevel - 1]) ?
                 starsToLevelUp[playerLevel - 1] : '-')
         + ' needed';
