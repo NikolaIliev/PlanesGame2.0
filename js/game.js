@@ -67,13 +67,20 @@ window.addEventListener("load", function () {
     $('<div id="loadingBarOutline"> </div>')
         .css({
             'position': 'absolute',
-            'top': 470,
-            'left': 200,
-            'width': 300,
+            'top': 340,
+            'left': 230,
+            'width': 500,
             'height': 20,
             'border': '2px solid grey'
         })
         .appendTo('#gameScreen');
+    $('<div id="loadingBar"> </div>')
+        .css({
+            'height': '100%',
+            'width': '0%',
+            'background-color': 'white'
+        })
+        .appendTo('#loadingBarOutline');
     for (i = 0; i < imgPaths.length; i++) {
         PreloadManager.addToQueue(imgPaths[i]);
     }
