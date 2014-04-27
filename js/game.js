@@ -64,6 +64,16 @@ var imgPaths = ['images/planes/player.png', 'images/planes/fighter.png', 'images
 
 window.addEventListener("load", function () {
     var i;
+    $('<div id="loadingBarOutline"> </div>')
+        .css({
+            'position': 'absolute',
+            'top': 470,
+            'left': 200,
+            'width': 300,
+            'height': 20,
+            'border': '2px solid grey'
+        })
+        .appendTo('#gameScreen');
     for (i = 0; i < imgPaths.length; i++) {
         PreloadManager.addToQueue(imgPaths[i]);
     }

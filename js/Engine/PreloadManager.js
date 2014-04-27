@@ -18,6 +18,7 @@
             });
             currentElem.addEventListener('error', function () {
                 self.errorCount++;
+                console.log('Error preloading ' + self.preloadQueue[i]);
                 if (self.isDone()) {
                     callback();
                 }
