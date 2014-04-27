@@ -22,13 +22,6 @@ var Visual = {
        .on("click", function () {
            Leaderboard.getHighScoreAndDrawLeaderboard();
        });
-
-        $("<div>Unlock Everything</div>")
-        .addClass("introButton")
-        .appendTo("#introScreen")
-        .on("click", function () {
-            Game.unlockEverything();
-        });
     },
 
     //Draws the screen at the end of the game
