@@ -1,0 +1,141 @@
+.uncompletedSecondary{
+	color:gray;
+}
+
+.missionList{
+	position: absolute;
+	z-index: 50;
+	top:10px;
+	left:10px;
+	list-style-image:url(../images/map/starMini.png)
+}
+.missionList>li{
+	text-shadow: 0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1);
+	font-size: 0.8em;
+	margin-left: 25px;
+}
+.mainMissionName{
+	position:absolute;
+	left:650px;
+	top:15px;
+	width:300px;
+	text-shadow: 0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1),0px 0px 6px rgba(0, 0, 0, 1);
+	font-weight: bolder;
+	font-size: 0.9em;
+}
+
+b{
+	font-size: 1.5em;
+}
+
+#fps{
+	position: absolute;
+	top:10px;
+	right:10px;
+}
+
+#ips {
+    position: absolute;
+    color: red;
+	top:30px;
+	right:10px;
+}
+
+.ui{
+	bottom:0px;
+	position: absolute;
+	width: 960px;
+	height: 70px;
+	background-image: url(../images/ui/ui.png) no-repeat;
+}
+
+.skills{
+	-webkit-box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	box-shadow: inset 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+	top:10px;
+	height: 50px;
+	width: 50px;
+	display: inline-block;
+	position: absolute;
+}
+
+#skill0{
+	left:396px;
+}
+
+#skill1{
+	left:452px;
+}
+
+#skill2{
+	left:508px;
+}
+
+#skill3{
+	left:564px;
+}
+
+.spreadShotIcon{
+	background-image: url(../images/ui/spreadShotIcon.png);
+}
+
+.penetratingShotIcon{
+	background-image: url(../images/ui/penetratingShotIcon.png);
+}
+
+.homingShotIcon{
+	background-image: url(../images/ui/homingShotIcon.png);
+}
+
+.sentryIcon{
+	background-image: url(../images/ui/sentryIcon.png)
+}
+
+.deathRayIcon{
+	background-image: url(../images/ui/deathRayIcon.png);
+}
+
+.stopTimeIcon{
+	background-image: url(../images/ui/stopTimeIcon.png);
+}
+
+.blackHoleIcon {
+    background-image: url(../images/ui/blackHoleIcon.png);
+}
+
+.stealthIcon {
+    background-image: url(../images/ui/stealthIcon.png);
+}
+
+.radioactiveIcon {
+    background-image: url(../images/ui/radioactiveIcon.png);
+}
+
+.healingShotIcon {
+    background-image: url(../images/ui/healingShotIcon.png);
+}
+
+.guidedRocketIcon {
+    background-image: url(../images/ui/guidedRocketIcon.png);
+}
+.shieldIcon {
+    background-image: url(../images/ui/shieldIcon.png);
+}
+.absorbBulletsIcon {
+    background-image: url(../images/ui/absorbBulletsIcon.png);
+}
+
+#hpBar{
+	display: inline-block;
+	position: absolute;
+	top:21px;
+	left: 189px;
+	height: 27px;
+	width: 200px;
+	background: -webkit-gradient(linear, 0 0, 0 100%, from(#ce2c28), to(#a02825));
+	background: -webkit-linear-gradient(#ce2c28, #a02825);
+	background: -moz-linear-gradient(#ce2c28, #a02825);
+	background: -o-linear-gradient(#ce2c28, #a02825);
+	background: linear-gradient(#ce2c28, #a02825);
+}
