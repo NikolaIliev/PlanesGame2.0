@@ -1474,7 +1474,7 @@
 
         handleGuidedRocket = function () {
             $("#gameScreen").css({
-                "cursor": "url(images/ui/pointerCursor.png), auto"
+                "cursor": "url(images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1552,7 +1552,7 @@
                 }
             } else {
                 if ($('#gameScreen').css('cursor') == 'none') {
-                    $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
+                    $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
                 }
                 converted.bottom = 80;
             }
@@ -1583,10 +1583,10 @@
                 $('#gameScreen').css('cursor', 'none');
             } else if (clientY > 570) {
                 converted.bottom = 80;
-                $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
+                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
             } else {
                 converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'url(images/ui/pointerCursor.png), auto');
+                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
             }
 
             return converted;
