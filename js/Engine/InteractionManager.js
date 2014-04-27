@@ -275,7 +275,7 @@
                     bullets[i].die();
                     bullets[i].toBeSpliced = true;
                     rocketPathArray = [];
-                } else if (bullets[i].bottomCoord < 0 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947) {
+                } else if (bullets[i].bottomCoord <= 70 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947) {
                     bullets[i].toBeSpliced = true;
                     if (bullets[i] instanceof PlayerBullet) {
                         trackAccuracy(false);
@@ -588,7 +588,7 @@
         detectCollisionPlayerBullet = function (bullet) {
             var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
-                isHit = detectCollision(bullet, enemyPlanes[i]);
+                isHit = !enemyPlanes[i].isAnimated && detectCollision(bullet, enemyPlanes[i]);
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
                 } else if (bullet instanceof PiercingBullet) {
@@ -805,6 +805,9 @@
         },
 
         handleMissionLoss = function () {
+            trackAccuracy();
+            trackRemainingHealth();
+            trackUsedSkills();
             $("<div/>", {
                 id: "effectScreen"
             })
@@ -854,6 +857,10 @@
 
         getBossHealth = function () {
             return boss.currentHealth;
+        },
+
+        getBossHealthPercentage = function () {
+            return boss.healthPercentage;
         },
 
         getPlayerLeftCoord = function () {
@@ -1694,6 +1701,10 @@
             playerPlane.level++;
         },
 
+        updatePrimaryStatus = function () {
+            currentMission.updatePrimaryStatus();
+        },
+
         handleSkillUsage = function (keyPressed) {
             if (playerPlane.skills[keyPressed]) {
                 playerPlane.skills[keyPressed].use();
@@ -1741,6 +1752,7 @@
         redrawGameObjects: redrawGameObjects,
         isPlayerShooting: isPlayerShooting,
         increasePlayerLevel: increasePlayerLevel, //this is safe, plane level only determines how many stars are needed for the next skill unlock
+        updatePrimaryStatus: updatePrimaryStatus,
 
         getTime: getTime,
         getSeconds: getSeconds,
@@ -1750,6 +1762,7 @@
         getPlayerLevel: getPlayerLevel,
         getStarsToLevelUp: getStarsToLevelUp,
         getBossHealth: getBossHealth,
+        getBossHealthPercentage: getBossHealthPercentage,
         getPlayerLeftCoord: getPlayerLeftCoord,
         getPlayerBottomCoord: getPlayerBottomCoord,
         getPlayerSkills: getPlayerSkills,

@@ -11,7 +11,7 @@ var MissionManager = {
     //Contains primary and secondary mission types
     //
     primary: ['survival', 'domination', 'gauntlet'],
-    //primary: ["boss"],
+    //primary: ["survival"],
     secondary: ['remainingHealth', 'accuracy', 'usedSkills'],
     currentAreaIndex: -1,
     currentMissionIndex: -1,
