@@ -1412,7 +1412,7 @@
 
         handleBlackHole = function () {
             $("#gameScreen").css({
-                "cursor": "url(images/ui/pointerCursor.png), auto"
+                "cursor": "url(images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
