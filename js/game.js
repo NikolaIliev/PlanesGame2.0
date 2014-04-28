@@ -66,7 +66,6 @@ window.addEventListener("load", function () {
     var i;
     $('<div id="loadingBarOutline"> </div>')
         .css({
-            'text-align': 'center',
             'position': 'absolute',
             'top': 340,
             'left': 230,
@@ -84,7 +83,11 @@ window.addEventListener("load", function () {
         })
         .appendTo('#loadingBarOutline');
     $('<span id="loadingPercentage"> </span>')
-        .css('position', 'absolute')
+        .css({
+            'position': 'absolute',
+            'left': 235,
+            'color': 'red',
+        })
         .appendTo('#loadingBarOutline');
     for (i = 0; i < imgPaths.length; i++) {
         PreloadManager.addToQueue(imgPaths[i]);
