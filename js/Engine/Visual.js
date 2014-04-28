@@ -26,7 +26,7 @@ var Visual = {
         $('<span id="loadingPercentage"> </span>')
             .css({
                 'position': 'relative',
-                'left': -5,
+                'left': -3,
                 'color': 'black',
             })
             .appendTo('#loadingBar');
