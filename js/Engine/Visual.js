@@ -3,6 +3,34 @@ var Visual = {
     backgroundPattern: null,
     uiImg: $('<img src="images/UI/UI.png" />')[0],
 
+    drawLoadingScreen: function () {
+        $('<div id="loadingBarOutline"> </div>')
+        .css({
+            'position': 'absolute',
+            'top': 340,
+            'left': 230,
+            'width': 500,
+            'height': 20,
+            'border': '2px solid grey'
+        })
+        .appendTo('#gameScreen');
+        $('<div id="loadingBar"> </div>')
+            .css({
+                'position': 'absolute',
+                'text-align': 'center',
+                'height': '100%',
+                'width': '0%',
+                'background-color': 'white'
+            })
+            .appendTo('#loadingBarOutline');
+        $('<span id="loadingPercentage"> </span>')
+            .css({
+                'position': 'absolute',
+                'color': 'black',
+            })
+            .appendTo('#loadingBar');
+    },
+
     drawIntroScreen: function () {
 
         $("<div id='introScreen'></div>")
