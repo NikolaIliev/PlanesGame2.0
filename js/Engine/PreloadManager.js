@@ -15,7 +15,7 @@
             currentElem.addEventListener('load', function () {
                 self.successCount++;
                 self.updatePercentageDone();
-                console.log('Loaded ' + currentPath);
+                console.log('Loaded ' + currentElem.src);
                 $('#loadingBar').css('width', self.percentageDone + '%');
                 $('#loadingPercentage').text(self.percentageDone + '%');
                 if (self.isDone()) {
