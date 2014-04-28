@@ -15,6 +15,7 @@
                 self.successCount++;
                 self.updatePercentageDone();
                 $('#loadingBar').css('width', self.percentageDone + '%');
+                $('#loadingPercentage').text(self.percentageDone + '%');
                 if (self.isDone()) {
                     callback();
                 }
@@ -23,6 +24,7 @@
                 self.errorCount++;
                 self.updatePercentageDone();
                 $('#loadingBar').css('width', self.percentageDone + '%');
+                $('#loadingPercentage').text(self.percentageDone + '%');
                 console.log('Error preloading ' + self.preloadQueue[i]);
                 if (self.isDone()) {
                     callback();
