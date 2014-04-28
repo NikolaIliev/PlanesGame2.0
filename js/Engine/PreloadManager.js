@@ -44,6 +44,10 @@
     },
     isDone: function () {
         var done = this.successCount + this.errorCount == this.preloadQueue.length;
+        console.log(this.successCount);
+        console.log(this.errorCount);
+        console.log(this.preloadQueue.length);
+        console.log('---------');
         return done;
     }
 };
