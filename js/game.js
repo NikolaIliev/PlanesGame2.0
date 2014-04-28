@@ -68,7 +68,10 @@ window.addEventListener("load", function () {
     for (i = 0; i < imgPaths.length; i++) {
         PreloadManager.addToQueue(imgPaths[i]);
     }
-    PreloadManager.preloadAll(Visual.drawIntroScreen);
+    PreloadManager.preloadAll(function () {
+        $('<div id="effectScreen"> </div>').appendTo("#gameScreen");
+        window.setTimeout(Visual.drawIntroScreen, 1500);
+    });
     
     if (!requestAnimationFrame) {
         window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame
