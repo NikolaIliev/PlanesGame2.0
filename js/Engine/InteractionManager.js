@@ -588,7 +588,7 @@
         detectCollisionPlayerBullet = function (bullet) {
             var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
-                isHit = !enemyPlanes[i].isAnimated && detectCollision(bullet, enemyPlanes[i]);
+                isHit = (bullet instanceof HomingBullet || !enemyPlanes[i].isAnimated) && detectCollision(bullet, enemyPlanes[i]);
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
                 } else if (bullet instanceof PiercingBullet) {
@@ -800,6 +800,7 @@
                     if (!Game.allUnlocked) {
                         Visual.updateStarsTracker();
                     }
+                    saveGame();
                 }
             }, 1500);
         },
@@ -814,12 +815,40 @@
            .appendTo("#gameScreen")
             window.setTimeout(function () {
                 abortMission();
+                saveGame();
                 Visual.adjustCSSofGameScreen(false);
                 Game.clearScreen();
                 AreaManager.drawMap();
+                if (!Game.allUnlocked) {
+                    Visual.updateStarsTracker();
+                }
                 Game.errorMessage("Mission failed");
             }, 1500);
 
+        },
+
+        saveGame = function () {
+            var saveData = {
+                time: Timer.current,
+                areas: AreaManager.areas,
+                unlockedSkills: Game.unlockedSkills,
+                playerSkills: Loadout.current,
+                earnedStars: playerPlane.stars,
+                level: playerPlane.level,
+            };
+            localStorage.setItem('saveData', JSON.stringify(saveData));
+            localStorage.setItem('resumeAvailable', 'true');
+        },
+
+        loadGame = function () {
+            var loadData = JSON.parse(localStorage.getItem('saveData'));
+            Timer.current = loadData.time;
+            startTimer();
+            AreaManager.areas = loadData.areas;
+            Game.unlockedSkills = loadData.unlockedSkills;
+            Loadout.current = loadData.playerSkills;
+            playerPlane.stars = loadData.earnedStars;
+            playerPlane.level = loadData.level;
         },
 
         getTime = function () {
@@ -1753,6 +1782,7 @@
         isPlayerShooting: isPlayerShooting,
         increasePlayerLevel: increasePlayerLevel, //this is safe, plane level only determines how many stars are needed for the next skill unlock
         updatePrimaryStatus: updatePrimaryStatus,
+        loadGame: loadGame,
 
         getTime: getTime,
         getSeconds: getSeconds,
