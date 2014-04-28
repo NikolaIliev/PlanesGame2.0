@@ -70,7 +70,10 @@ window.addEventListener("load", function () {
     }
     PreloadManager.preloadAll(function () {
         $('<div id="effectScreen"> </div>').appendTo("#gameScreen");
-        window.setTimeout(Visual.drawIntroScreen, 1500);
+        window.setTimeout(function () {
+            $('#effectScreen').remove();
+            Visual.drawIntroScreen();
+        }, 1500);
     });
     
     if (!requestAnimationFrame) {
