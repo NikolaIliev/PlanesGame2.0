@@ -7,14 +7,15 @@
         this.preloadQueue.push(path);
     },
     preloadAll: function (callback) {
-        var i, currentElem,
+        var i, currentElem, currentPath,
             self = this;
         for (i = 0; i < this.preloadQueue.length; i++) {
+            currentPath = this.preloadQueue[i];
             currentElem = new Image();
             currentElem.addEventListener('load', function () {
                 self.successCount++;
                 self.updatePercentageDone();
-                console.log('Loaded ' + self.preloadQueue[i]);
+                console.log('Loaded ' + currentPath);
                 $('#loadingBar').css('width', self.percentageDone + '%');
                 $('#loadingPercentage').text(self.percentageDone + '%');
                 if (self.isDone()) {
