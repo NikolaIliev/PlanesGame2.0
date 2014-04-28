@@ -59,6 +59,7 @@
         },
         setInitialValues = function () {
             playerPlane.absorptionShieldStrength = 0;
+            playerPlane.move = playerPlane.originalMoveFunction;
             boss = null;
             playerPlane.isShooting = false;
             timeIsStopped = false;
@@ -608,8 +609,19 @@
             var nowMs = Date.now();
             if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-                playerPlane.takeDamage(stormerDamage);
-                trackRemainingHealth(playerPlane.currentHealth);
+				if (playerPlane.absorptionShieldStrength == 0) {
+					playerPlane.takeDamage(stormerDamage);
+					trackRemainingHealth(playerPlane.currentHealth);
+				} else {
+					playerPlane.absorptionShieldStrength--;
+					if (playerPlane.absorptionShieldStrength == 0) {
+						if (playerPlane.isStealthed) {
+							playerPlane.move = playerPlane.stealthMove;
+						} else {
+							playerPlane.move = playerPlane.originalMoveFunction;
+						}
+					}
+				}
             }
         },
 
@@ -660,7 +672,23 @@
             }
         },
         handleAbsorbCollisionEnemyBullets = function (hitter) {
-            playerPlane.receiveHeal(1);
+			if(!(hitter instanceof EnemyKamikaze)){
+				playerPlane.receiveHeal(1);
+			}else{
+				if (playerPlane.absorptionShieldStrength == 0) {
+					playerPlane.takeDamage(hitter.damage);
+					trackRemainingHealth(playerPlane.currentHealth);
+				} else {
+					playerPlane.absorptionShieldStrength--;
+					if (playerPlane.absorptionShieldStrength == 0) {
+						if (playerPlane.isStealthed) {
+							playerPlane.move = playerPlane.stealthMove;
+						} else {
+							playerPlane.move = playerPlane.originalMoveFunction;
+						}
+					}
+				}
+			}			
         },
 
         handleAbsorbBullets = function (duration) {
@@ -772,12 +800,14 @@
                 abortMission();
                 //Clear screen, update the area and mission statuses
                 Visual.adjustCSSofGameScreen(false);
+                Game.clearScreen();
                 //Draw the win screen
                 if (MissionManager.currentAreaIndex == 3) { //boss mission
                     setVictoryTime();
                     Visual.drawVictoryScreen();
+                    localStorage.setItem('saveData', '');
+                    localStorage.setItem('resumeAvailable', 'false');
                 } else {
-                    Game.clearScreen();
                     AreaManager.updateAreaStatus(starsWonForMission);
                     AreaManager.drawMap();
                     playerPlane.stars += starsWonForMission;
