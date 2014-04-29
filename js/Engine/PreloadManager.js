@@ -7,15 +7,14 @@
         this.preloadQueue.push(path);
     },
     preloadAll: function (callback) {
-        var i, currentElem, currentPath,
+        var i, currentElem,
             self = this;
         for (i = 0; i < this.preloadQueue.length; i++) {
-            currentPath = this.preloadQueue[i];
+            console.log(i);
             currentElem = new Image();
             currentElem.addEventListener('load', function () {
                 self.successCount++;
                 self.updatePercentageDone();
-                console.log('Loaded ' + currentElem.src);
                 $('#loadingBar').css('width', self.percentageDone + '%');
                 $('#loadingPercentage').text(self.percentageDone + '%');
                 if (self.isDone()) {
@@ -46,10 +45,6 @@
     },
     isDone: function () {
         var done = this.successCount + this.errorCount == this.preloadQueue.length;
-        console.log(this.successCount);
-        console.log(this.errorCount);
-        console.log(this.preloadQueue.length);
-        console.log('---------');
         return done;
     }
 };
