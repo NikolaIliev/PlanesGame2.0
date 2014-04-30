@@ -1,7 +1,36 @@
 var Visual = {
     backgroundImg: null,
     backgroundPattern: null,
-    uiImg: $('<img src="images/ui/UI.png" />')[0],
+    uiImg: $('<img src="images/UI/UI.png" />')[0],
+
+    drawLoadingScreen: function () {
+        $('<div id="loadingBarOutline"> </div>')
+        .css({
+            'position': 'absolute',
+            'top': 340,
+            'left': 230,
+            'width': 500,
+            'height': 20,
+            'border': '2px solid grey'
+        })
+        .appendTo('#gameScreen');
+        $('<div id="loadingBar"> </div>')
+            .css({
+                'position': 'absolute',
+                'text-align': 'center',
+                'height': '100%',
+                'width': '0%',
+                'background-color': 'white'
+            })
+            .appendTo('#loadingBarOutline');
+        $('<span id="loadingPercentage"> </span>')
+            .css({
+                'position': 'relative',
+                'left': -3,
+                'color': 'black',
+            })
+            .appendTo('#loadingBar');
+    },
 
     drawIntroScreen: function () {
 
@@ -9,10 +38,22 @@ var Visual = {
         .css("background-image", "url(images/map/IntroScreen.png)")
         .appendTo("#gameScreen");
 
-        $("<div>Play</div>")
+        if (localStorage.getItem('resumeAvailable') === 'true') {
+            $("<div>Resume Game</div>")
+               .addClass("introButton")
+               .appendTo("#introScreen")
+               .on("click", function () {
+                   InteractionManager.loadGame();
+                   Game.load();
+               });
+        }
+
+        $("<div>New Game</div>")
         .addClass("introButton")
         .appendTo("#introScreen")
         .on("click", function () {
+            localStorage.setItem('resumeAvailable', 'false');
+            localStorage.setItem('saveData', '');
             Game.init();
         });
         
@@ -22,13 +63,6 @@ var Visual = {
        .on("click", function () {
            Leaderboard.getHighScoreAndDrawLeaderboard();
        });
-
-        $("<div>Unlock Everything</div>")
-        .addClass("introButton")
-        .appendTo("#introScreen")
-        .on("click", function () {
-            Game.unlockEverything();
-        });
     },
 
     //Draws the screen at the end of the game
@@ -71,17 +105,12 @@ var Visual = {
 
         if (isStartMission) {
             this.backgroundOffset = 0;
-            //$("#gameScreen").css({
-            //    "cursor": "none",
-            //    "background-image": "url(images/backgrounds/" + backgrounds[MissionManager.currentAreaIndex] + ".jpg)"
-            //});
             this.backgroundImg = document.createElement('img');
             this.backgroundImg.src = 'images/backgrounds/' + backgrounds[MissionManager.currentAreaIndex] + ".jpg";
-            //this.backgroundPattern = ctx.createPattern(this.backgroundImg, 'repeat-y');
         }
         else {
             $("#gameScreen").css({
-                "cursor": "inherit",
+                "cursor": "url(../images/UI/pointerCursor.png),auto;",
                 "background-image": "none"
             });
         }
@@ -98,8 +127,6 @@ var Visual = {
             this.backgroundOffset = 0;
         }
         ctx.drawImage(self.backgroundImg, 0, -this.backgroundOffset);
-        
-        //$('#gameScreen').css('backgroundPosition', 'right 0px top ' + this.backgroundOffset + 'px');
     },
 
 
@@ -322,7 +349,6 @@ var Visual = {
 
     drawGameObjects: function () {
         requestAnimationFrame(Visual.drawGameObjects);
-        //$('#fps').text(fps.getFPS());
         if (InteractionManager.getCurrentMission()) {
             ctx.clearRect(0, 0, 960, 700);
             Visual.iterateBackground();
