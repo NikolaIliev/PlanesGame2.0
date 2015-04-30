@@ -1,19 +1,10 @@
-﻿EnemyPlane = AIPlane.extend({
+﻿﻿EnemyPlane = AIPlane.extend({
     init: function (left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height) {
         this._super(left, bottom, maxHealth, damage, shootFrequency, width, height);
         this.movementSpeed = movementSpeed;
         this.updateCoords(left, bottom);
         this.move();
-        this.div.className = 'enemyPlane';
-        this.hpBar.className = "hpBarEnemy";
-        $(this.hpBar)
-            .addClass('hpBarEnemy')
-            .css('top', this.height);
-        $(this.hpBarEmpty)
-            .addClass('hpBarEnemyEmpty')
-            .css('top', this.height);
         this.lastDirectionChangeTimestamp = -1;
-        $(this.hpBar).appendTo(this.div);
     },
     movingRight: null,
     movingUp: null,
@@ -37,6 +28,10 @@
 
     },
 
+    move: function () {
+        this._super();
+    },
+
     moveAtDirection: function () {
         if (this.movingRight && this.leftCoord < (960 - 95)) {
             this.leftCoord += this.movementSpeed;
@@ -54,7 +49,7 @@
     die: function () {
         this._super();
         if (parseInt(Math.random() * 100 + 1) <= this.healingOrbSpawnChance) {
-            interactionManager.spawnHealingOrb(this.leftCoord + (this.width / 2 - 20), this.bottomCoord + (this.height / 2 - 20));
+            InteractionManager.spawnHealingOrb(this.leftCoord + (this.width / 2 - 20), this.bottomCoord + (this.height / 2 - 20));
         }
     }
 });

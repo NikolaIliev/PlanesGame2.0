@@ -1,12 +1,13 @@
-﻿HealingOrb = Pickup.extend({
+﻿﻿HealingOrb = Pickup.extend({
     init: function (left, bottom) {
         var width = 50,
             height = 50;
         this._super(left, bottom, width, height);
-        $(this.div).addClass('healingOrbDiv');
         this.healingAmount = 5;
+        this.frameCount = 4;
     },
 
+    img: $('<img src="images/sprites/HealthOrbFrames.png" />')[0],
     healingAmount: null,
 
     heal: function (plane) {

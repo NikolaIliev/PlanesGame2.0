@@ -14,6 +14,7 @@ html,body{
 }
 
 body{
+    cursor:url(../images/UI/pointerCursor.png),auto;
     background: -webkit-gradient(linear, 0 0, 100% 0, from(#0e1b20), to(#23363c));
     background: -webkit-linear-gradient( #23363c, #0e1b20, #23363c);
     background: -moz-linear-gradient( #23363c, #0e1b20, #23363c);
@@ -41,7 +42,7 @@ section{
 	margin-top:0%;
 	height: 700px;
 	width: 960px;
-	background: #4fbee7;
+	background: black;
     overflow: hidden;
 }
 
@@ -59,83 +60,11 @@ section{
 	animation: effectsScreenAnimation 1.5s;
 }
 
-/*Planes*/
-
-#playerPlaneDiv {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100px;
-    height: 75px;
-    z-index: 1000;
-}
-
-.sentryPlaneDiv {
-    position: absolute;
-    width: 100px;
-    height: 75px;
-    left: 0;
-    bottom: 0;
-}
-
-.enemyPlane {
-    position: absolute;
-    left: 0px;
-    bottom: 0px;
-    width: 100px;
-    height: 80px;
-}
-
-.enemyFighterDiv {
-    position: absolute;
-    width: 90px;
-    height: 72px;
-    left: 0;
-    bottom: 0;
-}
-
-.bossPlaneDiv {
-    position: absolute;
-    width: 300px;
-    height: 240px;
-    left: 0;
-    bottom: 0;
-}
-
-.explosionDiv{
-    position: absolute;
-    height: 50px;
-    width:50px;
-    background-image: url(../images/planes/explosionFrames.png);
-    -webkit-animation : explodeAnimation 0.4s;
-    animation : explodeAnimation 0.4
-}
-
 .guidedRocketDiv {
     position: absolute;
     width: 61px;
     height: 100px;
-}
-
-.playerBulletDiv {
-    border-radius: 2px 2px 0px 0px;
-    position: absolute;
-    height: 15px;
-    width: 4px;
-    background: -webkit-gradient(linear, 0 0, 0 100%, from(#fb2c00), color-stop(0.5, #ffcb00), to(rgb(255,113,0)));
-    background: -webkit-linear-gradient(#fb2c00, #ffcb00, rgb(255,113,0));
-    background: -moz-linear-gradient(#fb2c00, #ffcb00, rgb(255,113,0));
-    background: -o-linear-gradient(#fb2c00, #ffcb00, rgb(255,113,0));
-    background: linear-gradient(#fb2c00, #ffcb00, rgb(255,113,0));
-}
-.playerShieldDiv {
-    border-radius: 100%;
-	position: absolute;
-	bottom: 0px;
-    width: 100%;
-    height: 115%;
-    background-color: #ffff66;
-	opacity:0.2;	
+    background-image: url(../images/skills/guidedRocket.png);
 }
 
 .deathRayDiv {
@@ -178,58 +107,6 @@ section{
     
 }
 
-.enemyBulletDiv {
-    border-radius:  0px 0px 2px 2px;
-    position: absolute;
-    height: 15px;
-    width: 4px;
-  	background: -webkit-gradient(linear, 0 0, 0 100%, from(#df3100), to(#ff7100));
-    background: -webkit-linear-gradient(#df3100, #ff7100);
-    background: -moz-linear-gradient(#df3100, #ff7100);
-    background: -o-linear-gradient(#df3100, #ff7100);
-    background: linear-gradient(#df3100, #ff7100);
-}
-
-.bossBulletDiv {
-    border-radius:  0px 0px 4px 4px;
-    position: absolute;
-    height: 30px;
-    width: 6px;
-  	background: -webkit-gradient(linear, 0 0, 0 100%, from(#df3100), to(#ff7100));
-    background: -webkit-linear-gradient(#df3100, #ff7100);
-    background: -moz-linear-gradient(#df3100, #ff7100);
-    background: -o-linear-gradient(#df3100, #ff7100);
-    background: linear-gradient(#df3100, #ff7100);
-}
-
-.piercingBulletDiv {
-    border-radius: 2px 2px 0px 0px;
-    position: absolute;
-    height: 15px;
-    width: 4px;
-    background: -webkit-gradient(linear, 0 0, 0 100%, from(#78f1ff), to(#277aea));
-    background: -webkit-linear-gradient(#78f1ff, #277aea);
-    background: -moz-linear-gradient(#78f1ff, #277aea);
-    background: -o-linear-gradient(#78f1ff, #277aea);
-    background: linear-gradient(#78f1ff, #277aea);
-}
-
-.homingBulletDiv{
-    position: absolute;
-    height:15px;
-    width:4px;
-    border-radius: 2px 2px 0px 0px;
-    background: linear-gradient(#e5ff51,#4e5142);
-}
-
-.healingBulletDiv{
-    position: absolute;
-    height:15px;
-    width:4px;
-    border-radius: 2px 2px 0px 0px;
-    background: linear-gradient(#41ec1a,#1a6808);
-}
-
 .blackHole{
     position: absolute;
     height: 400px;
@@ -237,27 +114,6 @@ section{
     border-radius: 200px;
     -webkit-animation : blackHoleAnimation 0.5s ease-out;
 	animation: blackHoleAnimation 0.5s ease-out;
-}
-
-
-.stormCloudDiv {
-    position: absolute;
-    height: 80px;
-    width: 80px;
-    z-index: 1;
-    background-image: url(../images/planes/stormCloudFrames.png);
-    -webkit-animation: stormCloudAnimation 0.3s infinite;
-	animation: stormCloudAnimation 0.3s infinite;
-}
-
-.healingOrbDiv {
-    position: absolute;
-    z-index: 1;
-     width: 50px;
-    height: 50px;
-    background-image: url(../images/skills/HealthOrbFrames.png);
-    animation:healingOrbSpin 0.3s infinite;
-    -webkit-animation:healingOrbSpin 0.3s infinite;
 }
 
 .stormCloudCast {
@@ -273,45 +129,6 @@ section{
     background: linear-gradient(to right, rgba(86,181,255,0) 0%, rgba(86,181,255,1) 10%, white 20%, white 80%, rgba(86,181,255,1) 90%, rgba(86,181,255,0) 100%);
 }
 
-.hpBarEnemy {
-    position: absolute;
-    width: 100%;
-    height: 5px;
-    border-bottom:2px solid black;
-    border-top:2px solid black;
-    border-left:2px solid black;
-    background-color: #d22d13;
-    opacity: 0.8;
-}
-
-.hpBarEnemyEmpty {
-    position: absolute;
-    width: 100%;
-    height: 5px;
-    border:2px solid black;
-    opacity: 0.8;
-}
-
-.castBarBoss {
-    position: absolute;
-    width: 0%;
-    display: none;
-    height: 5px;
-    border-style: solid;
-    border-color: black;
-    border-bottom-width: 2px;
-    border-top-width: 2px;
-    background-color: antiquewhite;
-}
-
-.hpBarFriendly {
-    position: absolute;
-    width: 100%;
-    height: 5px;
-    border:2px solid black;
-    background-color: #45cb36;
-    opacity: 0.8;
-}
 
 @-webkit-keyframes enemyDeathAnimation {
 	from  {opacity: 1; -webkit-transform: scale(1, 1) rotateY(0deg)}
@@ -331,29 +148,6 @@ section{
 	from  {opacity: 0; }
 	to {opacity: 1; }
 }
-
-@-webkit-keyframes stormCloudAnimation{
-                0%{background-position: 0px 0px}
-                24.9%{background-position: 0px 0px}
-                25%{background-position: 80px 0px}
-                49.9%{background-position: 80px 0px}
-                50%{background-position: 160px 0px}
-                74.9%{background-position: 160px 0px}
-                75%{background-position: 240px 0px}
-                99.9%{background-position: 240px 0px}
-                100%{background-position: 0px 0px}
-            }
-@keyframes stormCloudAnimation{
-                0%{background-position: 0px 0px}
-                24.9%{background-position: 0px 0px}
-                25%{background-position: 80px 0px}
-                49.9%{background-position: 80px 0px}
-                50%{background-position: 160px 0px}
-                74.9%{background-position: 160px 0px}
-                75%{background-position: 240px 0px}
-                99.9%{background-position: 240px 0px}
-                100%{background-position: 0px 0px}
-            }
 
 @-webkit-keyframes blackHoleAnimation{
             0%{
@@ -379,53 +173,3 @@ section{
                 opacity: 0.8;
             }
         }
-
-@keyframes healingOrbSpin{
-    0%{background-position: 0px 0px}
-    24.9%{background-position: 0px 0px}
-    25%{background-position: 50px 0px}
-    49.9%{background-position: 50px 0px}
-    50%{background-position: 100px 0px}
-    74.9%{background-position: 100px 0px}
-    75%{background-position: 150px 0px}
-    99.9%{background-position: 150px 0px}
-    100%{background-position: 0px 0px}
- }
-
- @-webkit-keyframes healingOrbSpin{
-    0%{background-position: 0px 0px}
-    24.9%{background-position: 0px 0px}
-    25%{background-position: 50px 0px}
-    49.9%{background-position: 50px 0px}
-    50%{background-position: 100px 0px}
-    74.9%{background-position: 100px 0px}
-    75%{background-position: 150px 0px}
-    99.9%{background-position: 150px 0px}
-    100%{background-position: 0px 0px}
- }
-
-@-webkit-keyframes explodeAnimation{
-                0%{background-position: 0px 0px}
-                19.9%{background-position: 0px 0px}
-                20%{background-position: 50px 0px}
-                39.9%{background-position: 50px 0px}
-                40%{background-position: 100px 0px}
-                59.9%{background-position: 100px 0px}
-                60%{background-position: 150px 0px}
-                79.9%{background-position: 150px 0px}
-                80%{background-position: 200px 0px}
-                100%{background-position: 200px 0px}
-            }
-
-            @keyframes explodeAnimation{
-                0%{background-position: 0px 0px}
-                19.9%{background-position: 0px 0px}
-                20%{background-position: 50px 0px}
-                39.9%{background-position: 50px 0px}
-                40%{background-position: 100px 0px}
-                59.9%{background-position: 100px 0px}
-                60%{background-position: 150px 0px}
-                79.9%{background-position: 150px 0px}
-                80%{background-position: 200px 0px}
-                100%{background-position: 200px 0px}
-            }

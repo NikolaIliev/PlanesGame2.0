@@ -1,4 +1,4 @@
-﻿//this skill doesn't get activated on cooldown - it gets activated after each 5 bullets the boss shoots
+﻿﻿//this skill doesn't get activated on cooldown - it gets activated after each 5 bullets the boss shoots
 BossDeathRays = BossSkill.extend({
     init: function (plane) {
         this._super("Boss Death Rays", plane, 300, 300, ""); //plane using the skill, duration, cooldown
@@ -9,7 +9,7 @@ BossDeathRays = BossSkill.extend({
         this._super();
         
         for (i = 0; i < 3; i++) {
-            interactionManager.handleBossDeathRay(this.plane.thirdPhaseDeathRays[i]);
+            InteractionManager.handleBossDeathRay(this.plane.thirdPhaseDeathRays[i]);
         }
     },
 
@@ -33,7 +33,7 @@ BossDeathRays = BossSkill.extend({
                             'display': 'none',
                             'width': '0%'
                         });
-                        if (interactionManager.getCurrentMission()) {
+                        if (InteractionManager.getCurrentMission()) {
                             self.activate.call(self);
                         }
                     },

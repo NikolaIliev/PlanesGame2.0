@@ -1,5 +1,7 @@
-﻿ var interactionManager = (function () {
+﻿var InteractionManager = (function () {
     var playerPlane = new PlayerPlane(),
+        starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
+        starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         boss,
         bullets,
         hazards,
@@ -28,9 +30,7 @@
         enemyPlanes,
         friendlyPlanes,
         enemySpawnFrequencyMs,
-        stormerStormFrequencyMs,
-        stormCloudDamageFrequencyMs,
-        fighterDirectionChangeFrequencyMs,
+        enemyDirectionChangeFrequencyMs,
         currentMission,
         secondaryObjectiveType,
         timeIsStopped,
@@ -38,7 +38,7 @@
         Timer = {
             //Counts how many seconds have passed since the start of the game
             current: 0,
-            finalTime : null,
+            finalTime: null,
             increaseTimer: function () {
                 this.current++;
             },
@@ -46,12 +46,7 @@
                 $('#timer').text(this.getTime());
             },
             getTime: function () {
-                var seconds = this.current % 60,
-                    minutes = Math.floor(this.current / 60),
-                    formattedSeconds = (seconds >= 10) ? seconds : ('0' + seconds),
-                    formattedMinutes = (minutes >= 10) ? minutes : ('0' + minutes),
-                    time = formattedMinutes + ':' + formattedSeconds;
-
+                var time = Utility.convertToTime(this.current);
                 return time;
             }
         },
@@ -64,6 +59,7 @@
         },
         setInitialValues = function () {
             playerPlane.absorptionShieldStrength = 0;
+            playerPlane.move = playerPlane.originalMoveFunction;
             boss = null;
             playerPlane.isShooting = false;
             timeIsStopped = false;
@@ -72,31 +68,16 @@
             pickups = [];
             rocketPathArray = [];
             playerBulletsSpeed = 10;
-            fighterBulletsSpeed = 7;
             bossBulletsSpeed = 12;
-            fighterMovementSpeed = 4;
-            supplierMovementSpeed = 1;
-            kamikazeMovementSpeed = 2;
-            fighterMaxHealth = 3;
-            supplierMaxHealth = 5;
-            kamikazeMaxHealth = 10;
-            stormerMaxHealth = 2;
             sentryMaxHealth = parseInt(playerPlane.maxHealth / 4);
-            fighterDamage = 5;
             sentryDamage = playerPlane.damage / 3;
-            supplierDamage = 0;
-            kamikazeDamage = 33;
-            stormerDamage = 3;
             deathRayDamage = playerPlane.damage * 10;
             bossDeathRayDamage = 10;
             radioactiveDamage = playerPlane.damage * 3;
             radioactiveRadius = 400;
             healingBulletHealPoints = 1;
             enemySpawnFrequencyMs = null; //set when the mission starts
-            fighterDirectionChangeFrequencyMs = 1000;
-            supplierSupplyFrequencyMs = 1500;
-            stormerStormFrequencyMs = 2000;
-            stormCloudDamageFrequencyMs = 500;
+            enemyDirectionChangeFrequencyMs = 1000;
             enemyPlanes = [];
             friendlyPlanes = [];
             lastShotPlayerBulletTimestamp = -1;
@@ -125,15 +106,13 @@
 
         spawnPlayer = function () {
             playerPlane.currentHealth = playerPlane.maxHealth;
-            playerPlane.addToScreen();
         },
 
         spawnBoss = function () {
             var handleBoss = handleBossIteration,
                 self = this;
             this.handleBossIteration = function () { };//delay the iteration of the boss until its spawn animation is complete
-            boss = new BossPlane(getRandomLeftCoord(150), getRandomBottomCoordTopHalf(120));
-            boss.addToScreen();
+            boss = new BossPlane(Utility.getRandomLeftCoord(150), Utility.getRandomBottomCoordTopHalf(120));
             boss.animateSpawn();
             window.setTimeout(function () {
                 self.handleBossIteration = handleBoss;
@@ -145,14 +124,11 @@
         spawnSentry = function (left, bottom) {
             var sentry = new SentryPlane(left, bottom, sentryMaxHealth, sentryDamage);
             friendlyPlanes.push(sentry);
-            sentry.addToScreen();
-
         },
 
         spawnRocket = function (left, bottom) {
             var rocket = new GuidedRocket(left, bottom, 0, playerPlane);
             bullets.push(rocket);
-            rocket.addToScreen();
         },
 
         spawnBullet = function (type, left, bottom, orientationDeg, owner) {
@@ -182,7 +158,6 @@
                     break;
             }
             bullets.push(newBullet);
-            newBullet.addToScreen();
         },
 
         spawnEnemy = function () {
@@ -210,53 +185,36 @@
         },
 
         spawnFighter = function () {
-            var newFighter = new EnemyFighter(getRandomLeftCoord(45), getRandomBottomCoordTopHalf(35),
+            var newFighter = new EnemyFighter(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
                 fighterMaxHealth, fighterDamage, fighterMovementSpeed);
-            newFighter.addToScreen();
             newFighter.animateSpawn();
-            window.setTimeout(function () {
-                enemyPlanes.push(newFighter);
-            }, 1500);
+            enemyPlanes.push(newFighter);
         },
 
         spawnSupplier = function () {
-            var newSupplier = new EnemySupplier(getRandomLeftCoord(45), getRandomBottomCoordTopHalf(35),
+            var newSupplier = new EnemySupplier(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
                 supplierMaxHealth, supplierDamage, supplierMovementSpeed);
-            newSupplier.addToScreen();
             newSupplier.animateSpawn();
-            window.setTimeout(function () {
-                enemyPlanes.push(newSupplier);
-            }, 1500);
+            enemyPlanes.push(newSupplier);
         },
 
         spawnKamikaze = function () {
-            var newKamikaze = new EnemyKamikaze(getRandomLeftCoord(45), getRandomBottomCoordTopHalf(35),
+            var newKamikaze = new EnemyKamikaze(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
                 kamikazeMaxHealth, kamikazeDamage, kamikazeMovementSpeed);
-            newKamikaze.addToScreen();
             newKamikaze.animateSpawn();
-            window.setTimeout(function () {
-                enemyPlanes.push(newKamikaze);
-            }, 1500);
+            enemyPlanes.push(newKamikaze);
         },
 
         spawnStormer = function () {
-            var newStormer = new EnemyStormer(getRandomLeftCoord(45), getRandomBottomCoordTopHalf(35),
+            var newStormer = new EnemyStormer(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
                 stormerMaxHealth, stormerDamage);
-            newStormer.addToScreen();
             newStormer.animateSpawn();
-            window.setTimeout(function () {
-                enemyPlanes.push(newStormer);
-            }, 1500);
+            enemyPlanes.push(newStormer);
         },
 
         spawnStormCloud = function (left, bottom, casterLeft, casterBottom, casterWidth) {
             var newStormCloud = new StormCloud(left, bottom);
             newStormCloud.animateCast(casterLeft, casterBottom, casterWidth);
-            window.setTimeout(function () {
-                if (currentMission) {
-                    newStormCloud.addToScreen();
-                }
-            }, 300);
             hazards.push(newStormCloud);
         },
 
@@ -264,7 +222,6 @@
             if (!(currentMission instanceof BossMission) && pickups.length < 3) { //no more than 3 pickups can be on the screen at once
                 var healingOrb = new HealingOrb(left, bottom);
                 pickups.push(healingOrb);
-                healingOrb.addToScreen();
             }
         },
 
@@ -285,7 +242,6 @@
 
             newCoords.left -= 50; //adjust plane to cursor
             playerPlane.updateCoords(newCoords.left, newCoords.bottom);
-            //playerPlane.move();
         },
 
         rotateSentries = function (direction) {
@@ -305,11 +261,12 @@
             var i, toBeDestroyed = false, hitEnemyPlaneIndex, hitFriendlyPlaneIndex;
             for (i = 0; i < bullets.length; i++) {
                 toBeDestroyed = false;
-                //if out of the screen, flag the bullet for removal
-                if (bullets[i].bottomCoord < 0 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947
-                    || (bullets[i] instanceof GuidedRocket && rocketPathArray.length == 0)) {
-                    bullets[i].toBeSpliced = true;
+                if (bullets[i] instanceof GuidedRocket && rocketPathArray.length == 0) {
                     bullets[i].die();
+                    bullets[i].toBeSpliced = true;
+                    rocketPathArray = [];
+                } else if (bullets[i].bottomCoord <= 70 || bullets[i].bottomCoord > 700 || bullets[i].leftCoord < 10 || bullets[i].leftCoord > 947) {
+                    bullets[i].toBeSpliced = true;
                     if (bullets[i] instanceof PlayerBullet) {
                         trackAccuracy(false);
                     }
@@ -322,7 +279,7 @@
                         handleCollisionPlayerBullet(bullets[i], hitEnemyPlaneIndex);
                         bullets[i].handleCollision(enemyPlanes[hitEnemyPlaneIndex]);
                     } else {
-                        movePlayerBullet(bullets[i]);  
+                        movePlayerBullet(bullets[i]);
                     }
                 }
                 else if ((type == 'all' || type == 'enemy') && bullets[i] instanceof EnemyBullet) {
@@ -360,7 +317,6 @@
                 : (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
                 //will travel diagonally at (playerBulletsSpeed) speed
                 bullet.updateCoords(newLeftCoord, newBottomCoord);
-                //bullet.move();
             }
         },
 
@@ -382,7 +338,6 @@
             }
 
             bullet.updateCoords(newLeftCoord, newBottomCoord);
-            //bullet.move();
         },
 
         moveEnemyBullet = function (bullet) {
@@ -394,7 +349,7 @@
                     bullet.updateCoords(newLeftCoord, bullet.bottomCoord - bulletSpeed);
                 }
                 else {
-                    newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ? 
+                    newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ?
                         (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
                       : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
 
@@ -407,37 +362,32 @@
         iterateFriendlyPlanes = function () {
             var i;
             for (i = 0; i < friendlyPlanes.length; i++) {
-                if (friendlyPlanes[i] instanceof SentryPlane) {
-                    friendlyPlanes[i].shoot();
-                } else if (friendlyPlanes[i] instanceof ReinforcementPlane) {
-                    if (rocketPathArray.length) {
-                        moveReinforcementPlane(friendlyPlanes[i]);
-                    } else {
-                        friendlyPlanes[i].die();
-                        friendlyPlanes.splice(i, 1);
-                        i--;
-                    }
-                }
+                friendlyPlanes[i].shoot();
             }
         },
+
         iterateEnemyPlanes = function () {
             var i;
             for (i = 0; i < enemyPlanes.length; i++) {
-                if (enemyPlanes[i] instanceof EnemyFighter) {
-                    moveEnemyPlane(enemyPlanes[i]);
-                    enemyPlanes[i].shoot();
-                } else if (enemyPlanes[i] instanceof EnemySupplier) {
-                    moveEnemyPlane(enemyPlanes[i]);
-                    supplySupplier(enemyPlanes[i]);
-                } else if (enemyPlanes[i] instanceof EnemyKamikaze) {
-                    moveKamikaze(enemyPlanes[i]);
-                    if (detectCollision(playerPlane, enemyPlanes[i])) {
-                        handleCollisionKamikaze(enemyPlanes[i]);
-                        enemyPlanes.splice(i, 1);
-                        i++;
+                if (!enemyPlanes[i].isAnimated) {
+                    if (enemyPlanes[i] instanceof EnemyFighter) {
+                        moveEnemyPlane(enemyPlanes[i]);
+                        enemyPlanes[i].shoot();
+                    } else if (enemyPlanes[i] instanceof EnemySupplier) {
+                        moveEnemyPlane(enemyPlanes[i]);
+                        supplySupplier(enemyPlanes[i]);
+                    } else if (enemyPlanes[i] instanceof EnemyKamikaze) {
+                        moveKamikaze(enemyPlanes[i]);
+                        if (detectCollision(playerPlane, enemyPlanes[i])) {
+                            handleCollisionKamikaze(enemyPlanes[i]);
+                            enemyPlanes.splice(i, 1);
+                            i++;
+                        }
+                    } else if (enemyPlanes[i] instanceof EnemyStormer) {
+                        enemyPlanes[i].trySummonStorm();
                     }
-                } else if (enemyPlanes[i] instanceof EnemyStormer) {
-                    stormStormer(enemyPlanes[i]);
+                } else {
+                    enemyPlanes[i].move();
                 }
             }
         },
@@ -461,7 +411,6 @@
                 if (pickups[i] instanceof HealingOrb) {
                     if (isPointInsideObject(pickups[i].leftCoord + pickups[i].width / 2, pickups[i].bottomCoord + pickups[i].height / 2, playerPlane)) {
                         pickups[i].heal(playerPlane);
-                        pickups[i].die();
                         pickups.splice(i, 1);
                         i--;
                     }
@@ -472,9 +421,8 @@
         moveEnemyPlane = function (enemyPlane) {
             var nowMs = Date.now();
             enemyPlane.moveAtDirection();
-            //enemyPlane.move();
 
-            if (nowMs - enemyPlane.lastDirectionChangeTimestamp > fighterDirectionChangeFrequencyMs) {
+            if (nowMs - enemyPlane.lastDirectionChangeTimestamp > enemyDirectionChangeFrequencyMs) {
                 enemyPlane.lastDirectionChangeTimestamp = nowMs;
                 enemyPlane.changeDirection();
             }
@@ -488,7 +436,6 @@
                 : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
             kamikaze.chasePlayer();
             kamikaze.updateCoords(newLeft, newBottom);
-            //kamikaze.move();
         },
 
         handleMouseClick = function (e) {
@@ -501,7 +448,7 @@
 
         supplySupplier = function (supplier) {
             var nowMs = Date.now(), i;
-            if (nowMs - supplier.lastSupplyTimestamp > supplierSupplyFrequencyMs) {
+            if (nowMs - supplier.lastSupplyTimestamp > supplier.supplyFrequencyMs) {
                 for (i = 0; i < enemyPlanes.length; i++) {
                     if (enemyPlanes[i] instanceof EnemyFighter
                         && distanceBetweenTwoPoints(supplier.leftCoord, supplier.bottomCoord, enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord) < 250
@@ -509,14 +456,6 @@
                         supplier.supply(enemyPlanes[i]);
                     }
                 }
-            }
-        },
-
-        stormStormer = function (stormer) {
-            var nowMs = Date.now();
-            if (nowMs - stormer.lastStormTimestamp > stormerStormFrequencyMs) {
-                stormer.lastStormTimestamp = nowMs;
-                stormer.summonStorm();
             }
         },
 
@@ -544,7 +483,7 @@
                         (stormCloud.bottomCoord + 68) < friendlyPlanes[i].bottomCoord + 75))
                     &&
                         ((stormCloud.leftCoord + 12 > friendlyPlanes[i].leftCoord &&
-                        stormCloud.leftCoord + 12< friendlyPlanes[i].leftCoord + 100) ||
+                        stormCloud.leftCoord + 12 < friendlyPlanes[i].leftCoord + 100) ||
                         (stormCloud.leftCoord + 68 > friendlyPlanes[i].leftCoord &&
                         stormCloud.leftCoord + 68 < friendlyPlanes[i].leftCoord + 100));
 
@@ -609,10 +548,10 @@
 
             return isIn;
         },
-		isPointInsideObject = function (x,y, obj){
-			isIn = ((x >= obj.leftCoord && x <= (obj.leftCoord + obj.width)) &&
+		isPointInsideObject = function (x, y, obj) {
+		    isIn = ((x >= obj.leftCoord && x <= (obj.leftCoord + obj.width)) &&
 				(y >= obj.bottomCoord && y <= (obj.bottomCoord + obj.height)))
-			return isIn;
+		    return isIn;
 		},
 
         detectCollision = function (obj1, obj2) {
@@ -635,7 +574,7 @@
         detectCollisionPlayerBullet = function (bullet) {
             var i, isHit, indexEnemiesHit;
             for (i = 0; i < enemyPlanes.length; i++) {
-                isHit = detectCollision(bullet, enemyPlanes[i]);
+                isHit = (bullet instanceof HomingBullet || !enemyPlanes[i].isAnimated) && detectCollision(bullet, enemyPlanes[i]);
                 if (isHit) { //return the index of the hit plane in the enemyPlanes array
                     return i;
                 } else if (bullet instanceof PiercingBullet) {
@@ -657,10 +596,10 @@
 
         handleCollisionStormCloudFriendlyPlane = function (stormCloud, hitPlaneIndex) {
             var nowMs = Date.now();
-            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
+            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
                 friendlyPlanes[hitPlaneIndex].takeDamage(stormerDamage);
-                if(friendlyPlanes[hitPlaneIndex].currentHealth == 0){
+                if (friendlyPlanes[hitPlaneIndex].currentHealth == 0) {
                     friendlyPlanes[hitPlaneIndex].die();
                 }
             }
@@ -668,10 +607,21 @@
 
         handleCollisionStormCloudPlayer = function (stormCloud) {
             var nowMs = Date.now();
-            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloudDamageFrequencyMs) {
+            if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-                playerPlane.takeDamage(stormerDamage);
-				trackRemainingHealth(playerPlane.currentHealth);
+				if (playerPlane.absorptionShieldStrength == 0) {
+					playerPlane.takeDamage(stormerDamage);
+					trackRemainingHealth(playerPlane.currentHealth);
+				} else {
+					playerPlane.absorptionShieldStrength--;
+					if (playerPlane.absorptionShieldStrength == 0) {
+						if (playerPlane.isStealthed) {
+							playerPlane.move = playerPlane.stealthMove;
+						} else {
+							playerPlane.move = playerPlane.originalMoveFunction;
+						}
+					}
+				}
             }
         },
 
@@ -682,11 +632,11 @@
                 damage = 5;
             }
 
-            if(bullet instanceof HealingBullet){
+            if (bullet instanceof HealingBullet) {
                 playerPlane.receiveHeal(healingBulletHealPoints);
             }
             enemyPlanes[hitEnemyPlaneIndex].takeDamage(damage);
-            if(enemyPlanes[hitEnemyPlaneIndex].currentHealth == 0){
+            if (enemyPlanes[hitEnemyPlaneIndex].currentHealth == 0) {
                 enemyPlanes[hitEnemyPlaneIndex].die();
                 enemyPlanes.splice(hitEnemyPlaneIndex, 1);
                 if (currentMission instanceof GauntletMission) {
@@ -700,7 +650,7 @@
             var ownerPlane = bullet.owner,
                 damage = (bullet instanceof HomingBullet) ? ownerPlane.damage * 0.5 : ownerPlane.damage;
             boss.takeDamage(damage);
-            if(boss.currentHealth == 0){
+            if (boss.currentHealth == 0) {
                 boss.die();
             }
             trackAccuracy(true);
@@ -709,32 +659,52 @@
         handleCollisionEnemy = function (hitter) {
             if (playerPlane.absorptionShieldStrength == 0) {
                 playerPlane.takeDamage(hitter.damage);
-				trackRemainingHealth(playerPlane.currentHealth);
-			} else {
+                trackRemainingHealth(playerPlane.currentHealth);
+            } else {
                 playerPlane.absorptionShieldStrength--;
                 if (playerPlane.absorptionShieldStrength == 0) {
-					$('#playerShield').remove();
-				}
-			}
+                    if (playerPlane.isStealthed) {
+                        playerPlane.move = playerPlane.stealthMove;
+                    } else {
+                        playerPlane.move = playerPlane.originalMoveFunction;
+                    }
+                }
+            }
         },
-        handleAbsorbCollisionEnemyBullets = function(hitter){
-            playerPlane.receiveHeal(1);
+        handleAbsorbCollisionEnemyBullets = function (hitter) {
+			if(!(hitter instanceof EnemyKamikaze)){
+				playerPlane.receiveHeal(1);
+			}else{
+				if (playerPlane.absorptionShieldStrength == 0) {
+					playerPlane.takeDamage(hitter.damage);
+					trackRemainingHealth(playerPlane.currentHealth);
+				} else {
+					playerPlane.absorptionShieldStrength--;
+					if (playerPlane.absorptionShieldStrength == 0) {
+						if (playerPlane.isStealthed) {
+							playerPlane.move = playerPlane.stealthMove;
+						} else {
+							playerPlane.move = playerPlane.originalMoveFunction;
+						}
+					}
+				}
+			}			
         },
 
-        handleAbsorbBullets = function (duration){
-            $(playerPlane.div).css('background-image', 'url(images/planes/playerAbsorbingBullets.png)');
-            var tempHandleCollisionEnemy =  handleCollisionEnemy;
+        handleAbsorbBullets = function (duration) {
+            playerPlane.img.src = 'images/planes/playerAbsorbingBullets.png';
+            var tempHandleCollisionEnemy = handleCollisionEnemy;
             handleCollisionEnemy = handleAbsorbCollisionEnemyBullets;
             window.setTimeout(function () {
                 handleCollisionEnemy = tempHandleCollisionEnemy;
-                 $(playerPlane.div).css('background-image', 'url(images/planes/player.png)');
+                playerPlane.img.src = 'images/planes/player.png';
             }, duration);
         },
 
         handleCollisionEnemyWithFriendlyPlane = function (hitter, friendlyIndex) {
             var friendly = friendlyPlanes[friendlyIndex];
             friendly.takeDamage(hitter.damage);
-            if(friendly.currentHealth == 0){
+            if (friendly.currentHealth == 0) {
                 friendly.die();
                 friendlyPlanes.splice(friendlyIndex, 1);
             }
@@ -832,31 +802,72 @@
                 Visual.adjustCSSofGameScreen(false);
                 Game.clearScreen();
                 //Draw the win screen
-                if(MissionManager.currentAreaIndex == 3){ //boss mission
+                if (MissionManager.currentAreaIndex == 3) { //boss mission
                     setVictoryTime();
                     Visual.drawVictoryScreen();
+                    localStorage.setItem('saveData', '');
+                    localStorage.setItem('resumeAvailable', 'false');
                 } else {
                     AreaManager.updateAreaStatus(starsWonForMission);
                     AreaManager.drawMap();
-                    Game.playerStars += starsWonForMission;
+                    playerPlane.stars += starsWonForMission;
                     MissionManager.winScreen(starsWonForMission);
+                    if (!Game.allUnlocked) {
+                        Visual.updateStarsTracker();
+                    }
+                    saveGame();
                 }
             }, 1500);
         },
 
         handleMissionLoss = function () {
+            trackAccuracy();
+            trackRemainingHealth();
+            trackUsedSkills();
             $("<div/>", {
                 id: "effectScreen"
             })
            .appendTo("#gameScreen")
             window.setTimeout(function () {
                 abortMission();
+                saveGame();
                 Visual.adjustCSSofGameScreen(false);
                 Game.clearScreen();
                 AreaManager.drawMap();
+                if (!Game.allUnlocked) {
+                    Visual.updateStarsTracker();
+                }
                 Game.errorMessage("Mission failed");
             }, 1500);
 
+        },
+
+        saveGame = function () {
+            var saveData = {
+                time: Timer.current,
+                areas: AreaManager.areas,
+                unlockedSkills: Game.unlockedSkills,
+                unlockableSkills: Game.unlockableSkills,
+                allUnlocked: Game.allUnlocked,
+                playerSkills: Loadout.current,
+                earnedStars: playerPlane.stars,
+                level: playerPlane.level,
+            };
+            localStorage.setItem('saveData', JSON.stringify(saveData));
+            localStorage.setItem('resumeAvailable', 'true');
+        },
+
+        loadGame = function () {
+            var loadData = JSON.parse(localStorage.getItem('saveData'));
+            Timer.current = loadData.time;
+            startTimer();
+            AreaManager.areas = loadData.areas;
+            Game.unlockedSkills = loadData.unlockedSkills;
+            Game.unlockableSkills = loadData.unlockableSkills;
+            Game.allUnlocked = loadData.allUnlocked;
+            Loadout.current = loadData.playerSkills;
+            playerPlane.stars = loadData.earnedStars;
+            playerPlane.level = loadData.level;
         },
 
         getTime = function () {
@@ -867,11 +878,12 @@
             return Timer.current;
         },
 
-        setVictoryTime = function(){
+        setVictoryTime = function () {
             Timer.finalTime = Timer.current;
+            Timer.finalTime = 3600 - Timer.finalTime;
         },
 
-        getVictoryTime = function(){
+        getVictoryTime = function () {
             return Timer.finalTime;
         },
 
@@ -879,8 +891,24 @@
             return playerPlane.currentHealth;
         },
 
+        getPlayerStars = function () {
+            return playerPlane.stars;
+        },
+
+        getPlayerLevel = function () {
+            return playerPlane.level;
+        },
+
+        getStarsToLevelUp = function () {
+            return starsToLevelUpCopy;
+        },
+
         getBossHealth = function () {
             return boss.currentHealth;
+        },
+
+        getBossHealthPercentage = function () {
+            return boss.healthPercentage;
         },
 
         getPlayerLeftCoord = function () {
@@ -931,7 +959,7 @@
                     case 'guidedrocket':
                         playerPlane.skills.push(new SummonGuidedRocket(playerPlane, i));
                         break;
-					case 'shield':
+                    case 'shield':
                         playerPlane.skills.push(new Shield(playerPlane, i));
                         break;
                     case 'absorbbullets':
@@ -1077,34 +1105,34 @@
         },
 
         distanceBetweenTwoPoints = function (x1, y1, x2, y2) {
-            return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)); 
+            return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         },
 
          handleRadioactive = function (left, bottom) {
-            animateRadioactive(left, bottom);
-            setTimeout(function(){
-                dealDamageRadioactive(left, bottom);
-            },400);
-            
-            if (boss && !boss.isInQuarterPhase) {
-                dealDamageRadioactiveToBoss(left, bottom);
-            }
-        },
+             animateRadioactive(left, bottom);
+             setTimeout(function () {
+                 dealDamageRadioactive(left, bottom);
+             }, 400);
+
+             if (boss && !boss.isInQuarterPhase) {
+                 dealDamageRadioactiveToBoss(left, bottom);
+             }
+         },
 
         animateRadioactive = function (left, bottom) {
             var radioactiveDiv =
                 $('<div></div>')
                 .addClass('radioactiveDiv')
                 .css({
-                    'bottom': bottom + playerPlane.height/2 + 'px',
-                    'left': left + playerPlane.width/2 +'px'
+                    'bottom': bottom + playerPlane.height / 2 + 'px',
+                    'left': left + playerPlane.width / 2 + 'px'
                 })
                 .appendTo('#gameScreen')
                 .animate({
-                    bottom: bottom + playerPlane.height/2 - radioactiveRadius/2, 
-                    left: left + playerPlane.width/2 - radioactiveRadius/2, 
-                    width: radioactiveRadius + "px", 
-                    height: radioactiveRadius + "px", 
+                    bottom: bottom + playerPlane.height / 2 - radioactiveRadius / 2,
+                    left: left + playerPlane.width / 2 - radioactiveRadius / 2,
+                    width: radioactiveRadius + "px",
+                    height: radioactiveRadius + "px",
                     opacity: 0
                 },
                 800,
@@ -1116,24 +1144,24 @@
 
         dealDamageRadioactive = function (left, bottom) {
             var i, isHit,
-            X = left + playerPlane.width/2, //PlayerPlane Center X
-            Y = bottom + playerPlane.height/2; //PlayerPlane Center Y
+            X = left + playerPlane.width / 2, //PlayerPlane Center X
+            Y = bottom + playerPlane.height / 2; //PlayerPlane Center Y
             //enemy planes
             for (i = 0; i < enemyPlanes.length; i++) {
-                isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius-100)) && 
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius-100));
+                isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100));
 
                 if (isHit) {
                     enemyPlanes[i].takeDamage(radioactiveDamage);
-                    if(enemyPlanes[i].currentHealth == 0){
+                    if (enemyPlanes[i].currentHealth == 0) {
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
                         if (currentMission instanceof GauntletMission) {
                             currentMission.incrementEnemiesKilled();
-                        } 
+                        }
                     }
                 }
             }
@@ -1145,14 +1173,14 @@
             X = left + 50, //PlayerPlane Center X
             Y = bottom + 40; //PlayerPlane Center Y
 
-            isHit = ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord, X, Y)) < (radioactiveRadius-100)) && 
-                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius-100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius-100));
+            isHit = ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100)) &&
+                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100));
 
             if (isHit) {
                 boss.takeDamage(radioactiveDamage);
-                if(boss.currentHealth == 0){
+                if (boss.currentHealth == 0) {
                     boss.die();
                 }
             }
@@ -1212,13 +1240,13 @@
 
                 if (isHit) {
                     enemyPlanes[i].takeDamage(deathRayDamage);
-                    if(enemyPlanes[i].currentHealth == 0){
+                    if (enemyPlanes[i].currentHealth == 0) {
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
                         if (currentMission instanceof GauntletMission) {
                             currentMission.incrementEnemiesKilled();
-                        } 
+                        }
                     }
                 }
             }
@@ -1232,7 +1260,7 @@
                     ((boss.leftCoord < (left + 22)) && (boss.leftCoord + 300) > (left + 78))); //boss is hit in the middle
             if (isHit) {
                 boss.takeDamage(deathRayDamage);
-                if(boss.currentHealth == 0){
+                if (boss.currentHealth == 0) {
                     boss.die();
                 }
             }
@@ -1247,7 +1275,7 @@
         createAndSkewBossDeathRay = function (orientationDeg) {
             //skew is an expensive operation, we do it preemptively to reduce performance issues
             var rayHeight = 500,
-                rayLeft = Math.floor(boss.leftCoord - (Math.tan(degreeToRadian(orientationDeg)) * (rayHeight / 2))),
+                rayLeft = Math.floor(boss.leftCoord - (Math.tan(Utility.degreeToRadian(orientationDeg)) * (rayHeight / 2))),
                 rayTop = 700 - Math.floor(boss.bottomCoord),
                 deathRay = {
                     div: null,
@@ -1272,8 +1300,8 @@
                     'top': rayTop + 'px',
                     'height': rayHeight + 'px',
                     '-webkit-transform': 'skewX(' + -orientationDeg + 'deg)',
-					'-ms-transform': 'skewX(' + -orientationDeg + 'deg)',
-					'transform': 'skewX(' + -orientationDeg + 'deg)'
+                    '-ms-transform': 'skewX(' + -orientationDeg + 'deg)',
+                    'transform': 'skewX(' + -orientationDeg + 'deg)'
                 })
                 .appendTo('#gameScreen');
             return deathRay;
@@ -1313,8 +1341,8 @@
                 rightVectorSecondPointX,
                 rightVectorSecondPointY = rightVectorFirstPointY - deathRayHeight;
             leftVectorSecondPointX = (deathRay.skewDegree > 0) ?
-                leftVectorFirstPointX + Math.tan(Math.abs(degreeToRadian(deathRay.skewDegree))) * deathRayHeight
-                : leftVectorFirstPointX - Math.tan(Math.abs(degreeToRadian(deathRay.skewDegree))) * deathRayHeight;
+                leftVectorFirstPointX + Math.tan(Math.abs(Utility.degreeToRadian(deathRay.skewDegree))) * deathRayHeight
+                : leftVectorFirstPointX - Math.tan(Math.abs(Utility.degreeToRadian(deathRay.skewDegree))) * deathRayHeight;
             rightVectorSecondPointX = leftVectorSecondPointX + deathRayWidth - 45;
 
             deathRay.leftVector.a = (leftVectorFirstPointY - leftVectorSecondPointY) / (leftVectorFirstPointX - leftVectorSecondPointX); //a = (y1 - y2) / (x1 - x2); 
@@ -1417,18 +1445,22 @@
             if (isHit) {
                 if (playerPlane.absorptionShieldStrength == 0) {
                     playerPlane.takeDamage(bossDeathRayDamage);
-					trackRemainingHealth(playerPlane.currentHealth);
-				} else {
+                    trackRemainingHealth(playerPlane.currentHealth);
+                } else {
                     playerPlane.absorptionShieldStrength = 0;
-					$('#playerShield').remove();
-				}
+                    if (playerPlane.isStealthed) {
+                        playerPlane.move = playerPlane.stealthMove;
+                    } else {
+                        playerPlane.move = playerPlane.originalMoveFunction;
+                    }
+                }
 
             }
         },
 
         handleBlackHole = function () {
             $("#gameScreen").css({
-                "cursor": "pointer"
+                "cursor": "url(images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1438,9 +1470,13 @@
         placeBlackHole = function (e) {
             //add black hole image
             var convertedCoords = convertEventCoordinates(e.clientX, e.clientY),
-                convertedLeft = (convertedCoords.left <= 860) ? convertedCoords.left : 860;
-            Visual.drawBlackHole(convertedCoords.left, convertedCoords.bottom);
-            moveEnemiesBlackHole(convertedLeft, convertedCoords.bottom);
+                convertedLeft = (convertedCoords.left <= 860) ? convertedCoords.left : 860,
+                convertedBottom = (convertedCoords.bottom >= 350) ? convertedCoords.bottom : 350;
+            if (currentMission instanceof BossMission && !boss.isInQuarterPhase) {
+                convertedLeft = (convertedCoords.left <= 660) ? convertedCoords.left : 660;
+            }
+            Visual.drawBlackHole(convertedLeft, convertedBottom);
+            moveEnemiesBlackHole(convertedCoords.left, convertedBottom);
 
             window.setTimeout(function () {
                 $(document).bind('mouseup mousedown', handleMouseClick);
@@ -1462,14 +1498,14 @@
             moveKamikaze = function () { };
             for (i = 0; i < enemyPlanes.length; i++) {
                 enemyPlanes[i].readyToMove = false;
-                $(enemyPlanes[i].div)
-                    .animate({
-                        left: left,
-                        bottom: bottom
-                    }, animationLengthMs);
-                
-                enemyPlanes[i].leftCoord = left;
-                enemyPlanes[i].bottomCoord = bottom;
+                CAnimations.animate(enemyPlanes[i], {
+                    opacity: 1,
+                    rotation: 0,
+                    scale: 1,
+                    left: left,
+                    bottom: bottom,
+                    frames: 25,
+                });
             }
             window.setTimeout(function () {
                 moveEnemyPlane = currentMoveEnemyPlaneFunction;
@@ -1481,9 +1517,8 @@
         },
 
         handleGuidedRocket = function () {
-            var rocketPath = new Array();
             $("#gameScreen").css({
-                "cursor": "pointer"
+                "cursor": "url(images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1515,7 +1550,7 @@
         },
 
         drawRocketPath = function (e) {
-            var converted = convertEventCoordinates(e.clientX, e.clientY),
+            var converted = convertEventCoordinates(e.clientX, e.clientY, true),
                 lastCoordsInPath = rocketPathArray[rocketPathArray.length - 1];
             if (!lastCoordsInPath || distanceBetweenTwoPoints(converted.left, converted.bottom, lastCoordsInPath.left, lastCoordsInPath.bottom) > 20) {
                 rocketPathArray.push(converted);
@@ -1535,11 +1570,10 @@
                     (rocket.bottomCoord - (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))))
                     : (rocket.bottomCoord + (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))));
                 rocket.updateCoords(coords.left, coords.bottom);
-                //rocket.move();
             }
         },
 
-        convertEventCoordinates = function (clientX, clientY) {
+        convertEventCoordinates = function (clientX, clientY, drawing) {
             var converted = { left: 0, bottom: 0 };
             var nonGameScreenWidth = window.innerWidth - 960;
             //newLeft
@@ -1556,12 +1590,12 @@
             //newBottom
             if (clientY <= 570) {
                 converted.bottom = 700 - clientY - 50;
-                if ($('#gameScreen').css('cursor') == 'default') {
+                if ($('#gameScreen').css('cursor') != 'none' && !drawing) {
                     $('#gameScreen').css('cursor', 'none');
                 }
             } else {
                 if ($('#gameScreen').css('cursor') == 'none') {
-                    $('#gameScreen').css('cursor', 'default');
+                    $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
                 }
                 converted.bottom = 80;
             }
@@ -1592,10 +1626,10 @@
                 $('#gameScreen').css('cursor', 'none');
             } else if (clientY > 570) {
                 converted.bottom = 80;
-                $('#gameScreen').css('cursor', 'default');
+                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
             } else {
                 converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'default');
+                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
             }
 
             return converted;
@@ -1694,6 +1728,23 @@
             for (i = 0; i < bullets.length; i++) {
                 bullets[i].move();
             }
+            for (i = 0; i < friendlyPlanes.length; i++) {
+                friendlyPlanes[i].rotate();
+            }
+            for (i = 0; i < pickups.length; i++) {
+                pickups[i].draw();
+            }
+            for (i = 0; i < hazards.length; i++) {
+                hazards[i].draw();
+            }
+        },
+
+        increasePlayerLevel = function () {
+            playerPlane.level++;
+        },
+
+        updatePrimaryStatus = function () {
+            currentMission.updatePrimaryStatus();
         },
 
         handleSkillUsage = function (keyPressed) {
@@ -1712,7 +1763,7 @@
         spawnBullet: spawnBullet,
         spawnEnemy: spawnEnemy,
         spawnHealingOrb: spawnHealingOrb,
-        gauntletSpawnEnemies: gauntletSpawnEnemies, 
+        gauntletSpawnEnemies: gauntletSpawnEnemies,
         movePlayerPlane: movePlayerPlane,
         iterateBullets: iterateBullets,
         iterateFriendlyPlanes: iterateFriendlyPlanes,
@@ -1742,12 +1793,19 @@
         rotateSentries: rotateSentries,
         redrawGameObjects: redrawGameObjects,
         isPlayerShooting: isPlayerShooting,
+        increasePlayerLevel: increasePlayerLevel, //this is safe, plane level only determines how many stars are needed for the next skill unlock
+        updatePrimaryStatus: updatePrimaryStatus,
+        loadGame: loadGame,
 
         getTime: getTime,
         getSeconds: getSeconds,
         getVictoryTime: getVictoryTime,
         getPlayerHealth: getPlayerHealth,
+        getPlayerStars: getPlayerStars,
+        getPlayerLevel: getPlayerLevel,
+        getStarsToLevelUp: getStarsToLevelUp,
         getBossHealth: getBossHealth,
+        getBossHealthPercentage: getBossHealthPercentage,
         getPlayerLeftCoord: getPlayerLeftCoord,
         getPlayerBottomCoord: getPlayerBottomCoord,
         getPlayerSkills: getPlayerSkills,

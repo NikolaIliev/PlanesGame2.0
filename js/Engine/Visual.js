@@ -1,4 +1,36 @@
 var Visual = {
+    backgroundImg: null,
+    backgroundPattern: null,
+    uiImg: $('<img src="images/UI/UI.png" />')[0],
+
+    drawLoadingScreen: function () {
+        $('<div id="loadingBarOutline"> </div>')
+        .css({
+            'position': 'absolute',
+            'top': 340,
+            'left': 230,
+            'width': 500,
+            'height': 20,
+            'border': '2px solid grey'
+        })
+        .appendTo('#gameScreen');
+        $('<div id="loadingBar"> </div>')
+            .css({
+                'position': 'absolute',
+                'text-align': 'center',
+                'height': '100%',
+                'width': '0%',
+                'background-color': 'white'
+            })
+            .appendTo('#loadingBarOutline');
+        $('<span id="loadingPercentage"> </span>')
+            .css({
+                'position': 'relative',
+                'left': -3,
+                'color': 'black',
+            })
+            .appendTo('#loadingBar');
+    },
 
     drawIntroScreen: function () {
 
@@ -6,10 +38,22 @@ var Visual = {
         .css("background-image", "url(images/map/IntroScreen.png)")
         .appendTo("#gameScreen");
 
-        $("<div>Play</div>")
+        if (localStorage.getItem('resumeAvailable') === 'true') {
+            $("<div>Resume Game</div>")
+               .addClass("introButton")
+               .appendTo("#introScreen")
+               .on("click", function () {
+                   InteractionManager.loadGame();
+                   Game.load();
+               });
+        }
+
+        $("<div>New Game</div>")
         .addClass("introButton")
         .appendTo("#introScreen")
         .on("click", function () {
+            localStorage.setItem('resumeAvailable', 'false');
+            localStorage.setItem('saveData', '');
             Game.init();
         });
         
@@ -17,17 +61,11 @@ var Visual = {
        .addClass("introButton")
        .appendTo("#introScreen")
        .on("click", function () {
-           Test.generateScores();
+           Leaderboard.getHighScoreAndDrawLeaderboard();
        });
-
-        $("<div>Unlock Everything</div>")
-        .addClass("introButton")
-        .appendTo("#introScreen")
-        .on("click", function () {
-            Game.unlockEverything();
-        });
     },
 
+    //Draws the screen at the end of the game
     drawVictoryScreen:function(){
         $("<div/>")
         .addClass("victoryScreen gameWindow")
@@ -45,11 +83,16 @@ var Visual = {
         .addClass("nameInput")
         .appendTo(".scoreSubmissionBox")
 
+        //Used to submit the score. If the name entered doesnt exist or is over 15 characters, it won't post them.
         $("<div>Submit</div>")
         .addClass("submitButton")
         .appendTo(".scoreSubmissionBox")
         .on("click",function(){
-            Leaderboard.submitScore($(".nameInput").val(),interactionManager.getVictoryTime());
+            if($(".nameInput").val().length>15 ||$(".nameInput").val().length<1){ 
+                Game.errorMessage("Enter a name under fifteen characters");
+                return;
+            }
+            Leaderboard.submitScore($(".nameInput").val(), InteractionManager.getVictoryTime());
             $(".victoryScreen").remove();
         });
     },
@@ -62,14 +105,12 @@ var Visual = {
 
         if (isStartMission) {
             this.backgroundOffset = 0;
-            $("#gameScreen").css({
-                "cursor": "none",
-                "background-image": "url(images/backgrounds/" + backgrounds[MissionManager.currentAreaIndex] + ".jpg)"
-            });
+            this.backgroundImg = document.createElement('img');
+            this.backgroundImg.src = 'images/backgrounds/' + backgrounds[MissionManager.currentAreaIndex] + ".jpg";
         }
         else {
             $("#gameScreen").css({
-                "cursor": "default",
+                "cursor": "url(../images/UI/pointerCursor.png),auto;",
                 "background-image": "none"
             });
         }
@@ -77,8 +118,15 @@ var Visual = {
 
     //Moves the background
     iterateBackground: function () {
+        var self = this;
         this.backgroundOffset++;
-        $('#gameScreen').css('backgroundPosition', 'right 0px top ' + this.backgroundOffset + 'px');
+        if (this.backgroundOffset >= 1400) {
+            ctx.drawImage(self.backgroundImg, 0, 700 - (this.backgroundOffset - 1400));
+        }
+        if (this.backgroundOffset >= 2100) {
+            this.backgroundOffset = 0;
+        }
+        ctx.drawImage(self.backgroundImg, 0, -this.backgroundOffset);
     },
 
 
@@ -91,7 +139,7 @@ var Visual = {
             return a <= b;
         };
         function comparer() { };
-        switch (interactionManager.getSecondaryMission()) {
+        switch (InteractionManager.getSecondaryMission()) {
             case "accuracy":
                 conditions = [25, 35, 50];
                 comparer = greaterThan;
@@ -119,7 +167,7 @@ var Visual = {
 
     setSecondaryDescriptions: function () {
         var conditions, i;
-        switch (interactionManager.getSecondaryMission()) {
+        switch (InteractionManager.getSecondaryMission()) {
             case "accuracy":
                 conditions = [25, 35, 50];
                 for (i = 0; i < conditions.length; i++) {
@@ -165,19 +213,8 @@ var Visual = {
         .addClass("ui")
         .appendTo("#gameScreen");
 
-         //Places the primary mission
-        $("<div/>")
-        .addClass("mainMissionName")
-        .appendTo(".ui");
-
-        $('<div id="fps"></div>')
-        .appendTo('.ui');
-
-        $('<div id="ips"></div>')
-        .appendTo('.ui');
-
         //Draw timer
-        $('<div id="timer">' + interactionManager.getTime() + '</div>')
+        $('<div id="timer">' + InteractionManager.getTime() + '</div>')
         .addClass("inGame")
         .appendTo('.ui');
 
@@ -186,7 +223,7 @@ var Visual = {
             id: "hpBar"
         })
         .appendTo(".ui");
-        var skillArray = interactionManager.getPlayerSkills();
+        var skillArray = InteractionManager.getPlayerSkills();
         for (var i = 0; i < 4; i++) {
             $("<div/>", {
                 id: "skill" + i
@@ -200,6 +237,10 @@ var Visual = {
             }
         }
 
+    },
+
+    redrawUI: function () {
+        ctx.drawImage(this.uiImg, 0, 0);
     },
 
     //Make a skill's icon grey
@@ -282,14 +323,14 @@ var Visual = {
             if (topArray[i]) {
                 var tableRow = $("<tr/>");
                 $("<td/>").addClass("positionCell").text(i+1).appendTo(tableRow);
-                $("<td/>").addClass("nicknameCell").text(topArray[i].nickname).appendTo(tableRow);
+                $("<td/>").addClass("nicknameCell").text(topArray[i].player).appendTo(tableRow);
                 $("<td/>").addClass("scoreCell").text(topArray[i].score).appendTo(tableRow);
                 tableRow.appendTo(".leaderboard")
             }
         }
 
         //If called with the arguement false instead of a numeric player position, it will just make a close button;
-        if (playerPosition == false) {
+        if (!playerPosition) {
             $("<div id='closePrompt'>X<div/>")
                  .on("click", function () {
                      $("#GamePromptScreen").remove();
@@ -308,10 +349,27 @@ var Visual = {
 
     drawGameObjects: function () {
         requestAnimationFrame(Visual.drawGameObjects);
-        $('#fps').text(fps.getFPS());
-        if (interactionManager.getCurrentMission()) {
+        if (InteractionManager.getCurrentMission()) {
+            ctx.clearRect(0, 0, 960, 700);
             Visual.iterateBackground();
-            interactionManager.redrawGameObjects();
+            CAnimations.iterate();
+            Visual.redrawUI();
+            InteractionManager.updatePrimaryStatus();
+            InteractionManager.redrawGameObjects();
         }
+    },
+
+    updateStarsTracker: function () {
+        var starsToLevelUp = InteractionManager.getStarsToLevelUp(),
+            playerLevel = InteractionManager.getPlayerLevel(),
+            starHtml = '<img src="images/map/starMini.png" />',
+            starsEarnedHtml =starHtml+ InteractionManager.getPlayerStars() + ' earned',
+            starsToNextLevelHtml =  starHtml + ((starsToLevelUp[playerLevel - 1]) ?
+                starsToLevelUp[playerLevel - 1] : '-')
+        + ' needed';
+        $('<div></div>')
+        .addClass("starTracker")
+            .html(starsEarnedHtml + '<br/>' + starsToNextLevelHtml)
+            .appendTo('#gameScreen')
     }
 };

@@ -28,26 +28,12 @@ b{
 	font-size: 1.5em;
 }
 
-#fps{
-	position: absolute;
-	top:10px;
-	right:10px;
-}
-
-#ips {
-    position: absolute;
-    color: red;
-	top:30px;
-	right:10px;
-}
-
 .ui{
 	bottom:0px;
 	position: absolute;
-	z-index: 20;
 	width: 960px;
 	height: 70px;
-	background-image: url(../images/ui/ui.png);
+	background-image: url(../images/UI/ui.png) no-repeat;
 }
 
 .skills{
@@ -78,53 +64,53 @@ b{
 }
 
 .spreadShotIcon{
-	background-image: url(../images/ui/spreadShotIcon.png);
+	background-image: url(../images/UI/spreadShotIcon.png);
 }
 
 .penetratingShotIcon{
-	background-image: url(../images/ui/penetratingShotIcon.png);
+	background-image: url(../images/UI/penetratingShotIcon.png);
 }
 
 .homingShotIcon{
-	background-image: url(../images/ui/homingShotIcon.png);
+	background-image: url(../images/UI/homingShotIcon.png);
 }
 
 .sentryIcon{
-	background-image: url(../images/ui/sentryIcon.png)
+	background-image: url(../images/UI/sentryIcon.png)
 }
 
 .deathRayIcon{
-	background-image: url(../images/ui/deathRayIcon.png);
+	background-image: url(../images/UI/deathRayIcon.png);
 }
 
 .stopTimeIcon{
-	background-image: url(../images/ui/stopTimeIcon.png);
+	background-image: url(../images/UI/stopTimeIcon.png);
 }
 
 .blackHoleIcon {
-    background-image: url(../images/ui/blackHoleIcon.png);
+    background-image: url(../images/UI/blackHoleIcon.png);
 }
 
 .stealthIcon {
-    background-image: url(../images/ui/stealthIcon.png);
+    background-image: url(../images/UI/stealthIcon.png);
 }
 
 .radioactiveIcon {
-    background-image: url(../images/ui/radioactiveIcon.png);
+    background-image: url(../images/UI/radioactiveIcon.png);
 }
 
 .healingShotIcon {
-    background-image: url(../images/ui/healingShotIcon.png);
+    background-image: url(../images/UI/healingShotIcon.png);
 }
 
 .guidedRocketIcon {
-    background-image: url(../images/ui/guidedRocketIcon.png);
+    background-image: url(../images/UI/guidedRocketIcon.png);
 }
 .shieldIcon {
-    background-image: url(../images/ui/shieldIcon.png);
+    background-image: url(../images/UI/shieldIcon.png);
 }
 .absorbBulletsIcon {
-    background-image: url(../images/ui/absorbBulletsIcon.png);
+    background-image: url(../images/UI/absorbBulletsIcon.png);
 }
 
 #hpBar{
@@ -139,11 +125,4 @@ b{
 	background: -moz-linear-gradient(#ce2c28, #a02825);
 	background: -o-linear-gradient(#ce2c28, #a02825);
 	background: linear-gradient(#ce2c28, #a02825);
-}
-
-@media screen and (max-height: 700px){
-	.ui{
-		position: fixed;
-		bottom:0px;
-	}
 }
