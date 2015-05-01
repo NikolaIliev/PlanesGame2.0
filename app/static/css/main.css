@@ -27,7 +27,7 @@ body{
 
 @font-face{
 	font-family: boston;
-	src: url(../css/boston_traffic.ttf);
+	src: url(boston_traffic.ttf);
 }
 
 section{

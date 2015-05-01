@@ -11,7 +11,7 @@ EnemyFighter = EnemyPlane.extend({
         this.healingOrbSpawnChance = 10;
     },
 
-    img: $('<img src="images/planes/fighter.png"/>')[0],
+    img: $('<img src="images/static/fighter.png"/>')[0],
 
     shoot: function () {
         if (this.tryShoot()) {

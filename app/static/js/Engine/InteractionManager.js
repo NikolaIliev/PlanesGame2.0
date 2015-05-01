@@ -692,12 +692,12 @@
         },
 
         handleAbsorbBullets = function (duration) {
-            playerPlane.img.src = 'images/planes/playerAbsorbingBullets.png';
+            playerPlane.img.src = 'images/static/playerAbsorbingBullets.png';
             var tempHandleCollisionEnemy = handleCollisionEnemy;
             handleCollisionEnemy = handleAbsorbCollisionEnemyBullets;
             window.setTimeout(function () {
                 handleCollisionEnemy = tempHandleCollisionEnemy;
-                playerPlane.img.src = 'images/planes/player.png';
+                playerPlane.img.src = 'images/static/player.png';
             }, duration);
         },
 
@@ -1146,7 +1146,7 @@
             var i, isHit,
             X = left + playerPlane.width / 2, //PlayerPlane Center X
             Y = bottom + playerPlane.height / 2; //PlayerPlane Center Y
-            //enemy planes
+            //enemy static
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
                     ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
@@ -1231,7 +1231,7 @@
 
         dealDamageDeathRay = function (left, bottom) {
             var i, isHit;
-            //enemy planes
+            //enemy static
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = (enemyPlanes[i].bottomCoord > bottom + 75) &&   //enemy is above the player
                     ((enemyPlanes[i].leftCoord > (left + 22) && enemyPlanes[i].leftCoord < (left + 78)) || //enemy's left side has been hit

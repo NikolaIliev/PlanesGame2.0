@@ -1,0 +1,21 @@
+{
+  "name": "planes-game",
+  "version": "2.1.0",
+  "homepage": "https://github.com/NikolaIliev/PlanesGame2.0",
+  "authors": [
+    "Nikola Iliev <nikola.iliev93@gmail.com>"
+  ],
+  "description": "A game with planes that try to murder each other.",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.17",
+    "jquery": "~2.1.4"
+  }
+}

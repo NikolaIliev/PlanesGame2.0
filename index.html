@@ -1,73 +1,87 @@
-﻿﻿<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>Planes</title>
-	<link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/menu.css">
-    <link rel="stylesheet" href="css/ui.css">
-    <script src="js/game.js"></script>
-	<script src="js/lib/jquery-1.11.0.min.js"></script>
-    <script src="js/lib/inheritance.js"></script>
-    <script src="js/Engine/Missions/Mission.js"></script>
-    <script src="js/Engine/Missions/BossMission.js"></script>
-    <script src="js/Engine/Missions/SurvivalMission.js"></script>
-    <script src="js/Engine/Missions/DominationMission.js"></script>
-    <script src="js/Engine/Missions/GauntletMission.js"></script>
-    <script src="js/GameObjects/GameObject.js"></script>
-    <script src="js/GameObjects/SpriteGameObject.js"></script>
-    <script src="js/GameObjects/Planes/Plane.js"></script>
-    <script src="js/GameObjects/Planes/AIPlane.js"></script>
-    <script src="js/GameObjects/Planes/PlayerPlane.js"></script>
-    <script src="js/GameObjects/Planes/SentryPlane.js"></script>
-    <script src="js/GameObjects/Planes/EnemyPlane.js"></script>
-    <script src="js/GameObjects/Planes/EnemyChasePlane.js"></script>
-    <script src="js/GameObjects/Planes/EnemyFighter.js"></script>
-    <script src="js/GameObjects/Planes/EnemySupplier.js"></script>
-    <script src="js/GameObjects/Planes/EnemyKamikaze.js"></script>
-    <script src="js/GameObjects/Planes/EnemyStormer.js"></script>
-    <script src="js/GameObjects/Planes/BossPlane.js"></script>
-    <script src="js/GameObjects/Bullets/Bullet.js"></script>
-    <script src="js/GameObjects/Bullets/PlayerBullet.js"></script>
-    <script src="js/GameObjects/Bullets/EnemyBullet.js"></script>
-    <script src="js/GameObjects/Bullets/FighterBullet.js"></script>
-    <script src="js/GameObjects/Bullets/BossBullet.js"></script>
-    <script src="js/GameObjects/Bullets/PiercingBullet.js"></script>
-    <script src="js/GameObjects/Bullets/GuidedRocket.js"></script>
-    <script src="js/GameObjects/Bullets/HomingBullet.js"></script>
-    <script src="js/GameObjects/Bullets/HealingBullet.js"></script>
-    <script src="js/GameObjects/Hazards/Hazard.js"></script>
-    <script src="js/GameObjects/Hazards/StormCloud.js"></script>
-    <script src="js/GameObjects/Pickups/Pickup.js"></script>
-    <script src="js/GameObjects/Pickups/HealingOrb.js"></script>
-    <script src="js/UserInterface/MissionInfo.js"></script>
-	<script src="js/UserInterface/area.js"></script>
-    <script src="js/UserInterface/loadout.js"></script>
-    <script src="js/Engine/Skills/Skill.js"></script>
-    <script src="js/Engine/Skills/BlackHole.js"></script>
-    <script src="js/Engine/Skills/DeathRay.js"></script>
-    <script src="js/Engine/Skills/StopTime.js"></script>
-    <script src="js/Engine/Skills/Sentry.js"></script>
-    <script src="js/Engine/Skills/Stealth.js"></script>
-    <script src="js/Engine/Skills/SpreadShot.js"></script>
-    <script src="js/Engine/Skills/PiercingShot.js"></script>
-    <script src="js/Engine/Skills/HomingShot.js"></script>
-    <script src="js/Engine/Skills/Radioactive.js"></script>
-    <script src="js/Engine/Skills/HealingShot.js"></script>
-    <script src="js/Engine/Skills/SummonGuidedRocket.js"></script>
-	<script src="js/Engine/Skills/Shield.js"></script>
-    <script src="js/Engine/Skills/AbsorbBullets.js"></script>
-    <script src="js/Engine/Skills/BossSkills/BossSkill.js"></script>
-    <script src="js/Engine/Skills/BossSkills/BossSpreadShot.js"></script>
-    <script src="js/Engine/Skills/BossSkills/BossDeathRays.js"></script>
-    <script src="js/Engine/Skills/BossSkills/BossSummonStormClouds.js"></script>
-    <script src="js/Engine/Leaderboard.js"></script>
-    <script src="js/Engine/Utility.js"></script>
-    <script src="js/Engine/Visual.js"></script>
-    <script src="js/Engine/Scaling.js"></script>
-    <script src="js/Engine/CAnimations.js"></script>
-    <script src="js/Engine/PreloadManager.js"></script>
-    <script src="js/Engine/InteractionManager.js"></script>	
+	<link rel="stylesheet" href="app/static/css/main.css">
+    <link rel="stylesheet" href="app/static/css/menu.css">
+    <link rel="stylesheet" href="app/static/css/ui.css">
+    <script src="vendors/requirejs/require.js"></script>
+    <script>
+        require.config({
+            baseUrl: "./app/static/js",
+            paths: {
+                "jquery": "../../../vendors/jquery/dist/jquery"
+            }
+        });
+        require( ["jquery", "bootstrap"],
+                function($, bootstrap) {
+                    bootstrap.init();
+                }
+        );
+    </script>
+    <!--<script src="app/static/js/game.js"></script>-->
+	<!--<script src="app/static/js/lib/jquery-1.11.0.min.js"></script>-->
+    <!--<script src="app/static/js/lib/inheritance.js"></script>-->
+    <!--<script src="app/static/js/Engine/Missions/Mission.js"></script>-->
+    <!--<script src="app/static/js/Engine/Missions/BossMission.js"></script>-->
+    <!--<script src="app/static/js/Engine/Missions/SurvivalMission.js"></script>-->
+    <!--<script src="app/static/js/Engine/Missions/DominationMission.js"></script>-->
+    <!--<script src="app/static/js/Engine/Missions/GauntletMission.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/GameObject.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/SpriteGameObject.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/Plane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/AIPlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/PlayerPlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/SentryPlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemyPlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemyChasePlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemyFighter.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemySupplier.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemyKamikaze.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/EnemyStormer.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Planes/BossPlane.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/Bullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/PlayerBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/EnemyBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/FighterBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/BossBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/PiercingBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/GuidedRocket.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/HomingBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Bullets/HealingBullet.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Hazards/Hazard.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Hazards/StormCloud.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Pickups/Pickup.js"></script>-->
+    <!--<script src="app/static/js/GameObjects/Pickups/HealingOrb.js"></script>-->
+    <!--<script src="app/static/js/UserInterface/MissionInfo.js"></script>-->
+	<!--<script src="app/static/js/UserInterface/area.js"></script>-->
+    <!--<script src="app/static/js/UserInterface/loadout.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/Skill.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/BlackHole.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/DeathRay.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/StopTime.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/Sentry.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/Stealth.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/SpreadShot.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/PiercingShot.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/HomingShot.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/Radioactive.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/HealingShot.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/SummonGuidedRocket.js"></script>-->
+	<!--<script src="app/static/js/Engine/Skills/Shield.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/AbsorbBullets.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/BossSkills/BossSkill.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/BossSkills/BossSpreadShot.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/BossSkills/BossDeathRays.js"></script>-->
+    <!--<script src="app/static/js/Engine/Skills/BossSkills/BossSummonStormClouds.js"></script>-->
+    <!--<script src="app/static/js/Engine/Leaderboard.js"></script>-->
+    <!--<script src="app/static/js/Engine/Utility.js"></script>-->
+    <!--<script src="app/static/js/Engine/Visual.js"></script>-->
+    <!--<script src="app/static/js/Engine/Scaling.js"></script>-->
+    <!--<script src="app/static/js/Engine/CAnimations.js"></script>-->
+    <!--<script src="app/static/js/Engine/PreloadManager.js"></script>-->
+    <!--<script src="app/static/js/Engine/InteractionManager.js"></script>-->
 </head>
 <body>
 	<section id="gameSection">

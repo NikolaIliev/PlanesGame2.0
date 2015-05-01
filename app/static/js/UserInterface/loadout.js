@@ -189,7 +189,7 @@ var Loadout = {
 			    return "Black Hole<br/>After use, click somewhere on the battlefield to suck all enemies there.";
 
 			case "skillIcon homingShotIcon":
-			    return "Homing Shot<br/>Projectiles you fire, seek out enemy planes.";
+			    return "Homing Shot<br/>Projectiles you fire, seek out enemy static.";
 
 			case "skillIcon deathRayIcon":
 			    return "Death Ray<br/>Annihilate all enemies in a line in front of you.";

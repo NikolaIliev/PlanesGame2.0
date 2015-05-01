@@ -23,7 +23,7 @@
         this.normalShootFunction = this.shoot;
         this.thirdPhaseDeathRays = []; //array of jQuery objects of death ray divs; this is used for optimization purposes
     },
-    img: $('<img src="images/planes/boss.png"/>')[0],
+    img: $('<img src="images/static/boss.png"/>')[0],
     castBar: null,
     isCasting: null,
     isInvulnerable: null,

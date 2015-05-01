@@ -16,7 +16,7 @@
         this.originalMoveFunction = this.move;
     },
 
-    img: $('<img src="images/planes/player.png"/>')[0],
+    img: $('<img src="images/static/player.png"/>')[0],
     stars: null,
     level: null,
     absorptionShieldStrength: null,

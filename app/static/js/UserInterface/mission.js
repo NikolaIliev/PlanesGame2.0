@@ -63,7 +63,7 @@ var MissionManager = {
 				break;
 		    case "gauntlet":
 		        title = "Gauntlet";
-		        primaryDescription = "<p>Kill 70 enemies. Pressing E will spawn 3 enemy planes</p>";
+		        primaryDescription = "<p>Kill 70 enemies. Pressing E will spawn 3 enemy static</p>";
 		}
 
 		switch(secondary){

@@ -11,14 +11,14 @@ EnemySupplier = EnemyPlane.extend({
         this.suppliedFighters = [];
         this.supplyFrequencyMs = 1500;
     },
-    img: $('<img src="images/planes/supplier.png"/>')[0],
+    img: $('<img src="images/static/supplier.png"/>')[0],
     supplyFrequencyMs: null,
     lastSupplyTimestamp: null,
     suppliedFighters: null,
 
     supply: function (fighter) {
         fighter.shoot = Utility.spreadShotEnemyShoot;
-        fighter.img = $('<img src="images/planes/fighter_spreadshot.png" />')[0];
+        fighter.img = $('<img src="images/static/fighter_spreadshot.png" />')[0];
         this.suppliedFighters.push(fighter);
     }
 });

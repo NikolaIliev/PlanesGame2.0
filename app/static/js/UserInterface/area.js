@@ -64,7 +64,5 @@ var AreaManager = {
 				MissionManager.drawMissions(i);
 			}
 		}
-	},
-
-
-}
+	}
+};
