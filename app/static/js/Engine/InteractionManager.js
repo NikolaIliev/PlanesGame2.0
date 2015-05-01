@@ -1,4 +1,51 @@
-﻿var InteractionManager = (function () {
+﻿define([
+    "Engine/CAnimations",
+    "Engine/Game",
+    "Engine/Missions/BossMission",
+    "Engine/Missions/DominationMission",
+    "Engine/Missions/GauntletMission",
+    "Engine/Missions/SurvivalMission",
+    "Engine/Scaling",
+    "Engine/Skills/AbsorbBullets",
+    "Engine/Skills/BlackHole",
+    "Engine/Skills/DeathRay",
+    "Engine/Skills/HealingShot",
+    "Engine/Skills/HomingShot",
+    "Engine/Skills/PiercingShot",
+    "Engine/Skills/Radioactive",
+    "Engine/Skills/Sentry",
+    "Engine/Skills/Shield",
+    "Engine/Skills/SpreadShot",
+    "Engine/Skills/Stealth",
+    "Engine/Skills/StopTime",
+    "Engine/Skills/SummonGuidedRocket",
+    "Engine/Visual",
+    "Engine/Utility",
+    "GameObjects/Bullets/BossBullet",
+    "GameObjects/Bullets/EnemyBullet",
+    "GameObjects/Bullets/FighterBullet",
+    "GameObjects/Bullets/GuidedRocket",
+    "GameObjects/Bullets/HealingBullet",
+    "GameObjects/Bullets/HomingBullet",
+    "GameObjects/Bullets/PiercingBullet",
+    "GameObjects/Bullets/PlayerBullet",
+    "GameObjects/Hazards/StormCloud",
+    "GameObjects/Pickups/HealingOrb",
+    "GameObjects/Planes/BossPlane",
+    "GameObjects/Planes/EnemyFighter",
+    "GameObjects/Planes/EnemyKamikaze",
+    "GameObjects/Planes/EnemyStormer",
+    "GameObjects/Planes/EnemySupplier",
+    "GameObjects/Planes/PlayerPlane",
+    "GameObjects/Planes/SentryPlane",
+    "UserInterface/area",
+    "UserInterface/loadout",
+    "UserInterface/MissionInfo",
+    "exports"
+], function (CAnimations, Game, BossMission, DominationMission, GauntletMission, SurvivalMission, Scaling,
+             AbsorbBullets, BlackHole, DeathRay, HealingShot, HomingShot, PiercingShot, Radioactive, Sentry, Shield, SpreadShot, Stealth, StopTime, SummonGuidedRocket,
+             Visual, Utility, BossBullet, EnemyBullet, FighterBullet, GuidedRocket, HealingBullet, HomingBullet, PiercingBullet, PlayerBullet, StormCloud,
+             HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, AreaManager, Loadout, MissionInfo, exports) {
     var playerPlane = new PlayerPlane(),
         starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
@@ -238,7 +285,7 @@
         movePlayerPlane = function (e) {
             //substracting a half of the non-game screen
             var newCoords = (currentMission instanceof BossMission) ?
-               convertEventCoordinatesBossMission(e.clientX, e.clientY) : convertEventCoordinates(e.clientX, e.clientY);
+                convertEventCoordinatesBossMission(e.clientX, e.clientY) : convertEventCoordinates(e.clientX, e.clientY);
 
             newCoords.left -= 50; //adjust plane to cursor
             playerPlane.updateCoords(newCoords.left, newCoords.bottom);
@@ -313,8 +360,8 @@
             } else {
                 var newLeftCoord = bullet.leftCoord + bullet.orientationDeg / 45 * playerBulletsSpeed, //if the degree is (45) or (-45), the bullet
                     newBottomCoord = parseInt((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ?
-                (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                : (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
+                        (bullet.bottomCoord + (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
+                        : (bullet.bottomCoord - (playerBulletsSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
                 //will travel diagonally at (playerBulletsSpeed) speed
                 bullet.updateCoords(newLeftCoord, newBottomCoord);
             }
@@ -351,7 +398,7 @@
                 else {
                     newBottomCoord = Math.floor((bullet.orientationDeg > -90 && bullet.orientationDeg < 90) ?
                         (bullet.bottomCoord - (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90))))
-                      : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
+                        : (bullet.bottomCoord + (bulletSpeed * (1 - Math.abs(bullet.orientationDeg / 90)))));
 
 
                     bullet.updateCoords(newLeftCoord, newBottomCoord);
@@ -432,8 +479,8 @@
             //speed * (1 - deg/90)
             var newLeft = kamikaze.leftCoord + kamikaze.orientationDeg / 90 * kamikaze.movementSpeed,
                 newBottom = (kamikaze.bottomCoord > playerPlane.bottomCoord) ?
-                (kamikaze.bottomCoord - (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))))
-                : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
+                    (kamikaze.bottomCoord - (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))))
+                    : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
             kamikaze.chasePlayer();
             kamikaze.updateCoords(newLeft, newBottom);
         },
@@ -478,14 +525,14 @@
             for (i = 0; i < friendlyPlanes.length; i++) {
                 if (friendlyPlanes[i] instanceof SentryPlane) {
                     isHit = ((stormCloud.bottomCoord + 12 > friendlyPlanes[i].bottomCoord &&
-                        stormCloud.bottomCoord + 12 < friendlyPlanes[i].bottomCoord + 75) ||
-                        ((stormCloud.bottomCoord + 68) > friendlyPlanes[i].bottomCoord &&
-                        (stormCloud.bottomCoord + 68) < friendlyPlanes[i].bottomCoord + 75))
+                    stormCloud.bottomCoord + 12 < friendlyPlanes[i].bottomCoord + 75) ||
+                    ((stormCloud.bottomCoord + 68) > friendlyPlanes[i].bottomCoord &&
+                    (stormCloud.bottomCoord + 68) < friendlyPlanes[i].bottomCoord + 75))
                     &&
-                        ((stormCloud.leftCoord + 12 > friendlyPlanes[i].leftCoord &&
-                        stormCloud.leftCoord + 12 < friendlyPlanes[i].leftCoord + 100) ||
-                        (stormCloud.leftCoord + 68 > friendlyPlanes[i].leftCoord &&
-                        stormCloud.leftCoord + 68 < friendlyPlanes[i].leftCoord + 100));
+                    ((stormCloud.leftCoord + 12 > friendlyPlanes[i].leftCoord &&
+                    stormCloud.leftCoord + 12 < friendlyPlanes[i].leftCoord + 100) ||
+                    (stormCloud.leftCoord + 68 > friendlyPlanes[i].leftCoord &&
+                    stormCloud.leftCoord + 68 < friendlyPlanes[i].leftCoord + 100));
 
                     if (isHit) {
                         return i;
@@ -498,74 +545,74 @@
 
         detectCollisionStormCloudPlayer = function (stormCloud) {
             var isHit = ((stormCloud.bottomCoord + 12 > playerPlane.bottomCoord + 20 &&
-                        stormCloud.bottomCoord + 12 < playerPlane.bottomCoord + 75) ||
-                        ((stormCloud.bottomCoord + 68) > playerPlane.bottomCoord + 20 &&
-                        (stormCloud.bottomCoord + 68) < playerPlane.bottomCoord + 75))
-                    &&
-                        ((stormCloud.leftCoord + 12 > playerPlane.leftCoord + 20 &&
-                        stormCloud.leftCoord + 12 < playerPlane.leftCoord + 80) ||
-                        (stormCloud.leftCoord + 68 > playerPlane.leftCoord + 20 &&
-                        stormCloud.leftCoord + 68 < playerPlane.leftCoord + 80))
-                    ||
-                        (stormCloud.bottomCoord > playerPlane.bottomCoord &&
-                        stormCloud.bottomCoord + 80 < playerPlane.bottomCoord + 70 &&
-                        stormCloud.leftCoord > playerPlane.leftcoord &&
-                        stormCloud.leftCoord + 80 < playerPlane.leftCoord + 100);
+                stormCloud.bottomCoord + 12 < playerPlane.bottomCoord + 75) ||
+                ((stormCloud.bottomCoord + 68) > playerPlane.bottomCoord + 20 &&
+                (stormCloud.bottomCoord + 68) < playerPlane.bottomCoord + 75))
+                &&
+                ((stormCloud.leftCoord + 12 > playerPlane.leftCoord + 20 &&
+                stormCloud.leftCoord + 12 < playerPlane.leftCoord + 80) ||
+                (stormCloud.leftCoord + 68 > playerPlane.leftCoord + 20 &&
+                stormCloud.leftCoord + 68 < playerPlane.leftCoord + 80))
+                ||
+                (stormCloud.bottomCoord > playerPlane.bottomCoord &&
+                stormCloud.bottomCoord + 80 < playerPlane.bottomCoord + 70 &&
+                stormCloud.leftCoord > playerPlane.leftcoord &&
+                stormCloud.leftCoord + 80 < playerPlane.leftCoord + 100);
 
             return isHit;
         },
 
         isPointInsideBoss = function (left, bottom) {
             var isIn = !boss.isInvulnerable && (
-                //left wing
+                    //left wing
                 (left >= boss.leftCoord
-                    && left <= boss.leftCoord + 75
-                    && bottom >= boss.bottomCoord + 90
-                    && bottom <= boss.bottomCoord + 240)
-                //between left wing and cockpit
+                && left <= boss.leftCoord + 75
+                && bottom >= boss.bottomCoord + 90
+                && bottom <= boss.bottomCoord + 240)
+                    //between left wing and cockpit
                 ||
                 (left >= boss.leftCoord + 75
-                    && left <= boss.leftCoord + 110
-                    && bottom >= boss.bottomCoord + 65
-                    && bottom <= boss.bottomCoord + 240)
-                //cockpit
+                && left <= boss.leftCoord + 110
+                && bottom >= boss.bottomCoord + 65
+                && bottom <= boss.bottomCoord + 240)
+                    //cockpit
                 || (left >= boss.leftCoord + 110
-                    && left <= boss.leftCoord + 185
-                    && bottom >= boss.bottomCoord + 30
-                    && bottom <= boss.bottomCoord + 240)
-                //between cockpit and right wing
+                && left <= boss.leftCoord + 185
+                && bottom >= boss.bottomCoord + 30
+                && bottom <= boss.bottomCoord + 240)
+                    //between cockpit and right wing
                 ||
                 (left >= boss.leftCoord + 185
-                    && left <= boss.leftCoord + 220
-                    && bottom >= boss.bottomCoord + 65
-                    && bottom <= boss.bottomCoord + 240)
-                //right wing
+                && left <= boss.leftCoord + 220
+                && bottom >= boss.bottomCoord + 65
+                && bottom <= boss.bottomCoord + 240)
+                    //right wing
                 || (left >= boss.leftCoord + 220
-                    && left <= boss.leftCoord + 300
-                    && bottom >= boss.bottomCoord + 90
-                    && bottom <= boss.bottomCoord + 240)
-            );
+                && left <= boss.leftCoord + 300
+                && bottom >= boss.bottomCoord + 90
+                && bottom <= boss.bottomCoord + 240)
+                );
 
             return isIn;
         },
-		isPointInsideObject = function (x, y, obj) {
-		    isIn = ((x >= obj.leftCoord && x <= (obj.leftCoord + obj.width)) &&
-				(y >= obj.bottomCoord && y <= (obj.bottomCoord + obj.height)))
-		    return isIn;
-		},
+        isPointInsideObject = function (x, y, obj) {
+            isIn = ((x >= obj.leftCoord && x <= (obj.leftCoord + obj.width)) &&
+            (y >= obj.bottomCoord && y <= (obj.bottomCoord + obj.height)))
+            return isIn;
+        },
 
         detectCollision = function (obj1, obj2) {
             var collision;
             if (obj2 instanceof BossPlane) {
                 collision = isPointInsideBoss(obj1.leftCoord, obj1.bottomCoord)
-                            || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord)
-                            || isPointInsideBoss(obj1.leftCoord, obj1.bottomCoord + obj1.height)
-                            || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height);
+                || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord)
+                || isPointInsideBoss(obj1.leftCoord, obj1.bottomCoord + obj1.height)
+                || isPointInsideBoss(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height);
             } else {
                 collision = isPointInsideObject(obj1.leftCoord, obj1.bottomCoord, obj2)
-                            || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord, obj2)
-                            || isPointInsideObject(obj1.leftCoord, obj1.bottomCoord + obj1.height, obj2)
-                            || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height, obj2);
+                || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord, obj2)
+                || isPointInsideObject(obj1.leftCoord, obj1.bottomCoord + obj1.height, obj2)
+                || isPointInsideObject(obj1.leftCoord + obj1.width, obj1.bottomCoord + obj1.height, obj2);
             }
 
             return collision;
@@ -609,19 +656,19 @@
             var nowMs = Date.now();
             if (nowMs - stormCloud.lastDamageTickTimestamp > stormCloud.damageFrequencyMs) {
                 stormCloud.lastDamageTickTimestamp = nowMs;
-				if (playerPlane.absorptionShieldStrength == 0) {
-					playerPlane.takeDamage(stormerDamage);
-					trackRemainingHealth(playerPlane.currentHealth);
-				} else {
-					playerPlane.absorptionShieldStrength--;
-					if (playerPlane.absorptionShieldStrength == 0) {
-						if (playerPlane.isStealthed) {
-							playerPlane.move = playerPlane.stealthMove;
-						} else {
-							playerPlane.move = playerPlane.originalMoveFunction;
-						}
-					}
-				}
+                if (playerPlane.absorptionShieldStrength == 0) {
+                    playerPlane.takeDamage(stormerDamage);
+                    trackRemainingHealth(playerPlane.currentHealth);
+                } else {
+                    playerPlane.absorptionShieldStrength--;
+                    if (playerPlane.absorptionShieldStrength == 0) {
+                        if (playerPlane.isStealthed) {
+                            playerPlane.move = playerPlane.stealthMove;
+                        } else {
+                            playerPlane.move = playerPlane.originalMoveFunction;
+                        }
+                    }
+                }
             }
         },
 
@@ -672,32 +719,32 @@
             }
         },
         handleAbsorbCollisionEnemyBullets = function (hitter) {
-			if(!(hitter instanceof EnemyKamikaze)){
-				playerPlane.receiveHeal(1);
-			}else{
-				if (playerPlane.absorptionShieldStrength == 0) {
-					playerPlane.takeDamage(hitter.damage);
-					trackRemainingHealth(playerPlane.currentHealth);
-				} else {
-					playerPlane.absorptionShieldStrength--;
-					if (playerPlane.absorptionShieldStrength == 0) {
-						if (playerPlane.isStealthed) {
-							playerPlane.move = playerPlane.stealthMove;
-						} else {
-							playerPlane.move = playerPlane.originalMoveFunction;
-						}
-					}
-				}
-			}			
+            if(!(hitter instanceof EnemyKamikaze)){
+                playerPlane.receiveHeal(1);
+            }else{
+                if (playerPlane.absorptionShieldStrength == 0) {
+                    playerPlane.takeDamage(hitter.damage);
+                    trackRemainingHealth(playerPlane.currentHealth);
+                } else {
+                    playerPlane.absorptionShieldStrength--;
+                    if (playerPlane.absorptionShieldStrength == 0) {
+                        if (playerPlane.isStealthed) {
+                            playerPlane.move = playerPlane.stealthMove;
+                        } else {
+                            playerPlane.move = playerPlane.originalMoveFunction;
+                        }
+                    }
+                }
+            }
         },
 
         handleAbsorbBullets = function (duration) {
-            playerPlane.img.src = 'images/static/playerAbsorbingBullets.png';
+            playerPlane.img.src = 'app/static/images/planes/playerAbsorbingBullets.png';
             var tempHandleCollisionEnemy = handleCollisionEnemy;
             handleCollisionEnemy = handleAbsorbCollisionEnemyBullets;
             window.setTimeout(function () {
                 handleCollisionEnemy = tempHandleCollisionEnemy;
-                playerPlane.img.src = 'images/static/player.png';
+                playerPlane.img.src = 'app/static/images/planes/player.png';
             }, duration);
         },
 
@@ -710,34 +757,40 @@
             }
         },
 
+        onMissionStart = function () {
+            Game.clearScreen();
+            Visual.adjustCSSofGameScreen(true);
+            Visual.drawUI(currentMission);
+        },
+
         launchMission = function (missionIndex, areaIndex) {
             setInitialValues();
             setScalingValues(areaIndex);
-            missionType = AreaManager.areas[areaIndex].missions[missionIndex].primary;
+            var missionType = AreaManager.areas[areaIndex].missions[missionIndex].primary;
             secondaryObjectiveType = AreaManager.areas[areaIndex].missions[missionIndex].secondary;
             //Set the current mission position
-            MissionManager.currentMissionIndex = missionIndex;
-            MissionManager.currentAreaIndex = areaIndex;
+            MissionInfo.currentMissionIndex = missionIndex;
+            MissionInfo.currentAreaIndex = areaIndex;
             switch (missionType) {
                 case "survival":
                     currentMission = new SurvivalMission(areaIndex);
-                    currentMission.startMission();
                     break;
                 case "domination":
                     currentMission = new DominationMission(areaIndex);
-                    currentMission.startMission();
-                    dominationSpawnStartingEnemies();
                     break;
                 case "gauntlet":
                     currentMission = new GauntletMission(areaIndex);
-                    currentMission.startMission();
                     break;
                 case "boss":
                     currentMission = new BossMission(areaIndex);
-                    currentMission.startMission();
                     break;
                 default:
                     throw new Error("Unrecognized mission type: " + missionType);
+            }
+            onMissionStart();
+            currentMission.startMission();
+            if (missionType === "domination") {
+                dominationSpawnStartingEnemies();
             }
             enemySpawnFrequencyMs = currentMission.enemySpawnFrequencyMs;
         },
@@ -794,7 +847,7 @@
             $("<div/>", {
                 id: "effectScreen"
             })
-            .appendTo("#gameScreen");
+                .appendTo("#gameScreen");
             window.setTimeout(function () {
                 //Finalize mission
                 abortMission();
@@ -802,7 +855,7 @@
                 Visual.adjustCSSofGameScreen(false);
                 Game.clearScreen();
                 //Draw the win screen
-                if (MissionManager.currentAreaIndex == 3) { //boss mission
+                if (MissionInfo.currentAreaIndex == 3) { //boss mission
                     setVictoryTime();
                     Visual.drawVictoryScreen();
                     localStorage.setItem('saveData', '');
@@ -811,7 +864,7 @@
                     AreaManager.updateAreaStatus(starsWonForMission);
                     AreaManager.drawMap();
                     playerPlane.stars += starsWonForMission;
-                    MissionManager.winScreen(starsWonForMission);
+                    MissionInfo.winScreen(starsWonForMission);
                     if (!Game.allUnlocked) {
                         Visual.updateStarsTracker();
                     }
@@ -827,7 +880,7 @@
             $("<div/>", {
                 id: "effectScreen"
             })
-           .appendTo("#gameScreen")
+                .appendTo("#gameScreen")
             window.setTimeout(function () {
                 abortMission();
                 saveGame();
@@ -851,7 +904,7 @@
                 allUnlocked: Game.allUnlocked,
                 playerSkills: Loadout.current,
                 earnedStars: playerPlane.stars,
-                level: playerPlane.level,
+                level: playerPlane.level
             };
             localStorage.setItem('saveData', JSON.stringify(saveData));
             localStorage.setItem('resumeAvailable', 'true');
@@ -1108,50 +1161,50 @@
             return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         },
 
-         handleRadioactive = function (left, bottom) {
-             animateRadioactive(left, bottom);
-             setTimeout(function () {
-                 dealDamageRadioactive(left, bottom);
-             }, 400);
+        handleRadioactive = function (left, bottom) {
+            animateRadioactive(left, bottom);
+            setTimeout(function () {
+                dealDamageRadioactive(left, bottom);
+            }, 400);
 
-             if (boss && !boss.isInQuarterPhase) {
-                 dealDamageRadioactiveToBoss(left, bottom);
-             }
-         },
+            if (boss && !boss.isInQuarterPhase) {
+                dealDamageRadioactiveToBoss(left, bottom);
+            }
+        },
 
         animateRadioactive = function (left, bottom) {
             var radioactiveDiv =
                 $('<div></div>')
-                .addClass('radioactiveDiv')
-                .css({
-                    'bottom': bottom + playerPlane.height / 2 + 'px',
-                    'left': left + playerPlane.width / 2 + 'px'
-                })
-                .appendTo('#gameScreen')
-                .animate({
-                    bottom: bottom + playerPlane.height / 2 - radioactiveRadius / 2,
-                    left: left + playerPlane.width / 2 - radioactiveRadius / 2,
-                    width: radioactiveRadius + "px",
-                    height: radioactiveRadius + "px",
-                    opacity: 0
-                },
-                800,
-                function () {
-                    radioactiveDiv.remove();
-                });
+                    .addClass('radioactiveDiv')
+                    .css({
+                        'bottom': bottom + playerPlane.height / 2 + 'px',
+                        'left': left + playerPlane.width / 2 + 'px'
+                    })
+                    .appendTo('#gameScreen')
+                    .animate({
+                        bottom: bottom + playerPlane.height / 2 - radioactiveRadius / 2,
+                        left: left + playerPlane.width / 2 - radioactiveRadius / 2,
+                        width: radioactiveRadius + "px",
+                        height: radioactiveRadius + "px",
+                        opacity: 0
+                    },
+                    800,
+                    function () {
+                        radioactiveDiv.remove();
+                    });
 
         },
 
         dealDamageRadioactive = function (left, bottom) {
             var i, isHit,
-            X = left + playerPlane.width / 2, //PlayerPlane Center X
-            Y = bottom + playerPlane.height / 2; //PlayerPlane Center Y
+                X = left + playerPlane.width / 2, //PlayerPlane Center X
+                Y = bottom + playerPlane.height / 2; //PlayerPlane Center Y
             //enemy static
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100));
+                ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+                ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord + enemyPlanes[i].width, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100)) &&
+                ((distanceBetweenTwoPoints(enemyPlanes[i].leftCoord, enemyPlanes[i].bottomCoord + enemyPlanes[i].height, X, Y)) < (radioactiveRadius - 100));
 
                 if (isHit) {
                     enemyPlanes[i].takeDamage(radioactiveDamage);
@@ -1170,13 +1223,13 @@
 
         dealDamageRadioactiveToBoss = function (left, bottom) {
             var isHit,
-            X = left + 50, //PlayerPlane Center X
-            Y = bottom + 40; //PlayerPlane Center Y
+                X = left + 50, //PlayerPlane Center X
+                Y = bottom + 40; //PlayerPlane Center Y
 
             isHit = ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100)) &&
-                    ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100));
+            ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord, X, Y)) < (radioactiveRadius - 100)) &&
+            ((distanceBetweenTwoPoints(boss.leftCoord + boss.width, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100)) &&
+            ((distanceBetweenTwoPoints(boss.leftCoord, boss.bottomCoord + boss.height, X, Y)) < (radioactiveRadius - 100));
 
             if (isHit) {
                 boss.takeDamage(radioactiveDamage);
@@ -1212,20 +1265,20 @@
         animateDeathRay = function (left, bottom) {
             var deathRayDiv =
                 $('<div></div>')
-                .addClass('deathRayDiv')
-                .css({
-                    'height': (700 - bottom + playerPlane.height) + 'px',
-                    'left': left + 22 + 'px',
-                    'bottom': bottom + playerPlane.height + 'px'
-                })
-                .appendTo('#gameScreen')
-                .animate({
-                    opacity: 0,
-                    left: '+=28',
-                    width: 0
-                }, function () {
-                    deathRayDiv.remove();
-                });
+                    .addClass('deathRayDiv')
+                    .css({
+                        'height': (700 - bottom + playerPlane.height) + 'px',
+                        'left': left + 22 + 'px',
+                        'bottom': bottom + playerPlane.height + 'px'
+                    })
+                    .appendTo('#gameScreen')
+                    .animate({
+                        opacity: 0,
+                        left: '+=28',
+                        width: 0
+                    }, function () {
+                        deathRayDiv.remove();
+                    });
 
         },
 
@@ -1234,9 +1287,9 @@
             //enemy static
             for (i = 0; i < enemyPlanes.length; i++) {
                 isHit = (enemyPlanes[i].bottomCoord > bottom + 75) &&   //enemy is above the player
-                    ((enemyPlanes[i].leftCoord > (left + 22) && enemyPlanes[i].leftCoord < (left + 78)) || //enemy's left side has been hit
-                     ((enemyPlanes[i].leftCoord + 100) > (left + 22) && (enemyPlanes[i].leftCoord + 100) < (left + 78)) ||    //enemy's right side has been hit
-                     ((enemyPlanes[i].leftCoord < (left + 22)) && (enemyPlanes[i].leftCoord + 100) > (left + 78))); //enemy is hit in the middle
+                ((enemyPlanes[i].leftCoord > (left + 22) && enemyPlanes[i].leftCoord < (left + 78)) || //enemy's left side has been hit
+                ((enemyPlanes[i].leftCoord + 100) > (left + 22) && (enemyPlanes[i].leftCoord + 100) < (left + 78)) ||    //enemy's right side has been hit
+                ((enemyPlanes[i].leftCoord < (left + 22)) && (enemyPlanes[i].leftCoord + 100) > (left + 78))); //enemy is hit in the middle
 
                 if (isHit) {
                     enemyPlanes[i].takeDamage(deathRayDamage);
@@ -1255,9 +1308,9 @@
 
         dealDamageDeathRayToBoss = function (left, bottom) {
             var isHit = (boss.bottomCoord > bottom + 75) &&   //boss is above the player
-                   ((boss.leftCoord > (left + 22) && boss.leftCoord < (left + 78)) || //boss' left side has been hit
-                    ((boss.leftCoord + 300) > (left + 22) && (boss.leftCoord + 300) < (left + 78)) ||    //boss' right side has been hit
-                    ((boss.leftCoord < (left + 22)) && (boss.leftCoord + 300) > (left + 78))); //boss is hit in the middle
+                ((boss.leftCoord > (left + 22) && boss.leftCoord < (left + 78)) || //boss' left side has been hit
+                ((boss.leftCoord + 300) > (left + 22) && (boss.leftCoord + 300) < (left + 78)) ||    //boss' right side has been hit
+                ((boss.leftCoord < (left + 22)) && (boss.leftCoord + 300) > (left + 78))); //boss is hit in the middle
             if (isHit) {
                 boss.takeDamage(deathRayDamage);
                 if (boss.currentHealth == 0) {
@@ -1281,29 +1334,29 @@
                     div: null,
                     leftCoord: null,
                     bottomCoord: null,
-                    skewDegree: (orientationDeg != 0) ? -orientationDeg : 1, //avoid dividing by zero 
+                    skewDegree: (orientationDeg != 0) ? -orientationDeg : 1, //avoid dividing by zero
                     leftVector: {
                         a: null,
-                        b: null,
+                        b: null
                     }, //f(x) = ax + b;
                     rightVector: {
                         a: null,
-                        b: null,
-                    }, //f(x) = ax + b;
+                        b: null
+                    } //f(x) = ax + b;
                 };
             deathRay.div =
                 $('<div></div>')
-                .addClass('bossDeathRayDiv')
-                .css({
-                    'opacity': 0,
-                    'left': rayLeft + 'px',
-                    'top': rayTop + 'px',
-                    'height': rayHeight + 'px',
-                    '-webkit-transform': 'skewX(' + -orientationDeg + 'deg)',
-                    '-ms-transform': 'skewX(' + -orientationDeg + 'deg)',
-                    'transform': 'skewX(' + -orientationDeg + 'deg)'
-                })
-                .appendTo('#gameScreen');
+                    .addClass('bossDeathRayDiv')
+                    .css({
+                        'opacity': 0,
+                        'left': rayLeft + 'px',
+                        'top': rayTop + 'px',
+                        'height': rayHeight + 'px',
+                        '-webkit-transform': 'skewX(' + -orientationDeg + 'deg)',
+                        '-ms-transform': 'skewX(' + -orientationDeg + 'deg)',
+                        'transform': 'skewX(' + -orientationDeg + 'deg)'
+                    })
+                    .appendTo('#gameScreen');
             return deathRay;
         },
 
@@ -1313,20 +1366,20 @@
             deathRay.leftCoord = boss.leftCoord + rayLeftOffset;
             deathRay.bottomCoord = boss.bottomCoord - rayTopOffset;
             $(deathRay.div)
-            .css({
-                'opacity': 1,
-                'left': '+=' + rayLeftOffset,
-                'top': '+=' + rayTopOffset,
-            })
-            .animate({
-                'left': '+=75',
-                'width': 0
-            }, {
-                duration: 400,
-                complete: function () {
-                    $(deathRay.div).remove();
-                }
-            });
+                .css({
+                    'opacity': 1,
+                    'left': '+=' + rayLeftOffset,
+                    'top': '+=' + rayTopOffset
+                })
+                .animate({
+                    'left': '+=75',
+                    'width': 0
+                }, {
+                    duration: 400,
+                    complete: function () {
+                        $(deathRay.div).remove();
+                    }
+                });
         },
 
         computeVectorsDeathRay = function (deathRay) {
@@ -1341,18 +1394,18 @@
                 rightVectorSecondPointX,
                 rightVectorSecondPointY = rightVectorFirstPointY - deathRayHeight;
             leftVectorSecondPointX = (deathRay.skewDegree > 0) ?
-                leftVectorFirstPointX + Math.tan(Math.abs(Utility.degreeToRadian(deathRay.skewDegree))) * deathRayHeight
+            leftVectorFirstPointX + Math.tan(Math.abs(Utility.degreeToRadian(deathRay.skewDegree))) * deathRayHeight
                 : leftVectorFirstPointX - Math.tan(Math.abs(Utility.degreeToRadian(deathRay.skewDegree))) * deathRayHeight;
             rightVectorSecondPointX = leftVectorSecondPointX + deathRayWidth - 45;
 
-            deathRay.leftVector.a = (leftVectorFirstPointY - leftVectorSecondPointY) / (leftVectorFirstPointX - leftVectorSecondPointX); //a = (y1 - y2) / (x1 - x2); 
+            deathRay.leftVector.a = (leftVectorFirstPointY - leftVectorSecondPointY) / (leftVectorFirstPointX - leftVectorSecondPointX); //a = (y1 - y2) / (x1 - x2);
             deathRay.leftVector.b = (leftVectorSecondPointY * leftVectorFirstPointX - leftVectorFirstPointY * leftVectorSecondPointX)
-                                        / (leftVectorFirstPointX - leftVectorSecondPointX);
+            / (leftVectorFirstPointX - leftVectorSecondPointX);
             //b = (y2x1 - y1x2) / (x1 - x2)
             //analogically compute right vector
             deathRay.rightVector.a = (rightVectorFirstPointY - rightVectorSecondPointY) / (rightVectorFirstPointX - rightVectorSecondPointX);
             deathRay.rightVector.b = (rightVectorSecondPointY * rightVectorFirstPointX - rightVectorFirstPointY * rightVectorSecondPointX)
-                                        / (rightVectorFirstPointX - rightVectorSecondPointX);
+            / (rightVectorFirstPointX - rightVectorSecondPointX);
 
             //these divs are used for debugging purposes, uncomment them to see the vector start and end point of the ray(marked by red squares)
 
@@ -1415,11 +1468,11 @@
             //check if left vector crosses the player
             function vectorFunction(x, a, b) { //input x, get y
                 return a * x + b;
-            };
+            }
             function reverseVectorFunction(y, a, b) { //input y, get x
                 //a is never 0, as the skew degree is never 0, division is safe
                 return (y - b) / a;
-            };
+            }
 
             leftVectorAtPlayerLeft = vectorFunction(playerPlane.leftCoord, deathRay.leftVector.a, deathRay.leftVector.b);
             leftVectorAtPlayerRight = vectorFunction(playerPlane.leftCoord + 100, deathRay.leftVector.a, deathRay.leftVector.b);
@@ -1431,14 +1484,14 @@
             rightVectorAtPlayerBottom = reverseVectorFunction(playerPlane.bottomCoord, deathRay.rightVector.a, deathRay.rightVector.b);
 
             isHitByLeft = (leftVectorAtPlayerLeft >= playerPlane.bottomCoord && leftVectorAtPlayerLeft <= playerPlane.bottomCoord + 75)
-                       || (leftVectorAtPlayerRight >= playerPlane.bottomCoord && leftVectorAtPlayerRight <= playerPlane.bottomCoord + 75)
-                       || (leftVectorAtPlayerBottom >= playerPlane.leftCoord && leftVectorAtPlayerBottom <= playerPlane.leftCoord + 100)
-                       || (leftVectorAtPlayerTop >= playerPlane.leftCoord && leftVectorAtPlayerTop <= playerPlane.leftCoord + 100);
+            || (leftVectorAtPlayerRight >= playerPlane.bottomCoord && leftVectorAtPlayerRight <= playerPlane.bottomCoord + 75)
+            || (leftVectorAtPlayerBottom >= playerPlane.leftCoord && leftVectorAtPlayerBottom <= playerPlane.leftCoord + 100)
+            || (leftVectorAtPlayerTop >= playerPlane.leftCoord && leftVectorAtPlayerTop <= playerPlane.leftCoord + 100);
 
             isHitByRight = (rightVectorAtPlayerLeft >= playerPlane.bottomCoord && rightVectorAtPlayerLeft <= playerPlane.bottomCoord + 75)
-                       || (rightVectorAtPlayerRight >= playerPlane.bottomCoord && rightVectorAtPlayerRight <= playerPlane.bottomCoord + 75)
-                       || (rightVectorAtPlayerBottom >= playerPlane.leftCoord && rightVectorAtPlayerBottom <= playerPlane.leftCoord + 100)
-                       || (rightVectorAtPlayerTop >= playerPlane.leftCoord && rightVectorAtPlayerTop <= playerPlane.leftCoord + 100);
+            || (rightVectorAtPlayerRight >= playerPlane.bottomCoord && rightVectorAtPlayerRight <= playerPlane.bottomCoord + 75)
+            || (rightVectorAtPlayerBottom >= playerPlane.leftCoord && rightVectorAtPlayerBottom <= playerPlane.leftCoord + 100)
+            || (rightVectorAtPlayerTop >= playerPlane.leftCoord && rightVectorAtPlayerTop <= playerPlane.leftCoord + 100);
 
             isHit = isHitByLeft || isHitByRight;
 
@@ -1460,7 +1513,7 @@
 
         handleBlackHole = function () {
             $("#gameScreen").css({
-                "cursor": "url(images/UI/pointerCursor.png), auto"
+                "cursor": "url(app/static/images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1504,7 +1557,7 @@
                     scale: 1,
                     left: left,
                     bottom: bottom,
-                    frames: 25,
+                    frames: 25
                 });
             }
             window.setTimeout(function () {
@@ -1518,7 +1571,7 @@
 
         handleGuidedRocket = function () {
             $("#gameScreen").css({
-                "cursor": "url(images/UI/pointerCursor.png), auto"
+                "cursor": "url(app/static/images/UI/pointerCursor.png), auto"
             });
             $(document).unbind('mouseup mousedown', handleMouseClick);
             $(document).unbind('mousemove', movePlayerPlane);
@@ -1595,7 +1648,7 @@
                 }
             } else {
                 if ($('#gameScreen').css('cursor') == 'none') {
-                    $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
+                    $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
                 }
                 converted.bottom = 80;
             }
@@ -1626,10 +1679,10 @@
                 $('#gameScreen').css('cursor', 'none');
             } else if (clientY > 570) {
                 converted.bottom = 80;
-                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
+                $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
             } else {
                 converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'url(images/UI/pointerCursor.png), auto');
+                $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
             }
 
             return converted;
@@ -1753,7 +1806,7 @@
             }
         };
 
-    return {
+    _.extend(exports, {
         startNewMission: launchMission,
         startTimer: startTimer,
         getSecondaryMission: getSecondaryMission,
@@ -1812,5 +1865,5 @@
         setPlayerSkills: setPlayerSkills,
         getEnemiesCount: getEnemiesCount,
         getCurrentMission: getCurrentMission
-    }
-})();
+    });
+});

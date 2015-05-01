@@ -21,19 +21,22 @@ define([
     //    }
     //});
 
-    function init () {
-        Visual.drawIntroScreen();
+    function extendUnderscore() {
+        _.mixin({
+            "hitch": function (context, func) {
+                var args = Array.prototype.slice.call(arguments, 2);
+
+                func = _.isFunction(func) ? func : context[func];
+
+                return _.bind.apply(_, [func, context].concat(args));
+            }
+        });
     }
 
-    _.mixin({
-        "hitch": function (context, func) {
-            var args = Array.prototype.slice.call(arguments, 2);
-
-            func = _.isFunction(func) ? func : context[func];
-
-            return _.bind.apply(_, [func, context].concat(args));
-        }
-    });
+    function init () {
+        extendUnderscore();
+        Visual.drawIntroScreen();
+    }
 
     return {
         init: init

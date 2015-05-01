@@ -1,4 +1,6 @@
-﻿define([], function () {
+﻿define([
+
+], function () {
     return  {
         getRandomLeftCoord: function (offsetWidth) {
             //returns a random number between (0 + offsetWidth) and (960 - offsetWidth)
@@ -30,14 +32,6 @@
             }
 
             return angle;
-        },
-
-        spreadShotEnemyShoot: function () {
-            if (this.tryShoot()) {
-                InteractionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, -15, this);
-                InteractionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 0, this);
-                InteractionManager.spawnBullet(this.bulletType, this.leftCoord + 45, this.bottomCoord, 15, this);
-            }
         },
 
         degreeToRadian: function (deg) {

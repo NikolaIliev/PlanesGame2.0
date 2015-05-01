@@ -1,4 +1,4 @@
-﻿Scaling = (function () {
+﻿define([], function () {
     var scaling = [
         //area 1
         {
@@ -76,13 +76,11 @@
             //bullet speed
             fighterBulletsSpeed: 7
         }
-    ],
-
-    getValue = function (areaIndex, type) { //e.g. getScaling(0, 'fighterMaxHealth') returns 1
-        return scaling[areaIndex][type];
-    };
+    ];
 
     return {
-        getValue: getValue
+        getValue: function (areaIndex, type) { //e.g. getScaling(0, 'fighterMaxHealth') returns 1
+            return scaling[areaIndex][type];
+        }
     }
-})();
+});

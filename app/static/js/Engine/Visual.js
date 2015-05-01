@@ -1,8 +1,13 @@
 define([
     "jquery",
-    "Engine/Leaderboard"
-], function ($, Leaderboard) {
-    return {
+    "Engine/CAnimations",
+    "Engine/Game",
+    "Engine/InteractionManager",
+    "Engine/Leaderboard",
+    "UserInterface/MissionInfo",
+    "exports"
+], function ($, CAnimations, Game, InteractionManager, Leaderboard, MissionInfo, exports) {
+    _.extend(exports, {
         backgroundImg: null,
         backgroundPattern: null,
         uiImg: $('<img src="app/static/images/UI/UI.png" />')[0],
@@ -45,20 +50,28 @@ define([
                 $("<div>Resume Game</div>")
                     .addClass("introButton")
                     .appendTo("#introScreen")
-                    .on("click", function () {
+                    .on("click", _.hitch(this, function () {
                         InteractionManager.loadGame();
                         Game.load();
-                    });
+                        this.drawGameObjects();
+                        if (!Game.allUnlocked) {
+                            this.updateStarsTracker();
+                        }
+                    }));
             }
 
             $("<div>New Game</div>")
                 .addClass("introButton")
                 .appendTo("#introScreen")
-                .on("click", function () {
+                .on("click", _.hitch(this, function () {
                     localStorage.setItem('resumeAvailable', 'false');
                     localStorage.setItem('saveData', '');
                     Game.init();
-                });
+                    this.drawGameObjects();
+                    if (!Game.allUnlocked) {
+                        this.updateStarsTracker();
+                    }
+                }));
 
             $("<div>Leaderboard</div>")
                 .addClass("introButton")
@@ -112,16 +125,17 @@ define([
 
         //Makes the cursor invisible while game is active
         adjustCSSofGameScreen: function (isStartMission) {
+            debugger;
             var backgrounds = ["river", "snow", "desert", "ocean"];
 
             if (isStartMission) {
                 this.backgroundOffset = 0;
                 this.backgroundImg = document.createElement('img');
-                this.backgroundImg.src = 'app/static/images/backgrounds/' + backgrounds[MissionManager.currentAreaIndex] + ".jpg";
+                this.backgroundImg.src = 'app/static/images/backgrounds/' + backgrounds[MissionInfo.currentAreaIndex] + ".jpg";
             }
             else {
                 $("#gameScreen").css({
-                    "cursor": "url(app/static/images/UI/pointerCursor.png),auto;",
+                    "cursor": "url(app/static/images/UI/pointerCursor.png),auto",
                     "background-image": "none"
                 });
             }
@@ -209,7 +223,7 @@ define([
                 .addClass("missionList")
                 .appendTo("#gameScreen");
 
-            if(!(mission instanceof BossMission)){
+            if(mission.type !== "boss"){
                 for (var i = 0; i < 3; i++) {
                     $("<li/>")
                         .attr("id", "listItem" + i)
@@ -359,12 +373,12 @@ define([
         },
 
         drawGameObjects: function () {
-            requestAnimationFrame(Visual.drawGameObjects);
+            requestAnimationFrame(_.hitch(this, "drawGameObjects"));
             if (InteractionManager.getCurrentMission()) {
                 ctx.clearRect(0, 0, 960, 700);
-                Visual.iterateBackground();
+                this.iterateBackground();
                 CAnimations.iterate();
-                Visual.redrawUI();
+                this.redrawUI();
                 InteractionManager.updatePrimaryStatus();
                 InteractionManager.redrawGameObjects();
             }
@@ -383,5 +397,5 @@ define([
                 .html(starsEarnedHtml + '<br/>' + starsToNextLevelHtml)
                 .appendTo('#gameScreen')
         }
-    }
+    });
 });

@@ -1,52 +1,58 @@
-﻿﻿//this skill doesn't get activated on cooldown - it gets activated after each 5 bullets the boss shoots
-BossDeathRays = BossSkill.extend({
-    init: function (plane) {
-        this._super("Boss Death Rays", plane, 300, 300, ""); //plane using the skill, duration, cooldown
-    },
+﻿define([
+    "Engine/Skills/BossSkills/BossSkill",
+    "Engine/InteractionManager"
+], function (BossSkill, InteractionManager) {
+    //this skill doesn't get activated on cooldown - it gets activated after each 5 bullets the boss shoots
 
-    activate: function () {
-        var i;
-        this._super();
-        
-        for (i = 0; i < 3; i++) {
-            InteractionManager.handleBossDeathRay(this.plane.thirdPhaseDeathRays[i]);
-        }
-    },
+    return BossSkill.extend({
+        init: function (plane) {
+            this._super("Boss Death Rays", plane, 300, 300, ""); //plane using the skill, duration, cooldown
+        },
 
-    deactivate: function () {
-        this._super();
-        this.plane.thirdPhaseDeathRays = [];
-    },
+        activate: function () {
+            var i;
+            this._super();
 
-    use: function () {
-        var self = this;
+            for (i = 0; i < 3; i++) {
+                InteractionManager.handleBossDeathRay(this.plane.thirdPhaseDeathRays[i]);
+            }
+        },
 
-        if (this.isAvailable) {
-            this.plane.isCasting = true;
-            $(this.plane.castBar)
-                .css('display', 'block')
-                .animate({
-                    'width': '100%'
-                }, {
-                    complete: function () {
-                        $(self.plane.castBar).css({
-                            'display': 'none',
-                            'width': '0%'
-                        });
-                        if (InteractionManager.getCurrentMission()) {
-                            self.activate.call(self);
-                        }
-                    },
-                    duration: self.castTime
-                });
+        deactivate: function () {
+            this._super();
+            this.plane.thirdPhaseDeathRays = [];
+        },
 
-            window.setTimeout(function () {
-                self.deactivate.call(self);
-            }, self.durationMs + self.castTime);
+        use: function () {
+            var self = this;
 
-            window.setTimeout(function () {
-                self.makeAvailable();
-            }, self.cooldownMs + self.durationMs + self.castTime);
-        }
-    },
+            if (this.isAvailable) {
+                this.plane.isCasting = true;
+                $(this.plane.castBar)
+                    .css('display', 'block')
+                    .animate({
+                        'width': '100%'
+                    }, {
+                        complete: function () {
+                            $(self.plane.castBar).css({
+                                'display': 'none',
+                                'width': '0%'
+                            });
+                            if (InteractionManager.getCurrentMission()) {
+                                self.activate.call(self);
+                            }
+                        },
+                        duration: self.castTime
+                    });
+
+                window.setTimeout(function () {
+                    self.deactivate.call(self);
+                }, self.durationMs + self.castTime);
+
+                window.setTimeout(function () {
+                    self.makeAvailable();
+                }, self.cooldownMs + self.durationMs + self.castTime);
+            }
+        },
+    });
 });
