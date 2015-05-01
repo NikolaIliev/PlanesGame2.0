@@ -1,4 +1,7 @@
-define([], function () {
+define([
+    "jquery",
+    "Engine/Leaderboard"
+], function ($, Leaderboard) {
     return {
         backgroundImg: null,
         backgroundPattern: null,
@@ -60,9 +63,9 @@ define([], function () {
             $("<div>Leaderboard</div>")
                 .addClass("introButton")
                 .appendTo("#introScreen")
-                .on("click", function () {
-                    Leaderboard.getHighScoreAndDrawLeaderboard();
-                });
+                .on("click", _.hitch(this, function () {
+                    Leaderboard.getHighscore().then(_.hitch(this, "drawLeaderBoard"));
+                }));
         },
 
         //Draws the screen at the end of the game
@@ -92,8 +95,16 @@ define([], function () {
                         Game.errorMessage("Enter a name under fifteen characters");
                         return;
                     }
-                    Leaderboard.submitScore($(".nameInput").val(), InteractionManager.getVictoryTime());
-                    $(".victoryScreen").remove();
+
+                    // TODO: Implement with node.js REST service
+                    Leaderboard.submitScore($(".nameInput").val(), InteractionManager.getVictoryTime())
+                        .then(Leaderboard.getPosition)
+                        .then(function (position) {
+                            Leaderboard.getHighscore().then(_.hitch(this, function (highscore) {
+                                $(".victoryScreen").remove();
+                                this.drawLeaderBoard(highscore, position);
+                            }));
+                        });
                 });
         },
 

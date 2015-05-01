@@ -11,11 +11,12 @@
         require.config({
             baseUrl: "./app/static/js",
             paths: {
-                "jquery": "../../../vendors/jquery/dist/jquery"
+                "jquery": "../../../vendors/jquery/dist/jquery",
+                "underscore": "../../../vendors/underscore/underscore"
             }
         });
-        require( ["jquery", "bootstrap"],
-                function($, bootstrap) {
+        require( ["jquery", "underscore", "bootstrap"],
+                function($, _, bootstrap) {
                     bootstrap.init();
                 }
         );

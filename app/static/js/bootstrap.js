@@ -1,7 +1,6 @@
 define([
-    "jquery",
     "Engine/Visual"
-], function ($, Visual) {
+], function (Visual) {
     //window.addEventListener("load", function () {
     //    var i;
     //    Visual.drawLoadingScreen();
@@ -25,6 +24,16 @@ define([
     function init () {
         Visual.drawIntroScreen();
     }
+
+    _.mixin({
+        "hitch": function (context, func) {
+            var args = Array.prototype.slice.call(arguments, 2);
+
+            func = _.isFunction(func) ? func : context[func];
+
+            return _.bind.apply(_, [func, context].concat(args));
+        }
+    });
 
     return {
         init: init
