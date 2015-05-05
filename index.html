@@ -9,7 +9,6 @@
     <script src="vendors/requirejs/require.js"></script>
     <script>
         var vendorsRelativePath = "../../../vendors";
-        debugger;
         require.config({
             baseUrl: "./app/static/js",
             paths: {
@@ -24,7 +23,6 @@
         });
         require(["jquery", "underscore", "lib/inheritance", "bootstrap"],
                 function($, _, simpleInheritance, bootstrap) {
-                    debugger;
                     bootstrap.init();
                 }
         );

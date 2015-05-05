@@ -126,7 +126,6 @@ define([
 
         //Makes the cursor invisible while game is active
         adjustCSSofGameScreen: function (isStartMission) {
-            debugger;
             var backgrounds = ["river", "snow", "desert", "ocean"];
 
             if (isStartMission) {
