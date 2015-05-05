@@ -3,7 +3,7 @@ define([
     "Engine/InteractionManager"
 ], function (Game, InteractionManager) {
     return {
-        current :[],
+        current: [],
 
         drawCurrentSkills : function(){
             var self = this;
@@ -117,7 +117,7 @@ define([
             var skillArray=InteractionManager.getPlayerSkills(), currentSkill;
             for(var i=0;i<skillArray.length;i++){
                 currentSkill = skillArray[i].icon.toLowerCase();
-                currentSkill = currentSkill.slice(0,-4)
+                currentSkill = currentSkill.slice(0,-4);
                 this.current.push(currentSkill);
                 for(var j=0;j<Game.unlockedSkills.length;j++){
                     if(currentSkill==Game.unlockedSkills[j]){

@@ -38,14 +38,13 @@
     "GameObjects/Planes/EnemySupplier",
     "GameObjects/Planes/PlayerPlane",
     "GameObjects/Planes/SentryPlane",
-    "UserInterface/area",
     "UserInterface/loadout",
-    "UserInterface/MissionInfo",
     "exports"
 ], function (CAnimations, Game, BossMission, DominationMission, GauntletMission, SurvivalMission, Scaling,
              AbsorbBullets, BlackHole, DeathRay, HealingShot, HomingShot, PiercingShot, Radioactive, Sentry, Shield, SpreadShot, Stealth, StopTime, SummonGuidedRocket,
              Visual, Utility, BossBullet, EnemyBullet, FighterBullet, GuidedRocket, HealingBullet, HomingBullet, PiercingBullet, PlayerBullet, StormCloud,
-             HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, AreaManager, Loadout, MissionInfo, exports) {
+             HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, Loadout, exports) {
+    debugger;
     var playerPlane = new PlayerPlane(),
         starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
@@ -758,7 +757,7 @@
         },
 
         onMissionStart = function () {
-            Game.clearScreen();
+            Visual.clearScreen();
             Visual.adjustCSSofGameScreen(true);
             Visual.drawUI(currentMission);
         },
@@ -766,11 +765,11 @@
         launchMission = function (missionIndex, areaIndex) {
             setInitialValues();
             setScalingValues(areaIndex);
-            var missionType = AreaManager.areas[areaIndex].missions[missionIndex].primary;
-            secondaryObjectiveType = AreaManager.areas[areaIndex].missions[missionIndex].secondary;
+            var missionType = Game.areas[areaIndex].missions[missionIndex].primary;
+            secondaryObjectiveType = Game.areas[areaIndex].missions[missionIndex].secondary;
             //Set the current mission position
-            MissionInfo.currentMissionIndex = missionIndex;
-            MissionInfo.currentAreaIndex = areaIndex;
+            Game.currentMissionIndex = missionIndex;
+            Game.currentAreaIndex = areaIndex;
             switch (missionType) {
                 case "survival":
                     currentMission = new SurvivalMission(areaIndex);
@@ -853,18 +852,18 @@
                 abortMission();
                 //Clear screen, update the area and mission statuses
                 Visual.adjustCSSofGameScreen(false);
-                Game.clearScreen();
+                Visual.clearScreen();
                 //Draw the win screen
-                if (MissionInfo.currentAreaIndex == 3) { //boss mission
+                if (Game.currentAreaIndex == 3) { //boss mission
                     setVictoryTime();
                     Visual.drawVictoryScreen();
                     localStorage.setItem('saveData', '');
                     localStorage.setItem('resumeAvailable', 'false');
                 } else {
-                    AreaManager.updateAreaStatus(starsWonForMission);
-                    AreaManager.drawMap();
+                    Game.updateAreaStatus(starsWonForMission);
+                    Visual.drawMap();
                     playerPlane.stars += starsWonForMission;
-                    MissionInfo.winScreen(starsWonForMission);
+                    Game.winScreen(starsWonForMission);
                     if (!Game.allUnlocked) {
                         Visual.updateStarsTracker();
                     }
@@ -885,12 +884,12 @@
                 abortMission();
                 saveGame();
                 Visual.adjustCSSofGameScreen(false);
-                Game.clearScreen();
-                AreaManager.drawMap();
+                Visual.clearScreen();
+                Visual.drawMap();
                 if (!Game.allUnlocked) {
                     Visual.updateStarsTracker();
                 }
-                Game.errorMessage("Mission failed");
+                Visual.errorMessage("Mission failed");
             }, 1500);
 
         },
@@ -898,7 +897,7 @@
         saveGame = function () {
             var saveData = {
                 time: Timer.current,
-                areas: AreaManager.areas,
+                areas: Game.areas,
                 unlockedSkills: Game.unlockedSkills,
                 unlockableSkills: Game.unlockableSkills,
                 allUnlocked: Game.allUnlocked,
@@ -914,7 +913,7 @@
             var loadData = JSON.parse(localStorage.getItem('saveData'));
             Timer.current = loadData.time;
             startTimer();
-            AreaManager.areas = loadData.areas;
+            Game.areas = loadData.areas;
             Game.unlockedSkills = loadData.unlockedSkills;
             Game.unlockableSkills = loadData.unlockableSkills;
             Game.allUnlocked = loadData.allUnlocked;

@@ -5,9 +5,9 @@ define([
     "Engine/Game",
     "Engine/InteractionManager",
     "Engine/Leaderboard",
-    "UserInterface/MissionInfo",
+    "UserInterface/loadout",
     "exports"
-], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, MissionInfo, exports) {
+], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, Loadout, exports) {
     _.extend(exports, {
         backgroundImg: null,
         backgroundPattern: null,
@@ -53,7 +53,8 @@ define([
                     .appendTo("#introScreen")
                     .on("click", _.hitch(this, function () {
                         InteractionManager.loadGame();
-                        Game.load();
+                        this.clearScreen();
+                        this.drawMap();
                         this.drawGameObjects();
                         if (!Game.allUnlocked) {
                             this.updateStarsTracker();
@@ -68,6 +69,8 @@ define([
                     localStorage.setItem('resumeAvailable', 'false');
                     localStorage.setItem('saveData', '');
                     Game.init();
+                    this.clearScreen();
+                    this.drawMap();
                     this.drawGameObjects();
                     if (!Game.allUnlocked) {
                         this.updateStarsTracker();
@@ -131,7 +134,7 @@ define([
             if (isStartMission) {
                 this.backgroundOffset = 0;
                 this.backgroundImg = document.createElement('img');
-                this.backgroundImg.src = 'app/static/images/backgrounds/' + backgrounds[MissionInfo.currentAreaIndex] + ".jpg";
+                this.backgroundImg.src = 'app/static/images/backgrounds/' + backgrounds[Game.currentAreaIndex] + ".jpg";
             }
             else {
                 $("#gameScreen").css({
@@ -396,6 +399,51 @@ define([
                 .addClass("starTracker")
                 .html(starsEarnedHtml + '<br/>' + starsToNextLevelHtml)
                 .appendTo('#gameScreen')
+        },
+        //Remove all contents of the main game window
+        clearScreen: function(){
+            $("#gameScreen").html("");
+        },
+        //Creates the GUI of the menu
+        drawMap : function(){
+            //Creates the main map div
+            $("<div/>",{
+                "class": "mainMap"
+            }).appendTo("#gameScreen");
+            //Creates loadout button
+            $("<div>LOADOUT</div>")
+                .addClass("loadoutButton")
+                .on("click",function(){
+                    Loadout.drawLoadoutScreen();
+                })
+                .appendTo("#gameScreen");
+
+            //Draw the timer
+            $('<div id="timer">' + InteractionManager.getTime() + '</div>').addClass("inMap").appendTo('#gameScreen');
+
+            //Creates the three areas
+            for(var i=0;i < Game.areas.length;i++){
+                var tempArea = document.createElement("div");
+                if(Game.areas[i].active){
+                    tempArea.className="colored area"+i;
+                }
+                else{
+                    tempArea.className="greyscale area"+i;
+                }
+                document.getElementById("gameScreen").appendChild(tempArea);
+                if(Game.areas[i].active){
+                    Game.drawMissions(i);
+                }
+            }
+        },
+        //Creates an error message with given content
+        errorMessage: function(content){
+            $("<div>"+content+"</div>")
+                .addClass("errorMessage")
+                .appendTo("#gameScreen")
+                .fadeOut(2000,"linear",function(){
+                    $(this).remove();
+                })
         }
     });
 });
