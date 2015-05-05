@@ -1,8 +1,10 @@
 ﻿define([
+    "GameObjects/Planes/AIPlane",
+
+    "Engine/Canvas",
     "Engine/InteractionManager",
-    "Engine/Utility",
-    "GameObjects/Planes/AIPlane"
-], function (InteractionManager, Utility, AIPlane) {
+    "Engine/Utility"
+], function (AIPlane, Canvas, InteractionManager, Utility) {
     return AIPlane.extend({
         init: function (left, bottom, maxHealth, damage) {
             var shootFrequency = 150, //ms
@@ -24,23 +26,23 @@
         },
 
         drawHpBar: function () {
-            ctx.beginPath();
-            ctx.fillStyle = 'red';
-            ctx.rect(-this.width / 2, (-this.height / 2) - 5, this.width * (this.currentHealth / this.maxHealth), 5);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            ctx.rect(-this.width / 2, (-this.height / 2) - 5, this.width, 5);
-            ctx.stroke();
+            Canvas.beginPath();
+            Canvas.set('fillStyle', 'red');
+            Canvas.rect(-this.width / 2, (-this.height / 2) - 5, this.width * (this.currentHealth / this.maxHealth), 5);
+            Canvas.fill();
+            Canvas.beginPath();
+            Canvas.set('lineWidth', 2);
+            Canvas.rect(-this.width / 2, (-this.height / 2) - 5, this.width, 5);
+            Canvas.stroke();
         },
 
         rotate: function () {
-            ctx.save();
-            ctx.translate(this.leftCoord + this.width / 2, this.bottomCoord + this.height / 2);
-            ctx.rotate(Utility.degreeToRadian(-this.orientationDeg));
-            ctx.drawImage(this.img, -this.width / 2, -this.height / 2);
+            Canvas.save();
+            Canvas.translate(this.leftCoord + this.width / 2, this.bottomCoord + this.height / 2);
+            Canvas.rotate(Utility.degreeToRadian(-this.orientationDeg));
+            Canvas.drawImage(this.img, -this.width / 2, -this.height / 2);
             this.drawHpBar();
-            ctx.restore();
+            Canvas.restore();
         }
     });
 });

@@ -1,6 +1,8 @@
 ﻿define([
-    "GameObjects/GameObject"
-], function (GameObject) {
+    "GameObjects/GameObject",
+
+    "Engine/Canvas"
+], function (GameObject, Canvas) {
     return GameObject.extend({
         init: function (left, bottom, orientationDeg, owner, width, height) {
             this._super(width, height);
@@ -20,10 +22,10 @@
         },
 
         move: function () {
-            ctx.beginPath();
-            ctx.fillStyle = this.bulletColor;
-            ctx.rect(this.leftCoord, this.bottomCoord, this.height, this.width);
-            ctx.fill();
+            Canvas.beginPath();
+            Canvas.set('fillStyle', this.bulletColor);
+            Canvas.rect(this.leftCoord, this.bottomCoord, this.height, this.width);
+            Canvas.fill();
         }
     });
 });

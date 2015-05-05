@@ -1,7 +1,9 @@
 ﻿define([
     "GameObjects/Bullets/PlayerBullet",
+
+    "Engine/Canvas",
     "Engine/Utility"
-], function (PlayerBullet, Utility) {
+], function (PlayerBullet, Canvas, Utility) {
     return PlayerBullet.extend({
         init: function (left, bottom, orientationDeg, owner, targetPlane) {
             this._super(left, bottom, orientationDeg, owner, 15, 4);
@@ -27,19 +29,19 @@
 
         move: function () {
             if (this.targetPlane) {
-                ctx.save();
-                ctx.translate(this.leftCoord, this.bottomCoord);
+                Canvas.save();
+                Canvas.translate(this.leftCoord, this.bottomCoord);
                 if (this.bottomCoord > this.targetPlane.bottomCoord + this.targetPlane.height / 2) {
-                    ctx.rotate(Utility.degreeToRadian(-(180 - this.orientationDeg)));
+                    Canvas.rotate(Utility.degreeToRadian(-(180 - this.orientationDeg)));
                 } else {
-                    ctx.rotate(Utility.degreeToRadian(-this.orientationDeg));
+                    Canvas.rotate(Utility.degreeToRadian(-this.orientationDeg));
                 }
 
-                ctx.beginPath();
-                ctx.fillStyle = this.bulletColor;
-                ctx.rect(0, 0, this.height, this.width);
-                ctx.fill();
-                ctx.restore();
+                Canvas.beginPath();
+                Canvas.set('fillStyle', this.bulletColor);
+                Canvas.rect(0, 0, this.height, this.width);
+                Canvas.fill();
+                Canvas.restore();
             } else {
                 this._super();
             }

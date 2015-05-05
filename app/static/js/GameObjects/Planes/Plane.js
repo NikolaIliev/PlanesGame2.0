@@ -1,6 +1,8 @@
 ﻿define([
-    "GameObjects/GameObject"
-], function (GameObject) {
+    "GameObjects/GameObject",
+
+    "Engine/Canvas"
+], function (GameObject, Canvas) {
     return GameObject.extend({
         init: function (maxHealth, damage, shootFrequency, width, height, type) {
             this._super(width, height);
@@ -80,19 +82,19 @@
         },
 
         drawHpBar: function () {
-            ctx.beginPath();
-            ctx.fillStyle = 'red';
-            ctx.rect(this.leftCoord, this.bottomCoord - 5, parseInt(this.width * (this.currentHealth / this.maxHealth)), 5);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            ctx.rect(this.leftCoord, this.bottomCoord - 5, this.width, 5);
-            ctx.stroke();
+            Canvas.beginPath();
+            Canvas.set('fillStyle', 'red');
+            Canvas.rect(this.leftCoord, this.bottomCoord - 5, parseInt(this.width * (this.currentHealth / this.maxHealth)), 5);
+            Canvas.fill();
+            Canvas.beginPath();
+            Canvas.set('lineWidth', 2);
+            Canvas.rect(this.leftCoord, this.bottomCoord - 5, this.width, 5);
+            Canvas.stroke();
         },
 
         move: function () {
             if (!this.isAnimated) {
-                ctx.drawImage(this.img, this.leftCoord, this.bottomCoord);
+                Canvas.drawImage(this.img, this.leftCoord, this.bottomCoord);
                 this.drawHpBar();
             }
         }

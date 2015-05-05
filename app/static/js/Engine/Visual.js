@@ -1,12 +1,13 @@
 define([
     "jquery",
     "Engine/CAnimations",
+    "Engine/Canvas",
     "Engine/Game",
     "Engine/InteractionManager",
     "Engine/Leaderboard",
     "UserInterface/MissionInfo",
     "exports"
-], function ($, CAnimations, Game, InteractionManager, Leaderboard, MissionInfo, exports) {
+], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, MissionInfo, exports) {
     _.extend(exports, {
         backgroundImg: null,
         backgroundPattern: null,
@@ -146,12 +147,12 @@ define([
             var self = this;
             this.backgroundOffset++;
             if (this.backgroundOffset >= 1400) {
-                ctx.drawImage(self.backgroundImg, 0, 700 - (this.backgroundOffset - 1400));
+                Canvas.drawImage(self.backgroundImg, 0, 700 - (this.backgroundOffset - 1400));
             }
             if (this.backgroundOffset >= 2100) {
                 this.backgroundOffset = 0;
             }
-            ctx.drawImage(self.backgroundImg, 0, -this.backgroundOffset);
+            Canvas.drawImage(self.backgroundImg, 0, -this.backgroundOffset);
         },
 
 
@@ -265,7 +266,7 @@ define([
         },
 
         redrawUI: function () {
-            ctx.drawImage(this.uiImg, 0, 0);
+            Canvas.drawImage(this.uiImg, 0, 0);
         },
 
         //Make a skill's icon grey
@@ -375,7 +376,7 @@ define([
         drawGameObjects: function () {
             requestAnimationFrame(_.hitch(this, "drawGameObjects"));
             if (InteractionManager.getCurrentMission()) {
-                ctx.clearRect(0, 0, 960, 700);
+                Canvas.getContext().clearRect(0, 0, 960, 700);
                 this.iterateBackground();
                 CAnimations.iterate();
                 this.redrawUI();

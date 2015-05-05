@@ -1,7 +1,9 @@
 ﻿define([
-    "Engine/InteractionManager",
-    "GameObjects/Planes/Plane"
-], function (InteractionManager, Plane) {
+    "GameObjects/Planes/Plane",
+
+    "Engine/Canvas",
+    "Engine/InteractionManager"
+], function (Plane, Canvas, InteractionManager) {
     return Plane.extend({
         init: function () {
             var maxHealth = 100,
@@ -46,26 +48,26 @@
 
         stealthMove: function () {
             if (!this.isAnimated) {
-                ctx.save();
-                ctx.globalAlpha = 0.5;
-                ctx.drawImage(this.img, this.leftCoord, this.bottomCoord);
+                Canvas.save();
+                Canvas.set('globalAlpha', 0.5);
+                Canvas.drawImage(this.img, this.leftCoord, this.bottomCoord);
                 this.drawHpBar();
-                ctx.restore();
+                Canvas.restore();
             }
         },
 
         shieldMove: function () {
             if (!this.isAnimated) {
-                ctx.save();
-                ctx.globalAlpha = 0.5;
-                ctx.beginPath();
-                ctx.arc((this.leftCoord + this.width/2), (this.bottomCoord + this.height/2), this.width/2, 0, 2 * Math.PI, false);
-                ctx.fillStyle = '#ffff66';
-                ctx.fill();
-                ctx.globalAlpha = 1;
-                ctx.drawImage(this.img, this.leftCoord, this.bottomCoord);
+                Canvas.save();
+                Canvas.set('globalAlpha', 0.5);
+                Canvas.beginPath();
+                Canvas.arc((this.leftCoord + this.width/2), (this.bottomCoord + this.height/2), this.width/2, 0, 2 * Math.PI, false);
+                Canvas.set('fillStyle', '#ffff66');
+                Canvas.fill();
+                Canvas.set('globalAlpha', 1);
+                Canvas.drawImage(this.img, this.leftCoord, this.bottomCoord);
                 this.drawHpBar();
-                ctx.restore();
+                Canvas.restore();
             }
         }
     });

@@ -1,7 +1,8 @@
 ﻿define([
+    "Engine/Canvas",
     "Engine/Game",
     "Engine/InteractionManager"
-], function (Game, InteractionManager) {
+], function (Canvas, Game, InteractionManager) {
     return Class.extend({
         init: function (enemySpawnFrequencyMs, areaIndex) {
             this.enemySpawnFrequencyMs = enemySpawnFrequencyMs;
@@ -17,11 +18,7 @@
         startMission: function () {
             var self = this;
 
-            ctx = $('<canvas width="960" height="700" id="gameCanvas"></canvas>')
-                .appendTo('#gameScreen')
-                [0].getContext('2d');
-            ctx.translate(0, 700);
-            ctx.scale(1, -1);
+            Canvas.init();
 
             InteractionManager.spawnPlayer();
             $(document).on('mousemove', InteractionManager.movePlayerPlane);

@@ -1,6 +1,7 @@
 ﻿define([
+    "Engine/Canvas",
     "Engine/Utility"
-], function (Utility) {
+], function (Canvas, Utility) {
     return {
         animatedObjects: [],
         iterate: function () {
@@ -47,13 +48,16 @@
                 obj.bottomCoord = parseInt(obj.bottomCoord);
                 this.normalizeAnimationProps(obj);
             }
-            //animate
-            ctx.save();
-            ctx.globalAlpha = obj.animationProps.opacityCurrent;
-            ctx.translate(obj.leftCoord, obj.bottomCoord);
-            ctx.rotate(Utility.degreeToRadian(obj.animationProps.rotationCurrent));
-            ctx.drawImage(obj.img, 0, 0, obj.width * obj.animationProps.scaleCurrent, obj.height * obj.animationProps.scaleCurrent);
-            ctx.restore();
+            this.updateCanvas(obj);
+        },
+
+        updateCanvas: function (obj) {
+            Canvas.save();
+            Canvas.set('globalAlpha', obj.animationProps.opacityCurrent);
+            Canvas.translate(obj.leftCoord, obj.bottomCoord);
+            Canvas.rotate(Utility.degreeToRadian(obj.animationProps.rotationCurrent));
+            Canvas.drawImage(obj.img, 0, 0, obj.width * obj.animationProps.scaleCurrent, obj.height * obj.animationProps.scaleCurrent);
+            Canvas.restore();
         },
 
         normalizeAnimationProps: function (obj) {

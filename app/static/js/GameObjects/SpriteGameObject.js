@@ -1,6 +1,8 @@
 define([
-    "GameObjects/GameObject"
-], function (GameObject) {
+    "GameObjects/GameObject",
+
+    "Engine/Canvas"
+], function (GameObject, Canvas) {
     return GameObject.extend({
         init: function (left, bottom, width, height) {
             this._super(width, height);
@@ -22,7 +24,7 @@ define([
                 this.lastSpriteChangeTimestampMs = nowMs;
                 this.currentFrame = (this.currentFrame < this.frameCount) ? (this.currentFrame + 1) : 1;
             }
-            ctx.drawImage(this.img, (this.currentFrame - 1) * this.width, 0, this.width, this.height, this.leftCoord, this.bottomCoord, this.width, this.height);
+            Canvas.drawImage(this.img, (this.currentFrame - 1) * this.width, 0, this.width, this.height, this.leftCoord, this.bottomCoord, this.width, this.height);
         }
     });
 });

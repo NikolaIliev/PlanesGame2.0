@@ -1,7 +1,9 @@
 ﻿define([
-    "Engine/InteractionManager",
-    "Engine/Missions/Mission"
-], function (InteractionManager, Mission) {
+    "Engine/Missions/Mission",
+
+    "Engine/Canvas",
+    "Engine/InteractionManager"
+], function (Mission, Canvas, InteractionManager) {
     return Mission.extend({
         init: function (areaIndex) {
             var enemySpawnFrequencyMs = 800;
@@ -23,21 +25,23 @@
         updatePrimaryStatus: function(past){
             var remainingTime = 45 - (InteractionManager.getSeconds() - this.startTime);
             remainingTime = (remainingTime >= 0) ? remainingTime : 0;
-            ctx.save();
-            ctx.translate(0, 700);
-            ctx.scale(1, -1);
-            ctx.shadowOffsetX = 3;
-            ctx.shadowOffsetY = 3;
-            ctx.shadowBlur = 2;
-            ctx.shadowColor = 'black';
-            ctx.font = '18px sans-serif';
-            ctx.fillStyle = 'white';
-            ctx.fillText('Survive for another', 655, 670);
-            ctx.font = '30px sans-serif';
-            ctx.fillText(remainingTime, 815, 670);
-            ctx.font = '18px sans-serif';
-            ctx.fillText('seconds', 855, 670);
-            ctx.restore();
+            Canvas.save();
+            Canvas.translate(0, 700);
+            Canvas.scale(1, -1);
+            Canvas.set({
+                shadowOffsetX: 3,
+                shadowOffsetY: 3,
+                shadowBlur: 2,
+                shadowColor: 'black',
+                font: '18px sans-serif',
+                fillStyle: 'white'
+            });
+            Canvas.fillText('Survive for another', 655, 670);
+            Canvas.set('font', '30px sans-serif');
+            Canvas.fillText(remainingTime, 815, 670);
+            Canvas.set('font', '18px sans-serif');
+            Canvas.fillText('seconds', 855, 670);
+            Canvas.restore();
         }
     });
 });

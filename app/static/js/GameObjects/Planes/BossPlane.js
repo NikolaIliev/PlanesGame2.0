@@ -1,12 +1,14 @@
 ﻿define([
     "GameObjects/Planes/EnemyChasePlane",
+
     "Engine/CAnimations",
+    "Engine/Canvas",
     "Engine/InteractionManager",
     "Engine/Skills/BossSkills/BossDeathRays",
     "Engine/Skills/BossSkills/BossSpreadShot",
     "Engine/Skills/BossSkills/BossSummonStormClouds",
     "Engine/Utility"
-], function (EnemyChasePlane, CAnimations, InteractionManager, BossDeathRays, BossSpreadShot, BossSummonStormClouds, Utility) {
+], function (EnemyChasePlane, CAnimations, Canvas, InteractionManager, BossDeathRays, BossSpreadShot, BossSummonStormClouds, Utility) {
     return EnemyChasePlane.extend({
         init: function (left, bottom) {
             var shootFrequency = 500, //ms
@@ -194,30 +196,30 @@
         },
 
         drawCastBar: function () {
-            ctx.beginPath();
-            ctx.fillStyle = 'white';
-            ctx.rect(-this.width / 2, (-this.height / 2) - 5, this.width * parseInt($(this.castBar).css('width')) / 100, 5);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            ctx.rect(-this.width / 2, (-this.height / 2) - 5, this.width, 5);
-            ctx.stroke();
+            Canvas.beginPath();
+            Canvas.set('fillStyle', 'white');
+            Canvas.rect(-this.width / 2, (-this.height / 2) - 5, this.width * parseInt($(this.castBar).css('width')) / 100, 5);
+            Canvas.fill();
+            Canvas.beginPath();
+            Canvas.set('lineWidth', 2);
+            Canvas.rect(-this.width / 2, (-this.height / 2) - 5, this.width, 5);
+            Canvas.stroke();
         },
 
         move: function () {
             var playerBottom = InteractionManager.getPlayerBottomCoord();
 
-            ctx.save();
-            ctx.translate(this.leftCoord + this.width / 2, this.bottomCoord + this.height / 2);
+            Canvas.save();
+            Canvas.translate(this.leftCoord + this.width / 2, this.bottomCoord + this.height / 2);
             if (this.bottomCoord > playerBottom) {
-                ctx.rotate(Utility.degreeToRadian(this.orientationDeg));
+                Canvas.rotate(Utility.degreeToRadian(this.orientationDeg));
             } else {
-                ctx.rotate(Utility.degreeToRadian(180 - this.orientationDeg));
+                Canvas.rotate(Utility.degreeToRadian(180 - this.orientationDeg));
             }
-            ctx.drawImage(this.img, -this.width / 2, -this.height / 2);
+            Canvas.drawImage(this.img, -this.width / 2, -this.height / 2);
             this.drawHpBar();
             this.drawCastBar();
-            ctx.restore();
+            Canvas.restore();
         }
     });
 });
