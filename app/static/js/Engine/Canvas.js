@@ -3,7 +3,7 @@ define([
 ], function () {
     var node = $('<canvas width="960" height="700" id="gameCanvas"></canvas>')[0],
         context = node.getContext('2d'),
-        proxyFunctions = ["arc", "beginPath", "drawImage", "fill", "fillText", "rect", "restore", "rotate", "save", "scale", "stroke", "translate"],
+        proxyFunctions = ["arc", "beginPath", "clearRect", "drawImage", "fill", "fillText", "rect", "restore", "rotate", "save", "scale", "stroke", "translate"],
         Canvas = {
             init: function () {
                 $(node).appendTo("#gameScreen");

@@ -378,7 +378,7 @@ define([
         drawGameObjects: function () {
             requestAnimationFrame(_.hitch(this, "drawGameObjects"));
             if (InteractionManager.getCurrentMission()) {
-                Canvas.getContext().clearRect(0, 0, 960, 700);
+                Canvas.clearRect(0, 0, 960, 700);
                 this.iterateBackground();
                 CAnimations.iterate();
                 this.redrawUI();
