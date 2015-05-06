@@ -226,7 +226,7 @@ define([
                 .addClass("missionList")
                 .appendTo("#gameScreen");
 
-            if(mission.type !== "boss"){
+            if(mission.get("type") !== "boss"){
                 for (var i = 0; i < 3; i++) {
                     $("<li/>")
                         .attr("id", "listItem" + i)

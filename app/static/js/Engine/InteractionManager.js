@@ -1,10 +1,7 @@
 ﻿define([
     "Engine/CAnimations",
     "Engine/Game",
-    "Engine/Missions/BossMission",
-    "Engine/Missions/DominationMission",
-    "Engine/Missions/GauntletMission",
-    "Engine/Missions/SurvivalMission",
+    "Engine/Missions/MissionCollection",
     "Engine/Scaling",
     "Engine/Skills/AbsorbBullets",
     "Engine/Skills/BlackHole",
@@ -40,11 +37,10 @@
     "GameObjects/Planes/SentryPlane",
     "UserInterface/loadout",
     "exports"
-], function (CAnimations, Game, BossMission, DominationMission, GauntletMission, SurvivalMission, Scaling,
+], function (CAnimations, Game, MissionCollection, Scaling,
              AbsorbBullets, BlackHole, DeathRay, HealingShot, HomingShot, PiercingShot, Radioactive, Sentry, Shield, SpreadShot, Stealth, StopTime, SummonGuidedRocket,
              Visual, Utility, BossBullet, EnemyBullet, FighterBullet, GuidedRocket, HealingBullet, HomingBullet, PiercingBullet, PlayerBullet, StormCloud,
              HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, Loadout, exports) {
-    debugger;
     var playerPlane = new PlayerPlane(),
         starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
@@ -265,7 +261,7 @@
         },
 
         spawnHealingOrb = function (left, bottom) {
-            if (!(currentMission instanceof BossMission) && pickups.length < 3) { //no more than 3 pickups can be on the screen at once
+            if (!(currentMission.get("type") === "boss") && pickups.length < 3) { //no more than 3 pickups can be on the screen at once
                 var healingOrb = new HealingOrb(left, bottom);
                 pickups.push(healingOrb);
             }
@@ -279,15 +275,6 @@
                     spawnRandomEnemy();
                 }
             }
-        },
-
-        movePlayerPlane = function (e) {
-            //substracting a half of the non-game screen
-            var newCoords = (currentMission instanceof BossMission) ?
-                convertEventCoordinatesBossMission(e.clientX, e.clientY) : convertEventCoordinates(e.clientX, e.clientY);
-
-            newCoords.left -= 50; //adjust plane to cursor
-            playerPlane.updateCoords(newCoords.left, newCoords.bottom);
         },
 
         rotateSentries = function (direction) {
@@ -408,6 +395,7 @@
         iterateFriendlyPlanes = function () {
             var i;
             for (i = 0; i < friendlyPlanes.length; i++) {
+                friendlyPlanes[i].rotateDeg();
                 friendlyPlanes[i].shoot();
             }
         },
@@ -482,10 +470,6 @@
                     : (kamikaze.bottomCoord + (kamikaze.movementSpeed * (1 - Math.abs(kamikaze.orientationDeg / 90))));
             kamikaze.chasePlayer();
             kamikaze.updateCoords(newLeft, newBottom);
-        },
-
-        handleMouseClick = function (e) {
-            playerPlane.isShooting = e.type == "mousedown";
         },
 
         shootPlayerPlane = function () {
@@ -685,7 +669,7 @@
             if (enemyPlanes[hitEnemyPlaneIndex].currentHealth == 0) {
                 enemyPlanes[hitEnemyPlaneIndex].die();
                 enemyPlanes.splice(hitEnemyPlaneIndex, 1);
-                if (currentMission instanceof GauntletMission) {
+                if (currentMission.get("type") === "gauntlet") {
                     currentMission.incrementEnemiesKilled();
                 }
             }
@@ -760,6 +744,17 @@
             Visual.clearScreen();
             Visual.adjustCSSofGameScreen(true);
             Visual.drawUI(currentMission);
+            MissionCollection.on("iterate", function () {
+                iterateBullets('all');
+                iterateFriendlyPlanes();
+                iterateEnemyPlanes();
+                iterateHazards();
+                iteratePickups();
+                shootPlayerPlane();
+                spawnEnemy();
+            });
+            MissionCollection.on("win", handleMissionWin);
+            MissionCollection.on("loss", handleMissionLoss);
         },
 
         launchMission = function (missionIndex, areaIndex) {
@@ -770,22 +765,9 @@
             //Set the current mission position
             Game.currentMissionIndex = missionIndex;
             Game.currentAreaIndex = areaIndex;
-            switch (missionType) {
-                case "survival":
-                    currentMission = new SurvivalMission(areaIndex);
-                    break;
-                case "domination":
-                    currentMission = new DominationMission(areaIndex);
-                    break;
-                case "gauntlet":
-                    currentMission = new GauntletMission(areaIndex);
-                    break;
-                case "boss":
-                    currentMission = new BossMission(areaIndex);
-                    break;
-                default:
-                    throw new Error("Unrecognized mission type: " + missionType);
-            }
+            currentMission = MissionCollection.add({
+                type: missionType
+            });
             onMissionStart();
             currentMission.startMission();
             if (missionType === "domination") {
@@ -823,6 +805,7 @@
                 playerPlane.skills[i].makeAvailable();
             }
             setInitialValues();
+            MissionCollection.off(null, null, this);
         },
 
         handleMissionWin = function () {
@@ -1211,7 +1194,7 @@
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
-                        if (currentMission instanceof GauntletMission) {
+                        if (currentMission.get("type") === "gauntlet") {
                             currentMission.incrementEnemiesKilled();
                         }
                     }
@@ -1296,7 +1279,7 @@
                         enemyPlanes[i].die();
                         enemyPlanes.splice(i, 1);
                         i--;
-                        if (currentMission instanceof GauntletMission) {
+                        if (currentMission.get("type") === "gauntlet") {
                             currentMission.incrementEnemiesKilled();
                         }
                     }
@@ -1514,25 +1497,25 @@
             $("#gameScreen").css({
                 "cursor": "url(app/static/images/UI/pointerCursor.png), auto"
             });
-            $(document).unbind('mouseup mousedown', handleMouseClick);
-            $(document).unbind('mousemove', movePlayerPlane);
+            //$(document).unbind('mouseup mousedown', handleMouseClick);
+            //$(document).unbind('mousemove', movePlayerPlane); // TODO: Fix
             $(document).on('click', placeBlackHole);
         },
 
         placeBlackHole = function (e) {
             //add black hole image
-            var convertedCoords = convertEventCoordinates(e.clientX, e.clientY),
+            var convertedCoords = Utility.convertEventCoordinates(e.clientX, e.clientY),
                 convertedLeft = (convertedCoords.left <= 860) ? convertedCoords.left : 860,
                 convertedBottom = (convertedCoords.bottom >= 350) ? convertedCoords.bottom : 350;
-            if (currentMission instanceof BossMission && !boss.isInQuarterPhase) {
+            if (currentMission.get("type") === "boss" && !boss.isInQuarterPhase) {
                 convertedLeft = (convertedCoords.left <= 660) ? convertedCoords.left : 660;
             }
             Visual.drawBlackHole(convertedLeft, convertedBottom);
             moveEnemiesBlackHole(convertedCoords.left, convertedBottom);
 
             window.setTimeout(function () {
-                $(document).bind('mouseup mousedown', handleMouseClick);
-                $(document).bind('mousemove', movePlayerPlane);
+                //$(document).bind('mouseup mousedown', handleMouseClick);
+                //$(document).bind('mousemove', movePlayerPlane); //TODO: Fix
                 $(document).off('click', placeBlackHole);
                 $("#gameScreen").css({
                     "cursor": "none"
@@ -1572,8 +1555,9 @@
             $("#gameScreen").css({
                 "cursor": "url(app/static/images/UI/pointerCursor.png), auto"
             });
-            $(document).unbind('mouseup mousedown', handleMouseClick);
-            $(document).unbind('mousemove', movePlayerPlane);
+            //TODO: fix
+            //$(document).unbind('mouseup mousedown', handleMouseClick);
+            //$(document).unbind('mousemove', movePlayerPlane);
             $(document).on('mousedown', initiateRocketPathDrawing);
             $(document).on('mouseup', finishRocketPathDrawing);
         },
@@ -1592,8 +1576,8 @@
                     $("#gameScreen").css({
                         "cursor": "none"
                     });
-                    $(document).on('mousemove', movePlayerPlane);
-                    $(document).bind('mouseup mousedown', handleMouseClick);
+                    //$(document).on('mousemove', movePlayerPlane);
+                    //$(document).bind('mouseup mousedown', handleMouseClick);
                     if (rocketPathArray.length > 0) {
                         spawnRocket(rocketPathArray[0].left, rocketPathArray[0].bottom);
                     }
@@ -1602,7 +1586,7 @@
         },
 
         drawRocketPath = function (e) {
-            var converted = convertEventCoordinates(e.clientX, e.clientY, true),
+            var converted = Utility.convertEventCoordinates(e.clientX, e.clientY, true),
                 lastCoordsInPath = rocketPathArray[rocketPathArray.length - 1];
             if (!lastCoordsInPath || distanceBetweenTwoPoints(converted.left, converted.bottom, lastCoordsInPath.left, lastCoordsInPath.bottom) > 20) {
                 rocketPathArray.push(converted);
@@ -1623,68 +1607,6 @@
                     : (rocket.bottomCoord + (rocket.movementSpeed * (1 - Math.abs(rocket.orientationDeg / 90))));
                 rocket.updateCoords(coords.left, coords.bottom);
             }
-        },
-
-        convertEventCoordinates = function (clientX, clientY, drawing) {
-            var converted = { left: 0, bottom: 0 };
-            var nonGameScreenWidth = window.innerWidth - 960;
-            //newLeft
-            if (clientX > nonGameScreenWidth / 2 + 50) {
-                //if mouse is inside the game screen
-                if (clientX < (nonGameScreenWidth / 2 + 960) - 50) {
-                    converted.left = clientX - (nonGameScreenWidth / 2);
-                } else { //mouse is to the right of game screen
-                    converted.left = 960 - 50;
-                }
-            } else { //mouse is to the left of game screen
-                converted.left = 0 + 50;
-            }
-            //newBottom
-            if (clientY <= 570) {
-                converted.bottom = 700 - clientY - 50;
-                if ($('#gameScreen').css('cursor') != 'none' && !drawing) {
-                    $('#gameScreen').css('cursor', 'none');
-                }
-            } else {
-                if ($('#gameScreen').css('cursor') == 'none') {
-                    $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
-                }
-                converted.bottom = 80;
-            }
-
-            converted.left = parseInt(converted.left);
-            converted.bottom = parseInt(converted.bottom);
-
-            return converted;
-        },
-
-        convertEventCoordinatesBossMission = function (clientX, clientY) {
-            var converted = { left: 0, bottom: 0 };
-            var nonGameScreenWidth = window.innerWidth - 960;
-            //newLeft
-            if (clientX > nonGameScreenWidth / 2 + 50) {
-                //if mouse is inside the game screen
-                if (clientX < (nonGameScreenWidth / 2 + 960) - 50) {
-                    converted.left = clientX - (nonGameScreenWidth / 2);
-                } else { //mouse is to the right of game screen
-                    converted.left = 960 - 50;
-                }
-            } else { //mouse is to the left of game screen
-                converted.left = 0 + 50;
-            }
-            //newBottom
-            if (clientY >= 350 && clientY <= 570) {
-                converted.bottom = 700 - clientY - 50;
-                $('#gameScreen').css('cursor', 'none');
-            } else if (clientY > 570) {
-                converted.bottom = 80;
-                $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
-            } else {
-                converted.bottom = 300;
-                $('#gameScreen').css('cursor', 'url(app/static/images/UI/pointerCursor.png), auto');
-            }
-
-            return converted;
         },
 
         isPlayerShooting = function () {
@@ -1797,12 +1719,6 @@
 
         updatePrimaryStatus = function () {
             currentMission.updatePrimaryStatus();
-        },
-
-        handleSkillUsage = function (keyPressed) {
-            if (playerPlane.skills[keyPressed]) {
-                playerPlane.skills[keyPressed].use();
-            }
         };
 
     _.extend(exports, {
@@ -1816,7 +1732,6 @@
         spawnEnemy: spawnEnemy,
         spawnHealingOrb: spawnHealingOrb,
         gauntletSpawnEnemies: gauntletSpawnEnemies,
-        movePlayerPlane: movePlayerPlane,
         iterateBullets: iterateBullets,
         iterateFriendlyPlanes: iterateFriendlyPlanes,
         iterateEnemyPlanes: iterateEnemyPlanes,
@@ -1824,11 +1739,9 @@
         iteratePickups: iteratePickups,
         increaseSpawnTime: increaseSpawnTime,
         shootPlayerPlane: shootPlayerPlane,
-        handleMouseClick: handleMouseClick,
         handleMissionWin: handleMissionWin,
         handleMissionLoss: handleMissionLoss,
         togglePause: togglePause,
-        handleSkillUsage: handleSkillUsage,
         stopTimeOn: stopTimeOn,
         stopTimeOff: stopTimeOff,
         handleDeathRay: handleDeathRay,

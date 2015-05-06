@@ -2,8 +2,10 @@
     "GameObjects/Planes/Plane",
 
     "Engine/Canvas",
-    "Engine/InteractionManager"
-], function (Plane, Canvas, InteractionManager) {
+    "Engine/InteractionManager",
+    "Engine/Missions/MissionCollection",
+    "Engine/Utility"
+], function (Plane, Canvas, InteractionManager, MissionCollection, Utility) {
     return Plane.extend({
         init: function () {
             var maxHealth = 100,
@@ -21,6 +23,8 @@
             this.stars = 0;
             this.bulletType = "player";
             this.originalMoveFunction = this.move;
+
+            this.setEvents();
         },
 
         img: $('<img src="app/static/images/planes/player.png"/>')[0],
@@ -31,6 +35,16 @@
         isStealthed: null,
         originalMoveFunction: null,
         skills: null,
+        setEvents: function () {
+            MissionCollection.on("change:active", _.bind(function (active) {
+                if (active) {
+                    $(document).on('keypress', _.bind(this.onKeyPress, this));
+                    $(document).on('mousedown', _.bind(this.onMouseDown, this));
+                    $(document).on('mousemove', _.bind(this.onMouseMove, this));
+                    $(document).on('mouseup', _.bind(this.onMouseUp, this));
+                }
+            }, this));
+        },
         shoot: function () {
             if (this.isShooting && this.tryShoot()) {
                 if (InteractionManager.getEnemiesCount() > 0 || InteractionManager.getCurrentMission().type === "boss")  {
@@ -68,6 +82,36 @@
                 Canvas.drawImage(this.img, this.leftCoord, this.bottomCoord);
                 this.drawHpBar();
                 Canvas.restore();
+            }
+        },
+
+        onMouseDown: function () {
+            this.isShooting = true;
+        },
+
+        onMouseUp: function () {
+            this.isShooting = false;
+        },
+
+        onMouseMove: function (e) {
+            //substracting a half of the non-game screen
+            var newCoords = (MissionCollection.getType() === "boss") ?
+                Utility.convertEventCoordinatesBossMission(e.clientX, e.clientY) :
+                Utility.convertEventCoordinates(e.clientX, e.clientY);
+
+            newCoords.left -= 50; //adjust plane to cursor
+            this.updateCoords(newCoords.left, newCoords.bottom);
+        },
+
+        onKeyPress: function (e) {
+            var skillIndex;
+
+            if (e.charCode >= "1".charCodeAt() && e.charCode <= "4".charCodeAt()) {
+                skillIndex = e.charCode - "1".charCodeAt();
+
+                if (this.skills[skillIndex]) {
+                    this.skills[skillIndex].use();
+                }
             }
         }
     });

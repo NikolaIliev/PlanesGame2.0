@@ -12,17 +12,22 @@
         require.config({
             baseUrl: "./app/static/js",
             paths: {
+                "backbone": vendorsRelativePath + "/backbone/backbone",
                 "jquery": vendorsRelativePath + "/jquery/dist/jquery",
                 "underscore": vendorsRelativePath + "/underscore/underscore"
             },
             shim: {
+                backbone: {
+                    deps: ["underscore", "jquery"],
+                    exports: "Backbone"
+                },
                 underscore: {
                     exports: '_'
                 }
             }
         });
-        require(["jquery", "underscore", "lib/inheritance", "bootstrap"],
-                function($, _, simpleInheritance, bootstrap) {
+        require(["jquery", "underscore", "backbone", "lib/inheritance", "bootstrap"],
+                function($, _, Backbone, simpleInheritance, bootstrap) {
                     bootstrap.init();
                 }
         );

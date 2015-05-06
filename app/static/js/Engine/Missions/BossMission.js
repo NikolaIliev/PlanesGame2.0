@@ -3,15 +3,15 @@
 
     "Engine/Canvas",
     "Engine/InteractionManager"
-], function (Mission, Canvas, InteractionManager) {
-    return Mission.extend({
-        init: function (areaIndex) {
+], function (MissionModel, Canvas, InteractionManager) {
+    return MissionModel.extend({
+        initialize: function (areaIndex) {
             var enemySpawnFrequencyMs = -1;
-            this._super(enemySpawnFrequencyMs, areaIndex);
+            MissionModel.prototype.initialize.call(this, enemySpawnFrequencyMs, areaIndex);
         },
 
         startMission: function () {
-            this._super();
+            MissionModel.prototype.startMission.apply(this, arguments);
             InteractionManager.spawnBoss();
         },
 

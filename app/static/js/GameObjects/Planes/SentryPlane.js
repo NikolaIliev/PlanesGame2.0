@@ -13,11 +13,18 @@
                 type = "friendly";
             this._super(left, bottom, maxHealth, damage, shootFrequency, width, height, type);
             this.orientationDeg = 0;
+            this.rotationDelta = 0;
             this.bulletType = "player";
             this.lastShootTimestamp = -1;
             this.rotate();
+            this.setEvents();
         },
         img: $('<img src="app/static/images/planes/sentry.png"/>')[0],
+
+        setEvents: function () {
+            $(document).on('keydown', _.bind(this.onKeyDown, this));
+            $(document).on('keyup', _.bind(this.onKeyUp, this));
+        },
 
         shoot: function () {
             if (this.tryShoot()) {
@@ -43,6 +50,29 @@
             Canvas.drawImage(this.img, -this.width / 2, -this.height / 2);
             this.drawHpBar();
             Canvas.restore();
+        },
+
+        rotateDeg: function () {
+            this.orientationDeg += this.rotationDelta;
+            if (this.orientationDeg < 0) {
+                this.orientationDeg = 360 - this.orientationDeg;
+            } else if (this.orientationDeg > 360) {
+                this.orientationDeg -= 360;
+            }
+        },
+
+        onKeyDown: function (e) {
+            if (e.keyCode === 65) { // a
+                this.rotationDelta = -3;
+            } else if (e.keyCode === 68) { //d
+                this.rotationDelta = 3;
+            }
+        },
+
+        onKeyUp: function (e) {
+            if (e.keyCode === 65 || e.keyCode === 68) { //a or d
+                this.rotationDelta = 0;
+            }
         }
     });
 });

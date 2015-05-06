@@ -2,20 +2,19 @@
     "Engine/Missions/Mission",
 
     "Engine/Canvas",
-    "Engine/InteractionManager"
-], function (Mission, Canvas, InteractionManager) {
-    return Mission.extend({
-        init: function (areaIndex) {
+    "Engine/InteractionManager",
+    "Engine/Missions/MissionCollection"
+], function (MissionModel, Canvas, InteractionManager, MissionCollection) {
+    return MissionModel.extend({
+        initialize: function (areaIndex) {
             var enemySpawnFrequencyMs = 1200;
-            this._super(enemySpawnFrequencyMs, areaIndex);
+
             this.enemiesKilled = 0;
             this.enemiesSpawnedPerTaunt = 3;
             this.lastTauntTimestamp = -1;
-        },
 
-        enemiesSpawnedPerTaunt: null,
-        enemiesKilled: null,
-        lastTauntTimestamp: null,
+            MissionModel.prototype.initialize.call(this, enemySpawnFrequencyMs, areaIndex);
+        },
 
         startMission: function () {
             $(document).on("keypress", function (e) {
@@ -24,7 +23,7 @@
                 }
             });
 
-            this._super();
+            MissionModel.prototype.startMission.call(this, arguments);
         },
 
         incrementEnemiesKilled: function () {

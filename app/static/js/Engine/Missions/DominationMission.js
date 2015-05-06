@@ -3,12 +3,13 @@
 
     "Engine/Canvas",
     "Engine/InteractionManager"
-], function (Mission, Canvas, InteractionManager) {
-    return Mission.extend({
-        init: function (areaIndex) {
+], function (MissionModel, Canvas, InteractionManager) {
+    return MissionModel.extend({
+        initialize: function (areaIndex) {
             var enemySpawnFrequencyMs = 600;
-            this._super(enemySpawnFrequencyMs, areaIndex);
             this.currentDominationStartTime = this.startTime;
+
+            MissionModel.prototype.initialize.call(this, enemySpawnFrequencyMs, areaIndex);
         },
 
         currentDominationStartTime: null,
@@ -26,7 +27,7 @@
                 this.resetDominationStartTime();
             }
             InteractionManager.increaseSpawnTime();
-            this._super();
+            MissionModel.prototype.mainLoop.apply(this, arguments);
         },
 
         checkWinConditions: function () {
