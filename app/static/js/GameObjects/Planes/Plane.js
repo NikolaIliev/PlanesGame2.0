@@ -4,68 +4,47 @@
     "Engine/Canvas"
 ], function (GameObject, Canvas) {
     return GameObject.extend({
-        init: function (maxHealth, damage, shootFrequency, width, height, type) {
-            this._super(width, height);
-            this.maxHealth = maxHealth;
-            this.currentHealth = maxHealth;
-            this.damage = damage;
-            this.shootFrequency = shootFrequency;
-            this.type = type;
-            this.lastShootTimestamp = -1;
-            this.isAnimated = false;
+        initialize: function (maxHealth, damage, shootFrequency, width, height, type) {
+            GameObject.prototype.initialize.call(this, width, height);
+
             this.animationProps = {
                 currentFrame: 0,
-                frames: 0,
-                //current values of supported animation properties
-                opacityCurrent: 1,
-                rotationCurrent: 0,
-                scaleCurrent: 1,
-                //target values of supported animation properties
-                opacityTarget: 1,
-                rotationTarget: 0,
-                scaleTarget: 1,
-                leftTarget: -1,
-                bottomTarget: -1,
-                //delta values of supported animation properties
-                opacityDelta: 0,
-                rotationDelta: 0,
-                scaleDelta: 0,
-                leftDelta: 0,
-                bottomDelta: 0
+                    frames: 0,
+                    //current values of supported animation properties
+                    opacityCurrent: 1,
+                    rotationCurrent: 0,
+                    scaleCurrent: 1,
+                    //target values of supported animation properties
+                    opacityTarget: 1,
+                    rotationTarget: 0,
+                    scaleTarget: 1,
+                    leftTarget: -1,
+                    bottomTarget: -1,
+                    //delta values of supported animation properties
+                    opacityDelta: 0,
+                    rotationDelta: 0,
+                    scaleDelta: 0,
+                    leftDelta: 0,
+                    bottomDelta: 0
             };
+            this.set({
+                maxHealth: maxHealth,
+                currentHealth: maxHealth,
+                damage: damage,
+                shootFrequency: shootFrequency,
+                type: type,
+                isAnimated: false,
+                lastShootTimestamp: -1
+            });
         },
 
-        maxHealth: null,
-        currentHealth: null,
-        damage: null,
-        shootFrequency: null,
-        bulletType: null,
-        lastShootTimestamp: null,
-        isAnimated: null,
-        animationProps: null,
-
-        updateCoords: function (left, bottom) {
-            this._super(left, bottom);
-        },
-
-        updateHpBar: function () {
-        },
-
-        takeDamage: function (damage){
-            if(this.currentHealth > damage){
-                this.currentHealth -= damage;
-            } else {
-                this.currentHealth = 0;
-            }
+        takeDamage: function (damage) {
+            this.set('currentHealth', Math.max(0, this.get('currentHealth') - damage));
             this.updateHpBar();
         },
 
-        receiveHeal: function(healingPoints){
-            if((this.currentHealth + healingPoints) >= this.maxHealth){
-                this.currentHealth = this.maxHealth;
-            } else {
-                this.currentHealth += healingPoints;
-            }
+        receiveHeal: function (healingPoints) {
+            this.set('currentHealth', Math.min(this.get('currentHealth') + healingPoints, this.get('maxHealth')));
             this.updateHpBar();
         },
 
@@ -73,8 +52,8 @@
             var nowMs = Date.now(),
                 canShoot = false;
 
-            if (nowMs - this.lastShootTimestamp > this.shootFrequency) {
-                this.lastShootTimestamp = nowMs;
+            if (nowMs - this.get('lastShootTimestamp') > this.get('shootFrequency')) {
+                this.set('lastShootTimestamp', nowMs);
                 canShoot = true;
             }
 
@@ -84,17 +63,17 @@
         drawHpBar: function () {
             Canvas.beginPath();
             Canvas.set('fillStyle', 'red');
-            Canvas.rect(this.leftCoord, this.bottomCoord - 5, parseInt(this.width * (this.currentHealth / this.maxHealth)), 5);
+            Canvas.rect(this.get('leftCoord'), this.get('bottomCoord') - 5, parseInt(this.get('width') * (this.get('currentHealth') / this.get('maxHealth'))), 5);
             Canvas.fill();
             Canvas.beginPath();
             Canvas.set('lineWidth', 2);
-            Canvas.rect(this.leftCoord, this.bottomCoord - 5, this.width, 5);
+            Canvas.rect(this.get('leftCoord'), this.get('bottomCoord') - 5, this.get('width'), 5);
             Canvas.stroke();
         },
 
-        move: function () {
-            if (!this.isAnimated) {
-                Canvas.drawImage(this.img, this.leftCoord, this.bottomCoord);
+        draw: function () {
+            if (!this.get('isAnimated')) {
+                Canvas.drawImage(this.img, this.get('leftCoord'), this.get('bottomCoord'));
                 this.drawHpBar();
             }
         }

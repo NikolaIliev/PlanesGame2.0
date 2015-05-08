@@ -36,7 +36,7 @@
             Canvas.stroke();
         },
 
-        move: function () {
+        draw: function () {
             if (InteractionManager.getPlayerLeftCoord && InteractionManager.getPlayerBottomCoord && !this.isAnimated) {
                 var playerLeft = InteractionManager.getPlayerLeftCoord(),
                     playerBottom = InteractionManager.getPlayerBottomCoord();

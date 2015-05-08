@@ -3,58 +3,44 @@
     "GameObjects/Planes/AIPlane"
 ], function (InteractionManager, AIPlane) {
     return AIPlane.extend({
-        init: function (left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height) {
+        initialize: function (left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height) {
             var type = "enemy";
-            this._super(left, bottom, maxHealth, damage, shootFrequency, width, height, type);
-            this.movementSpeed = movementSpeed;
+            AIPlane.prototype.initialize.call(this, left, bottom, maxHealth, damage, shootFrequency, width, height, type);
+            this.set({
+                movementSpeed: movementSpeed,
+                lastDirectionChangeTimestamp: -1
+            });
             this.updateCoords(left, bottom);
-            this.move();
-            this.lastDirectionChangeTimestamp = -1;
+            this.draw();
         },
-        movingRight: null,
-        movingUp: null,
-        lastDirectionChangeTimestamp: null,
-        healingOrbSpawnChance: null, //percent
-
-
 
         changeDirection: function () {
-            //Generates a random number [0,3] and changes direction accordingly
-            switch (parseInt(Math.random() * 2)) {
-                case 0:
-                    this.movingRight = !this.movingRight;
-                    break;
-                case 1:
-                    this.movingUp = !this.movingUp;
-                    break;
-                default:
-                    throw new Error("Error with generating a random number [0,1] @ EnemyFighter::changeDirection()");
+            if (Math.random() > 0.5) {
+                this.set('movingRight', !this.get('movingRight'));
+            } else {
+                this.set('movingUp', !this.get('movingUp'));
             }
-
-        },
-
-        move: function () {
-            this._super();
         },
 
         moveAtDirection: function () {
-            if (this.movingRight && this.leftCoord < (960 - 95)) {
-                this.leftCoord += this.movementSpeed;
-            } else if (!this.movingRight && this.leftCoord > 3) {
-                this.leftCoord -= this.movementSpeed;
+            if (this.get('movingRight') && this.get('leftCoord') < (960 - 95)) {
+                this.set('leftCoord', this.get('leftCoord') + this.get('movementSpeed'));
+            } else if (!this.get('movingRight') && this.get('leftCoord') > 3) {
+                this.set('leftCoord', this.get('leftCoord') - this.get('movementSpeed'));
             }
 
-            if (this.movingUp && this.bottomCoord < (700 - 70)) {
-                this.bottomCoord += this.movementSpeed;
-            } else if (!this.movingUp && this.bottomCoord > (350)) {
-                this.bottomCoord -= this.movementSpeed;
+            if (this.get('movingUp') && this.get('bottomCoord') < (700 - 70)) {
+                this.set('bottomCoord', this.get('bottomCoord') + this.get('movementSpeed'));
+            } else if (!this.get('movingUp') && this.get('bottomCoord') > (350)) {
+                this.set('bottomCoord', this.get('bottomCoord') - this.get('movementSpeed'));
             }
         },
 
         die: function () {
-            this._super();
-            if (parseInt(Math.random() * 100 + 1) <= this.healingOrbSpawnChance) {
-                InteractionManager.spawnHealingOrb(this.leftCoord + (this.width / 2 - 20), this.bottomCoord + (this.height / 2 - 20));
+            AIPlane.prototype.die.apply(this, arguments);
+
+            if (parseInt(Math.random() * 100 + 1) <= this.get('healingOrbSpawnChance')) {
+                InteractionManager.spawnHealingOrb(this.get('leftCoord') + (this.get('width') / 2 - 20), this.get('bottomCoord') + (this.get('height') / 2 - 20));
             }
         }
     });

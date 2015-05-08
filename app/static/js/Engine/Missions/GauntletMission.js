@@ -2,9 +2,8 @@
     "Engine/Missions/Mission",
 
     "Engine/Canvas",
-    "Engine/InteractionManager",
-    "Engine/Missions/MissionCollection"
-], function (MissionModel, Canvas, InteractionManager, MissionCollection) {
+    "Engine/InteractionManager"
+], function (MissionModel, Canvas, InteractionManager) {
     return MissionModel.extend({
         initialize: function (areaIndex) {
             var enemySpawnFrequencyMs = 1200;
@@ -23,7 +22,7 @@
                 }
             });
 
-            MissionModel.prototype.startMission.call(this, arguments);
+            MissionModel.prototype.startMission.apply(this, arguments);
         },
 
         incrementEnemiesKilled: function () {

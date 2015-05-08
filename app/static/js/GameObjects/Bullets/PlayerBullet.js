@@ -5,24 +5,41 @@
     "Engine/Utility"
 ], function (Bullet, Canvas, Utility) {
     return Bullet.extend({
-        init: function (left, bottom, orientationDeg, owner) {
-            this._super(left, bottom, orientationDeg, owner, 15, 4);
-            this.bulletColor = '#fb2c00';
+        initialize: function (left, bottom, orientationDeg, owner) {
+            Bullet.prototype.initialize.call(this, left, bottom, orientationDeg, owner, 15, 4);
+
+            this.set('bulletColor', '#fb2c00');
         },
 
-        move: function () {
-            if (this.orientationDeg != 0) {
+        draw: function () {
+            if (this.get('orientationDeg') != 0) {
                 Canvas.save();
-                Canvas.translate(this.leftCoord, this.bottomCoord);
-                Canvas.rotate(Utility.degreeToRadian(-this.orientationDeg));
+                Canvas.translate(this.get('leftCoord'), this.get('bottomCoord'));
+                Canvas.rotate(Utility.degreeToRadian(-this.get('orientationDeg')));
                 Canvas.beginPath();
-                Canvas.set('fillStyle', this.bulletColor);
-                Canvas.rect(0, 0, this.height, this.width);
+                Canvas.set('fillStyle', this.get('bulletColor'));
+                Canvas.rect(0, 0, this.get('height'), this.get('width'));
                 Canvas.fill();
                 Canvas.restore();
             } else {
-                this._super();
+                Bullet.prototype.draw.apply(this, arguments);
             }
+        },
+
+        move: function () {
+            var playerBulletsSpeed = 10,
+                newLeftCoord = this.get('leftCoord') + this.get('orientationDeg') / 45 * playerBulletsSpeed, //if the degree is (45) or (-45), the bullet
+                newBottomCoord = parseInt((this.get('orientationDeg') > -90 && this.get('orientationDeg') < 90) ?
+                    (this.get('bottomCoord') + (playerBulletsSpeed * (1 - Math.abs(this.get('orientationDeg') / 90))))
+                    : (this.get('bottomCoord') - (playerBulletsSpeed * (1 - Math.abs(this.get('orientationDeg') / 90)))));
+            //will travel diagonally at (playerBulletsSpeed) speed
+            this.updateCoords(newLeftCoord, newBottomCoord);
+        },
+
+        onIterate: function () {
+            Bullet.prototype.onIterate.apply(this, arguments);
+
+            this.move();
         }
     });
 });

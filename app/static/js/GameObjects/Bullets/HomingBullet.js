@@ -27,7 +27,7 @@
             this.orientationDeg = 0;
         },
 
-        move: function () {
+        draw: function () {
             if (this.targetPlane) {
                 Canvas.save();
                 Canvas.translate(this.leftCoord, this.bottomCoord);

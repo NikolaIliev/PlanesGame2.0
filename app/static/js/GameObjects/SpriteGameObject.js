@@ -4,27 +4,26 @@ define([
     "Engine/Canvas"
 ], function (GameObject, Canvas) {
     return GameObject.extend({
-        init: function (left, bottom, width, height) {
-            this._super(width, height);
-            this.updateCoords(left, bottom);
-            this.spriteChangeFrequency = 50;
+        initialize: function (left, bottom, width, height) {
+            GameObject.prototype.initialize.call(this, width, height);
+
             this.lastSpriteChangeTimestampMs = -1;
-            this.currentFrame = 1;
+            this.set({
+                leftCoord: left,
+                bottomCoord: bottom,
+                spriteChangeFrequency: 50,
+                currentFrame: 1
+            })
         },
 
-        img: null,
-        currentFrame: null,
-        spriteChangeFrequency: null,
-        lastSpriteChangeTimestampMs: null,
-        frameCount: null,
-
-        draw: function () {
+        drawSpriteFrame: function () {
             var nowMs = Date.now();
-            if (nowMs - this.lastSpriteChangeTimestampMs > this.spriteChangeFrequency) {
+
+            if (nowMs - this.lastSpriteChangeTimestampMs > this.get('spriteChangeFrequency')) {
                 this.lastSpriteChangeTimestampMs = nowMs;
-                this.currentFrame = (this.currentFrame < this.frameCount) ? (this.currentFrame + 1) : 1;
+                this.set('currentFrame', (this.get('currentFrame') < this.frameCount) ? (this.get('currentFrame') + 1) : 1);
             }
-            Canvas.drawImage(this.img, (this.currentFrame - 1) * this.width, 0, this.width, this.height, this.leftCoord, this.bottomCoord, this.width, this.height);
+            Canvas.drawImage(this.get('img'), (this.get('currentFrame') - 1) * this.get('width'), 0, this.get('width'), this.get('height'), this.get('leftCoord'), this.get('bottomCoord'), this.get('width'), this.get('height'));
         }
     });
 });

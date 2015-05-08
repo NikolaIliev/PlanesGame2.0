@@ -5,9 +5,10 @@ define([
     "Engine/Game",
     "Engine/InteractionManager",
     "Engine/Leaderboard",
+    "Engine/pubsub",
     "UserInterface/loadout",
     "exports"
-], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, Loadout, exports) {
+], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, pubsub, Loadout, exports) {
     _.extend(exports, {
         backgroundImg: null,
         backgroundPattern: null,
@@ -383,7 +384,8 @@ define([
                 CAnimations.iterate();
                 this.redrawUI();
                 InteractionManager.updatePrimaryStatus();
-                InteractionManager.redrawGameObjects();
+                //InteractionManager.redrawGameObjects();
+                pubsub.trigger("frame");
             }
         },
 

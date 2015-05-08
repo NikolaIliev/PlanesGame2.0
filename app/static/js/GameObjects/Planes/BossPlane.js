@@ -206,7 +206,7 @@
             Canvas.stroke();
         },
 
-        move: function () {
+        draw: function () {
             var playerBottom = InteractionManager.getPlayerBottomCoord();
 
             Canvas.save();

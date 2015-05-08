@@ -1,7 +1,7 @@
 ﻿define([
     "Engine/CAnimations",
     "Engine/Game",
-    "Engine/Missions/MissionCollection",
+    "collections/MissionCollection",
     "Engine/Scaling",
     "Engine/Skills/AbsorbBullets",
     "Engine/Skills/BlackHole",
@@ -101,9 +101,9 @@
         },
         setInitialValues = function () {
             playerPlane.absorptionShieldStrength = 0;
-            playerPlane.move = playerPlane.originalMoveFunction;
+            playerPlane.move = playerPlane.get('originalMoveFunction');
             boss = null;
-            playerPlane.isShooting = false;
+            playerPlane.set('isShooting', false);
             timeIsStopped = false;
             bullets = [];
             hazards = [];
@@ -312,7 +312,7 @@
                         handleCollisionPlayerBullet(bullets[i], hitEnemyPlaneIndex);
                         bullets[i].handleCollision(enemyPlanes[hitEnemyPlaneIndex]);
                     } else {
-                        movePlayerBullet(bullets[i]);
+                        //movePlayerBullet(bullets[i]);
                     }
                 }
                 else if ((type == 'all' || type == 'enemy') && bullets[i] instanceof EnemyBullet) {
@@ -421,7 +421,7 @@
                         enemyPlanes[i].trySummonStorm();
                     }
                 } else {
-                    enemyPlanes[i].move();
+                    enemyPlanes[i].draw();
                 }
             }
         },
@@ -744,15 +744,15 @@
             Visual.clearScreen();
             Visual.adjustCSSofGameScreen(true);
             Visual.drawUI(currentMission);
-            MissionCollection.on("iterate", function () {
-                iterateBullets('all');
-                iterateFriendlyPlanes();
-                iterateEnemyPlanes();
-                iterateHazards();
-                iteratePickups();
-                shootPlayerPlane();
-                spawnEnemy();
-            });
+            //MissionCollection.on("iterate", function () {
+            //    //iterateBullets('all');
+            //    iterateFriendlyPlanes();
+            //    //iterateEnemyPlanes();
+            //    iterateHazards();
+            //    iteratePickups();
+            //    //shootPlayerPlane();
+            //    //spawnEnemy();
+            //});
             MissionCollection.on("win", handleMissionWin);
             MissionCollection.on("loss", handleMissionLoss);
         },
@@ -782,7 +782,7 @@
 
         dominationSpawnStartingEnemies = function () {
             var i;
-            for (i = 0; i < 13; i++) {
+            for (i = 0; i < 100; i++) {
                 spawnFighter();
             }
         },
@@ -947,15 +947,15 @@
         },
 
         getPlayerLeftCoord = function () {
-            return playerPlane.leftCoord;
+            return playerPlane.get('leftCoord');
         },
 
         getPlayerBottomCoord = function () {
-            return playerPlane.bottomCoord;
+            return playerPlane.get('bottomCoord');
         },
 
         getPlayerSkills = function () {
-            return playerPlane.skills;
+            return playerPlane.get('skills');
         },
         setPlayerSkills = function (skillArray) {
             playerPlane.skills = [];
@@ -1610,7 +1610,7 @@
         },
 
         isPlayerShooting = function () {
-            return playerPlane.isShooting;
+            return playerPlane.get('isShooting');
         },
 
         handleBossIteration = function () {
@@ -1695,21 +1695,21 @@
 
         redrawGameObjects = function () {
             var i;
-            playerPlane.move();
+            playerPlane.draw();
             for (i = 0; i < enemyPlanes.length; i++) {
-                enemyPlanes[i].move();
+                enemyPlanes[i].draw();
             }
             for (i = 0; i < bullets.length; i++) {
-                bullets[i].move();
+                bullets[i].draw();
             }
             for (i = 0; i < friendlyPlanes.length; i++) {
                 friendlyPlanes[i].rotate();
             }
             for (i = 0; i < pickups.length; i++) {
-                pickups[i].draw();
+                pickups[i].drawSpriteFrame();
             }
             for (i = 0; i < hazards.length; i++) {
-                hazards[i].draw();
+                hazards[i].drawSpriteFrame();
             }
         },
 

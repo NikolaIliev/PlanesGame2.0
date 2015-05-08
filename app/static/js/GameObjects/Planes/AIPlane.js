@@ -3,30 +3,31 @@
     "GameObjects/Planes/Plane"
 ], function (CAnimations, Plane) {
     return Plane.extend({
-        init: function (left, bottom, maxHealth, damage, shootFrequency, width, height, type) {
-            this._super(maxHealth, damage, shootFrequency, width, height, type);
-            this.updateCoords(left, bottom);
-            this.move();
+        initialize: function (left, bottom, maxHealth, damage, shootFrequency, width, height, type) {
+            Plane.prototype.initialize.call(this, maxHealth, damage, shootFrequency, width, height, type);
+            this.set({
+                leftCoord: left,
+                bottomCoord: bottom
+            });
+            this.draw();
         },
-
-        hpBar: null,
 
         animateSpawn: function () {
             var rand = parseInt(Math.random() * 2),
-                currentLeftCoord = this.leftCoord;
+                currentLeftCoord = this.get('leftCoord');
 
             switch (rand) {
                 case 0:
-                    this.leftCoord = 0; //plane comes from the left side
+                    this.set('leftCoord', 0); //plane comes from the left side
                     break;
                 case 1:
-                    this.leftCoord = 960; //plane comes from the right side
+                    this.set('leftCoord', 960); //plane comes from the right side
                     break;
                 default:
                     throw new Error('Error generating a random number [0, 2]');
             }
 
-            this.move();
+            this.draw();
 
             this.animationProps.opacityCurrent = 0;
             CAnimations.animate(this, {
@@ -34,25 +35,20 @@
                 rotation: 0,
                 scale: 1,
                 left: currentLeftCoord,
-                bottom: this.bottomCoord,
+                bottom: this.get('bottomCoord'),
                 frames: 90
             });
         },
 
         die: function () {
-            var self = this;
             CAnimations.animate(this, {
                 opacity: 0,
                 rotation: 179,
                 scale: 0,
-                left: this.leftCoord,
-                bottom: this.bottomCoord,
-                frames: 80,
+                left: this.get('leftCoord'),
+                bottom: this.get('bottomCoord'),
+                frames: 80
             });
-        },
-
-        move: function () {
-            this._super();
         }
     });
 });

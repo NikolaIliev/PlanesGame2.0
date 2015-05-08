@@ -22,8 +22,13 @@
         img: $('<img src="app/static/images/planes/sentry.png"/>')[0],
 
         setEvents: function () {
-            $(document).on('keydown', _.bind(this.onKeyDown, this));
-            $(document).on('keyup', _.bind(this.onKeyUp, this));
+            this.onKeyDownEvent = $(document).on('keydown', _.bind(this.onKeyDown, this));
+            this.onKeyUpEvent = $(document).on('keyup', _.bind(this.onKeyUp, this));
+        },
+
+        unsetEvents: function () {
+            $.off(this.onKeyDownEvent);
+            $.off(this.onKeyUpEvent);
         },
 
         shoot: function () {

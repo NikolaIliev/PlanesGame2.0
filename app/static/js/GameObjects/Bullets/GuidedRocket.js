@@ -51,7 +51,7 @@
             }, 1500);
         },
 
-        move: function () {
+        draw: function () {
             if (this.readyToMove) {
                 this.div.style.left = this.leftCoord + 'px';
                 this.div.style.bottom = this.bottomCoord + 'px';

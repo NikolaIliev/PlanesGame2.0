@@ -4,27 +4,33 @@
     "Engine/Canvas"
 ], function (GameObject, Canvas) {
     return GameObject.extend({
-        init: function (left, bottom, orientationDeg, owner, width, height) {
-            this._super(width, height);
-            this.owner = owner;
+        initialize: function (left, bottom, orientationDeg, owner, width, height) {
+            GameObject.prototype.initialize.call(this, width, height);
+
+            this.set({
+                owner: owner,
+                orientationDeg: orientationDeg,
+                toBeSpliced: false
+            });
             this.updateCoords(left, bottom);
-            this.move();
-            this.orientationDeg = orientationDeg;
-            this.toBeSpliced = false;               //true if the bullet is to be removed from the bullets array
         },
 
-        owner: null,
-        toBeSpliced: null,
-        bulletColor: null,
+        onIterate: function () {
+            GameObject.prototype.onIterate.apply(this, arguments);
+
+            if (this.get('bottomCoord') <= 70 || this.get('bottomCoord') > 700 || this.get('leftCoord') < 10 || this.get('leftCoord') > 947) {
+                this.destroy();
+            }
+        },
 
         handleCollision: function () {
-            this.toBeSpliced = true;
+            this.set('toBeSpliced', true);
         },
 
-        move: function () {
+        draw: function () {
             Canvas.beginPath();
-            Canvas.set('fillStyle', this.bulletColor);
-            Canvas.rect(this.leftCoord, this.bottomCoord, this.height, this.width);
+            Canvas.set('fillStyle', this.get('bulletColor'));
+            Canvas.rect(this.get('leftCoord'), this.get('bottomCoord'), this.get('height'), this.get('width'));
             Canvas.fill();
         }
     });
