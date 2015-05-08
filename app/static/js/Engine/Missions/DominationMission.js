@@ -1,9 +1,10 @@
 ﻿define([
     "Engine/Missions/Mission",
 
+    "collections/PlaneCollection",
     "Engine/Canvas",
     "Engine/InteractionManager"
-], function (MissionModel, Canvas, InteractionManager) {
+], function (MissionModel, PlaneCollection, Canvas, InteractionManager) {
     return MissionModel.extend({
         initialize: function (areaIndex) {
             var enemySpawnFrequencyMs = 600;
@@ -15,7 +16,9 @@
         currentDominationStartTime: null,
 
         checkDominating: function () {
-            return (InteractionManager.getEnemiesCount() <= 7);
+            return PlaneCollection.filter(function (model) {
+                return model.get('type') === 'enemy';
+            }).length <= 7;
         },
 
         resetDominationStartTime: function () {

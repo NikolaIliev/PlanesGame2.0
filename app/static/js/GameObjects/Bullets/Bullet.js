@@ -1,8 +1,11 @@
 ﻿define([
     "GameObjects/GameObject",
 
-    "Engine/Canvas"
-], function (GameObject, Canvas) {
+    "collections/BulletCollection",
+    "collections/PlaneCollection",
+    "Engine/Canvas",
+    "Engine/Utility"
+], function (GameObject, BulletCollection, PlaneCollection, Canvas, Utility) {
     return GameObject.extend({
         initialize: function (left, bottom, orientationDeg, owner, width, height) {
             GameObject.prototype.initialize.call(this, width, height);
@@ -20,7 +23,20 @@
 
             if (this.get('bottomCoord') <= 70 || this.get('bottomCoord') > 700 || this.get('leftCoord') < 10 || this.get('leftCoord') > 947) {
                 this.destroy();
+            } else {
+                this.checkCollision();
             }
+        },
+
+        checkCollision: function () {
+            //PlaneCollection.chain()
+            //    .filter(_.hitch(this, function (planeModel) {
+            //        return planeModel.get('type') !== this.get('owner').get('type')
+            //            && Utility.checkCollision(this, planeModel);
+            //    }))
+            //    .each(_.hitch(this, function (planeModel) {
+            //        planeModel.takeDamage(this.get('owner').damage);
+            //    }));
         },
 
         handleCollision: function () {
@@ -32,6 +48,11 @@
             Canvas.set('fillStyle', this.get('bulletColor'));
             Canvas.rect(this.get('leftCoord'), this.get('bottomCoord'), this.get('height'), this.get('width'));
             Canvas.fill();
+        },
+
+        destroy: function () {
+            GameObject.prototype.destroy.apply(this, arguments);
+            BulletCollection.remove(this);
         }
     });
 });

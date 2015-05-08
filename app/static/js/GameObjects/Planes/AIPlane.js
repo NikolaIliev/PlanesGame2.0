@@ -40,6 +40,14 @@
             });
         },
 
+        takeDamage: function () {
+            Plane.prototype.takeDamage.apply(this, arguments);
+
+            if (!this.get('currentHealth')) {
+                this.die();
+            }
+        },
+
         die: function () {
             CAnimations.animate(this, {
                 opacity: 0,
@@ -49,6 +57,7 @@
                 bottom: this.get('bottomCoord'),
                 frames: 80
             });
+            this.destroy();
         }
     });
 });

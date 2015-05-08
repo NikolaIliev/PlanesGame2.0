@@ -1,9 +1,10 @@
 ﻿define([
+    "collections/BulletCollection",
     "Engine/InteractionManager",
     "Engine/Skills/SpreadShot",
     "GameObjects/Planes/EnemyPlane",
     "GameObjects/Bullets/EnemyBullet"
-], function (InteractionManager, SpreadShot, EnemyPlane, EnemyBullet) {
+], function (BulletCollection, InteractionManager, SpreadShot, EnemyPlane, EnemyBullet) {
     //The generic enemy plane
 
     return EnemyPlane.extend({
@@ -14,7 +15,6 @@
             EnemyPlane.prototype.initialize.call(this, left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height);
 
             this.set({
-                bulletType: "fighter",
                 skills: [new SpreadShot(this)],
                 healingOrbSpawnChance: 10
             });
@@ -35,13 +35,12 @@
 
         shoot: function () {
             if (this.tryShoot()) {
-                debugger;
-                new EnemyBullet(this.get('leftCoord') + this.get('width') / 2, this.get('bottomCoord'), 0, this);
+                BulletCollection.add(new EnemyBullet(this.get('leftCoord') + this.get('width') / 2, this.get('bottomCoord'), 0, this));
             }
         },
 
         onIterate: function () {
-            if (!this.isAnimated) {
+            if (!this.get('isAnimated')) {
                 this.move();
                 this.shoot();
             }

@@ -2,6 +2,7 @@
     "Engine/CAnimations",
     "Engine/Game",
     "collections/MissionCollection",
+    "collections/PlaneCollection",
     "Engine/Scaling",
     "Engine/Skills/AbsorbBullets",
     "Engine/Skills/BlackHole",
@@ -37,11 +38,11 @@
     "GameObjects/Planes/SentryPlane",
     "UserInterface/loadout",
     "exports"
-], function (CAnimations, Game, MissionCollection, Scaling,
+], function (CAnimations, Game, MissionCollection, PlaneCollection, Scaling,
              AbsorbBullets, BlackHole, DeathRay, HealingShot, HomingShot, PiercingShot, Radioactive, Sentry, Shield, SpreadShot, Stealth, StopTime, SummonGuidedRocket,
              Visual, Utility, BossBullet, EnemyBullet, FighterBullet, GuidedRocket, HealingBullet, HomingBullet, PiercingBullet, PlayerBullet, StormCloud,
              HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, Loadout, exports) {
-    var playerPlane = new PlayerPlane(),
+    var playerPlane = PlaneCollection.add(new PlayerPlane()),
         starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         boss,
@@ -227,8 +228,8 @@
         },
 
         spawnFighter = function () {
-            var newFighter = new EnemyFighter(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
-                fighterMaxHealth, fighterDamage, fighterMovementSpeed);
+            var newFighter = PlaneCollection.add(new EnemyFighter(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
+                10, fighterDamage, fighterMovementSpeed));
             newFighter.animateSpawn();
             enemyPlanes.push(newFighter);
         },
@@ -782,7 +783,7 @@
 
         dominationSpawnStartingEnemies = function () {
             var i;
-            for (i = 0; i < 100; i++) {
+            for (i = 0; i < 13; i++) {
                 spawnFighter();
             }
         },
@@ -923,7 +924,7 @@
         },
 
         getPlayerHealth = function () {
-            return playerPlane.currentHealth;
+            return playerPlane.get('currentHealth');
         },
 
         getPlayerStars = function () {

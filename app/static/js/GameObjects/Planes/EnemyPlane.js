@@ -7,6 +7,7 @@
             var type = "enemy";
             AIPlane.prototype.initialize.call(this, left, bottom, maxHealth, damage, shootFrequency, width, height, type);
             this.set({
+                type: "enemy",
                 movementSpeed: movementSpeed,
                 lastDirectionChangeTimestamp: -1
             });
@@ -40,7 +41,7 @@
             AIPlane.prototype.die.apply(this, arguments);
 
             if (parseInt(Math.random() * 100 + 1) <= this.get('healingOrbSpawnChance')) {
-                InteractionManager.spawnHealingOrb(this.get('leftCoord') + (this.get('width') / 2 - 20), this.get('bottomCoord') + (this.get('height') / 2 - 20));
+                //InteractionManager.spawnHealingOrb(this.get('leftCoord') + (this.get('width') / 2 - 20), this.get('bottomCoord') + (this.get('height') / 2 - 20));
             }
         }
     });

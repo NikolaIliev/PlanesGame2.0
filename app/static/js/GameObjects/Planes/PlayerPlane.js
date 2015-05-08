@@ -3,10 +3,11 @@
 
     "Engine/Canvas",
     "Engine/InteractionManager",
+    "collections/BulletCollection",
     "collections/MissionCollection",
     "Engine/Utility",
     "GameObjects/Bullets/PlayerBullet"
-], function (Plane, Canvas, InteractionManager, MissionCollection, Utility, PlayerBullet) {
+], function (Plane, Canvas, InteractionManager, BulletCollection, MissionCollection, Utility, PlayerBullet) {
     return Plane.extend({
         initialize: function () {
             var maxHealth = 100,
@@ -25,7 +26,7 @@
                 absorptionShieldStrength: 0,
                 level: 1,
                 stars: 0,
-                bulletType: "player",
+                type: "player",
                 originalMoveFunction: this.move
             });
 
@@ -53,7 +54,7 @@
 
         shoot: function () {
             if (this.get('isShooting') && this.tryShoot()) {
-                new PlayerBullet(this.get('leftCoord'), this.get('bottomCoord'), 0, this);
+                BulletCollection.add(new PlayerBullet(this.get('leftCoord'), this.get('bottomCoord'), 0, this));
                 //if (InteractionManager.getEnemiesCount() > 0 || InteractionManager.getCurrentMission().type === "boss")  {
                 //    InteractionManager.spawnBullet(this.get('bulletType'), this.get('leftCoord') + this.get('width')/2, this.get('bottomCoord') + this.get('height'), 0, this);
                 //} else {

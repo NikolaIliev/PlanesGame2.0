@@ -1,8 +1,9 @@
 ﻿define([
     "GameObjects/GameObject",
 
+    "collections/PlaneCollection",
     "Engine/Canvas"
-], function (GameObject, Canvas) {
+], function (GameObject, PlaneCollection, Canvas) {
     return GameObject.extend({
         initialize: function (maxHealth, damage, shootFrequency, width, height, type) {
             GameObject.prototype.initialize.call(this, width, height);
@@ -76,6 +77,13 @@
                 Canvas.drawImage(this.img, this.get('leftCoord'), this.get('bottomCoord'));
                 this.drawHpBar();
             }
-        }
+        },
+
+        destroy: function () {
+            GameObject.prototype.destroy.apply(this, arguments);
+            PlaneCollection.remove(this);
+        },
+
+        updateHpBar: function () { }
     });
 });

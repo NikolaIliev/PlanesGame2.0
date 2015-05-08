@@ -108,6 +108,18 @@
             converted.bottom = parseInt(converted.bottom);
 
             return converted;
+        },
+
+        isPointInsideObject: function (x, y, obj) {
+            return (x >= obj.get('leftCoord') && x <= (obj.get('leftCoord') + obj.get('width'))) &&
+                (y >= obj.get('bottomCoord') && y <= (obj.get('bottomCoord') + obj.get('height')));
+        },
+
+        checkCollision: function (obj1, obj2) {
+            return this.isPointInsideObject(obj1.get('leftCoord'), obj1.get('bottomCoord'), obj2)
+                || this.isPointInsideObject(obj1.get('leftCoord') + obj1.get('width'), obj1.get('bottomCoord'), obj2)
+                || this.isPointInsideObject(obj1.get('leftCoord'), obj1.get('bottomCoord') + obj1.get('height'), obj2)
+                || this.isPointInsideObject(obj1.get('leftCoord') + obj1.get('width'), obj1.get('bottomCoord') + obj1.get('height'), obj2);
         }
     }
 });
