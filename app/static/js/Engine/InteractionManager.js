@@ -42,7 +42,7 @@
              AbsorbBullets, BlackHole, DeathRay, HealingShot, HomingShot, PiercingShot, Radioactive, Sentry, Shield, SpreadShot, Stealth, StopTime, SummonGuidedRocket,
              Visual, Utility, BossBullet, EnemyBullet, FighterBullet, GuidedRocket, HealingBullet, HomingBullet, PiercingBullet, PlayerBullet, StormCloud,
              HealingOrb, BossPlane, EnemyFighter, EnemyKamikaze, EnemyStormer, EnemySupplier, PlayerPlane, SentryPlane, Loadout, exports) {
-    var playerPlane = PlaneCollection.add(new PlayerPlane()),
+    var playerPlane = PlaneCollection.add({ type: "player"}),
         starsToLevelUp = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         starsToLevelUpCopy = [1, 3, 6, 9, 12, 15, 18, 19, 20, 21, 22, 23, 24, 25],
         boss,
@@ -228,8 +228,7 @@
         },
 
         spawnFighter = function () {
-            var newFighter = PlaneCollection.add(new EnemyFighter(Utility.getRandomLeftCoord(45), Utility.getRandomBottomCoordTopHalf(35),
-                10, fighterDamage, fighterMovementSpeed));
+            var newFighter = PlaneCollection.add({ type: "fighter"});
             newFighter.animateSpawn();
             enemyPlanes.push(newFighter);
         },
@@ -802,8 +801,8 @@
                 //continue to exist as they're coupled (reference eachother) and all the skills continue to get used on cooldown
                 //(storm clouds continue to appear every 20 seconds, even on the area screen)
             }
-            for (i = 0; i < playerPlane.skills.length; i++) {
-                playerPlane.skills[i].makeAvailable();
+            for (i = 0; i < playerPlane.get('skills').length; i++) {
+                playerPlane.get('skills')[i].makeAvailable();
             }
             setInitialValues();
             MissionCollection.off(null, null, this);

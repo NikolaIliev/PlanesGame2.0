@@ -1,19 +1,16 @@
 define([
-    "backbone",
-    "Engine/Missions/BossMission",
-    "Engine/Missions/DominationMission",
-    "Engine/Missions/GauntletMission",
-    "Engine/Missions/SurvivalMission"
-], function (Backbone, BossMissionModel, DominationMissionModel, GauntletMissionModel, SurvivalMissionModel) {
+    "backbone"
+], function (Backbone) {
     var modelMapping = {
-            "boss": BossMissionModel,
-            "domination": DominationMissionModel,
-            "gauntlet": GauntletMissionModel,
-            "survival": SurvivalMissionModel
+            "boss": "Engine/Missions/BossMission",
+            "domination": "Engine/Missions/DominationMission",
+            "gauntlet": "Engine/Missions/GauntletMission",
+            "multiplayer": "Engine/Missions/MultiplayerMission",
+            "survival": "Engine/Missions/SurvivalMission"
         },
         MissionCollection = Backbone.Collection.extend({
         model: function (attributes, options) {
-            return new modelMapping[attributes.type](attributes, options);
+            return new (require(modelMapping[attributes.type]))(attributes, options);
         },
 
         getType: function () {

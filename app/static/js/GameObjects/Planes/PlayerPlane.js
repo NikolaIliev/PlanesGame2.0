@@ -17,7 +17,7 @@
                 height = 80,
                 type = "player";
 
-            Plane.prototype.initialize.call(this, maxHealth, damage, shootFrequency, width, height, type);
+            Plane.prototype.initialize.apply(this, arguments);
 
             this.set({
                 isShooting: false,
@@ -26,6 +26,12 @@
                 absorptionShieldStrength: 0,
                 level: 1,
                 stars: 0,
+                width: 100,
+                height: 80,
+                shootFrequency: 120,
+                damage: 1,
+                maxHealth: 100,
+                currentHealth: 100,
                 type: "player",
                 originalMoveFunction: this.move
             });
@@ -46,15 +52,22 @@
         },
 
         unsetEvents: function () {
-            $.off(this.onKeyPressEvent);
-            $.off(this.onMouseDownEvent);
-            $.off(this.onMouseMoveEvent);
-            $.off(this.onMouseUpEvent);
+            $(document).off(this.onKeyPressEvent);
+            $(document).off(this.onMouseDownEvent);
+            $(document).off(this.onMouseMoveEvent);
+            $(document).off(this.onMouseUpEvent);
         },
 
         shoot: function () {
             if (this.get('isShooting') && this.tryShoot()) {
-                BulletCollection.add(new PlayerBullet(this.get('leftCoord'), this.get('bottomCoord'), 0, this));
+                BulletCollection.add({
+                    type: 'player',
+                    leftCoord: this.get('leftCoord') + this.get('width') / 2,
+                    bottomCoord: this.get('bottomCoord') + this.get('height'),
+                    orientationDeg: 0,
+                    damage: this.get('damage')
+                });
+                //BulletCollection.add(new PlayerBullet(this.get('leftCoord'), this.get('bottomCoord'), 0, this.get('damage')));
                 //if (InteractionManager.getEnemiesCount() > 0 || InteractionManager.getCurrentMission().type === "boss")  {
                 //    InteractionManager.spawnBullet(this.get('bulletType'), this.get('leftCoord') + this.get('width')/2, this.get('bottomCoord') + this.get('height'), 0, this);
                 //} else {

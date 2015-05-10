@@ -6,9 +6,13 @@
     "Engine/Utility"
 ], function (Bullet, Canvas, Scaling, Utility) {
     return Bullet.extend({
-        initialize: function (left, bottom, orientationDeg, owner) {
-            Bullet.prototype.initialize.call(this, left, bottom, orientationDeg, owner, 15, 4);
-            this.set('bulletColor', '#fb2c00');
+        initialize: function () {
+            Bullet.prototype.initialize.apply(this, arguments);
+            this.set({
+                width: 15,
+                height: 4,
+                bulletColor: '#fb2c00'
+            });
         },
 
         draw: function () {
@@ -39,7 +43,7 @@
         onIterate: function () {
             Bullet.prototype.onIterate.apply(this, arguments);
 
-            this.move();
+            //this.move();
         }
     });
 });

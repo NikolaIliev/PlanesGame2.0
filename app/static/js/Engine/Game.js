@@ -25,7 +25,8 @@ define([
     _.extend(exports, {
         //Contains primary and secondary mission types
         //
-        primaryMissionTypes: ['survival', 'domination', 'gauntlet'],
+        //primaryMissionTypes: ['survival', 'domination', 'gauntlet'],
+        primaryMissionTypes: ['domination'],
         //primary: ["survival"],
         secondaryMissionTypes: ['remainingHealth', 'accuracy', 'usedSkills'],
         unlockableSkills : ["spreadshot","homingshot","penetratingshot","sentry","stoptime","deathray", "blackhole", "stealth", "radioactive", "healingshot", 'guidedrocket', 'shield', 'absorbbullets'],

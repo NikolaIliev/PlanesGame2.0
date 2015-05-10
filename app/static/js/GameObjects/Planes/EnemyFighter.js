@@ -2,20 +2,27 @@
     "collections/BulletCollection",
     "Engine/InteractionManager",
     "Engine/Skills/SpreadShot",
+    "Engine/Utility",
     "GameObjects/Planes/EnemyPlane",
     "GameObjects/Bullets/EnemyBullet"
-], function (BulletCollection, InteractionManager, SpreadShot, EnemyPlane, EnemyBullet) {
+], function (BulletCollection, InteractionManager, SpreadShot, Utility, EnemyPlane, EnemyBullet) {
     //The generic enemy plane
 
     return EnemyPlane.extend({
-        initialize: function (left, bottom, maxHealth, damage, movementSpeed) {
-            var shootFrequency = 1500,
-                width = 90,
-                height = 72;
-            EnemyPlane.prototype.initialize.call(this, left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height);
+        initialize: function () {
+            EnemyPlane.prototype.initialize.apply(this, arguments);
 
             this.set({
+                leftCoord: Utility.getRandomLeftCoord(45),
+                bottomCoord: Utility.getRandomBottomCoordTopHalf(35),
+                maxHealth: 10,
+                currentHealth: 10,
+                damage: 1,
+                movementSpeed: 10,
                 skills: [new SpreadShot(this)],
+                shootFrequency: 1500,
+                width: 90,
+                height: 72,
                 healingOrbSpawnChance: 10
             });
             this.changeDirection();
@@ -35,15 +42,21 @@
 
         shoot: function () {
             if (this.tryShoot()) {
-                BulletCollection.add(new EnemyBullet(this.get('leftCoord') + this.get('width') / 2, this.get('bottomCoord'), 0, this));
+                BulletCollection.add({
+                    type: 'fighter',
+                    leftCoord: this.get('leftCoord') + this.get('width') / 2,
+                    bottomCoord: this.get('bottomCoord'),
+                    orientationDeg: 0,
+                    damage: this.get('damage')
+                });
             }
         },
 
         onIterate: function () {
-            if (!this.get('isAnimated')) {
-                this.move();
-                this.shoot();
-            }
+            //if (!this.get('isAnimated')) {
+            //    this.move();
+            //    this.shoot();
+            //}
         }
     });
 });

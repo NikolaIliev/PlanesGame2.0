@@ -3,15 +3,11 @@
     "GameObjects/Planes/AIPlane"
 ], function (InteractionManager, AIPlane) {
     return AIPlane.extend({
-        initialize: function (left, bottom, maxHealth, damage, movementSpeed, shootFrequency, width, height) {
-            var type = "enemy";
-            AIPlane.prototype.initialize.call(this, left, bottom, maxHealth, damage, shootFrequency, width, height, type);
+        initialize: function () {
+            AIPlane.prototype.initialize.apply(this, arguments);
             this.set({
-                type: "enemy",
-                movementSpeed: movementSpeed,
                 lastDirectionChangeTimestamp: -1
             });
-            this.updateCoords(left, bottom);
             this.draw();
         },
 

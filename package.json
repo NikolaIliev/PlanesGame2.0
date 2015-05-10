@@ -1,0 +1,15 @@
+{
+  "name": "planes-game",
+  "version": "2.0.0",
+  "description": "A game where planes seek to murder one another",
+  "dependencies": {
+    "socket.io": "~1.3.5",
+    "backbone": "~1.1.2",
+    "underscore": "~1.8.3"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NikolaIliev/PlanesGame2.0.git"
+  }
+}

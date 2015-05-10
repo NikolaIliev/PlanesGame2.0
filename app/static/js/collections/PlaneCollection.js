@@ -8,19 +8,25 @@ define([
     //"GameObjects/Planes/Sentry"
 ], function (Backbone) {//, EnemyFighterModel, EnemyKamikazeModel, EnemyStormerModel, EnemySupplierModel,
              //PlayerPlaneModel, SentryPlaneModel) {
-    //var modelMapping = {
-    //        "fighter": EnemyFighterModel,
-    //        "kamikaze": EnemyKamikazeModel,
-    //        "stormer": EnemyStormerModel,
-    //        "supplier": EnemySupplierModel,
-    //        "player": PlayerPlaneModel,
-    //        "sentry": SentryPlaneModel
-    //    },
-    //    PlaneCollection = Backbone.Collection.extend({
-    //        model: function (attributes, options) {
-    //            return new modelMapping[attributes.type](attributes, options);
-    //        }
-    //    });
+    var modelMapping = {
+            "fighter": "GameObjects/Planes/EnemyFighter",
+            //"kamikaze": EnemyKamikazeModel,
+            //"stormer": EnemyStormerModel,
+            //"supplier": EnemySupplierModel,
+            "player": "GameObjects/Planes/PlayerPlane"
+            //"sentry": SentryPlaneModel
+        },
+        PlaneCollection = Backbone.Collection.extend({
+            model: function (attributes, options) {
+                return new (require(modelMapping[attributes.type]))(attributes, options);
+            }
+        });
 
-    return new Backbone.Collection();
+    return new PlaneCollection();
+
+    //return new (Backbone.Collection.extend({
+    //    model: function () {
+    //
+    //    }
+    //}))();
 });

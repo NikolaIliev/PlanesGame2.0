@@ -5,8 +5,8 @@
     "Engine/Canvas"
 ], function (GameObject, PlaneCollection, Canvas) {
     return GameObject.extend({
-        initialize: function (maxHealth, damage, shootFrequency, width, height, type) {
-            GameObject.prototype.initialize.call(this, width, height);
+        initialize: function () {
+            GameObject.prototype.initialize.apply(this, arguments);
 
             this.animationProps = {
                 currentFrame: 0,
@@ -29,11 +29,6 @@
                     bottomDelta: 0
             };
             this.set({
-                maxHealth: maxHealth,
-                currentHealth: maxHealth,
-                damage: damage,
-                shootFrequency: shootFrequency,
-                type: type,
                 isAnimated: false,
                 lastShootTimestamp: -1
             });

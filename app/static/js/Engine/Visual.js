@@ -1,5 +1,6 @@
 define([
     "jquery",
+    "collections/MissionCollection",
     "Engine/CAnimations",
     "Engine/Canvas",
     "Engine/Game",
@@ -8,7 +9,7 @@ define([
     "Engine/pubsub",
     "UserInterface/loadout",
     "exports"
-], function ($, CAnimations, Canvas, Game, InteractionManager, Leaderboard, pubsub, Loadout, exports) {
+], function ($, MissionCollection, CAnimations, Canvas, Game, InteractionManager, Leaderboard, pubsub, Loadout, exports) {
     _.extend(exports, {
         backgroundImg: null,
         backgroundPattern: null,
@@ -72,6 +73,25 @@ define([
                     Game.init();
                     this.clearScreen();
                     this.drawMap();
+                    this.drawGameObjects();
+                    if (!Game.allUnlocked) {
+                        this.updateStarsTracker();
+                    }
+                }));
+
+            $("<div>Multi Player</div>")
+                .addClass("introButton")
+                .appendTo("#introScreen")
+                .on("click", _.hitch(this, function () {
+                    var currentMission = MissionCollection.add({ type: "multiplayer" });
+                    Game.init();
+                    Game.currentMissionIndex = 0;
+                    Game.currentAreaIndex = 0;
+                    this.clearScreen();
+                    this.adjustCSSofGameScreen(true);
+                    this.drawUI(currentMission);
+                    this.clearScreen();
+                    currentMission.startMission();
                     this.drawGameObjects();
                     if (!Game.allUnlocked) {
                         this.updateStarsTracker();
@@ -378,12 +398,12 @@ define([
 
         drawGameObjects: function () {
             requestAnimationFrame(_.hitch(this, "drawGameObjects"));
-            if (InteractionManager.getCurrentMission()) {
+            if (MissionCollection.length) {
                 Canvas.clearRect(0, 0, 960, 700);
                 this.iterateBackground();
                 CAnimations.iterate();
                 this.redrawUI();
-                InteractionManager.updatePrimaryStatus();
+                //InteractionManager.updatePrimaryStatus();
                 //InteractionManager.redrawGameObjects();
                 pubsub.trigger("frame");
             }

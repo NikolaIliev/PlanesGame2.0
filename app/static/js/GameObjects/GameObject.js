@@ -4,18 +4,20 @@
     "Engine/pubsub"
 ], function (Backbone, MissionCollection, pubsub) {
     return Backbone.Model.extend({
-        initialize: function (width, height) {
+        initialize: function () {
             Backbone.Model.prototype.initialize.apply(this, arguments);
 
             this.set({
-                width: width,
-                height: height,
+                _id: + new Date(),
                 readyToMove: true
             });
 
             MissionCollection.on("iterate", this.onIterate, this);
+            MissionCollection.on("win loss", this.destroy, this);
             pubsub.on("frame", this.onFrame, this);
         },
+
+        idAttribute: "_id",
 
         updateCoords: function (left, bottom) {
             this.set({

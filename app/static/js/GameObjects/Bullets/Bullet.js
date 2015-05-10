@@ -7,15 +7,12 @@
     "Engine/Utility"
 ], function (GameObject, BulletCollection, PlaneCollection, Canvas, Utility) {
     return GameObject.extend({
-        initialize: function (left, bottom, orientationDeg, owner, width, height) {
-            GameObject.prototype.initialize.call(this, width, height);
+        initialize: function () {
+            GameObject.prototype.initialize.apply(this, arguments);
 
             this.set({
-                owner: owner,
-                orientationDeg: orientationDeg,
                 toBeSpliced: false
             });
-            this.updateCoords(left, bottom);
         },
 
         onIterate: function () {

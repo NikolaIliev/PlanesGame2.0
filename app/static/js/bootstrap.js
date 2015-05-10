@@ -1,6 +1,7 @@
 define([
+    "Engine/Missions/MultiplayerMission",
     "Engine/Visual"
-], function (Visual) {
+], function (MultiplayerMission, Visual) {
     //window.addEventListener("load", function () {
     //    var i;
     //    Visual.drawLoadingScreen();

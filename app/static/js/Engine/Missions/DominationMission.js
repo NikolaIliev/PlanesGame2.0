@@ -18,7 +18,7 @@
         checkDominating: function () {
             return PlaneCollection.filter(function (model) {
                 return model.get('type') === 'enemy';
-            }).length <= 7;
+            }).length <= 100;
         },
 
         resetDominationStartTime: function () {
@@ -35,7 +35,7 @@
 
         checkWinConditions: function () {
             //A domination mission is 'won' if the player manages to dominate his enemies for (30) seconds;
-            var win = (InteractionManager.getSeconds() - this.currentDominationStartTime) >= 30;
+            var win = (InteractionManager.getSeconds() - this.currentDominationStartTime) >= 500;
             return win;
         },
 

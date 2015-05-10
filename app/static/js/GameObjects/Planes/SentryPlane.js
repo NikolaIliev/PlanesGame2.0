@@ -27,8 +27,8 @@
         },
 
         unsetEvents: function () {
-            $.off(this.onKeyDownEvent);
-            $.off(this.onKeyUpEvent);
+            $(document).off(this.onKeyDownEvent);
+            $(document).off(this.onKeyUpEvent);
         },
 
         shoot: function () {

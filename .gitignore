@@ -3,6 +3,7 @@
 ################
 
 vendors/
+node_modules/
 
 #################
 ## Eclipse

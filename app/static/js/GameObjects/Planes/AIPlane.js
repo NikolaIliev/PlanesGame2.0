@@ -3,12 +3,8 @@
     "GameObjects/Planes/Plane"
 ], function (CAnimations, Plane) {
     return Plane.extend({
-        initialize: function (left, bottom, maxHealth, damage, shootFrequency, width, height, type) {
-            Plane.prototype.initialize.call(this, maxHealth, damage, shootFrequency, width, height, type);
-            this.set({
-                leftCoord: left,
-                bottomCoord: bottom
-            });
+        initialize: function () {
+            Plane.prototype.initialize.apply(this, arguments);
             this.draw();
         },
 

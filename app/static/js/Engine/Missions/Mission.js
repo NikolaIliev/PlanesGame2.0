@@ -6,7 +6,8 @@
     "Engine/Game",
     "Engine/InteractionManager",
     "Engine/Utility"
-], function (Backbone, BulletCollection, PlaneCollection, Canvas, Game, InteractionManager, Utility) {
+], function (Backbone, BulletCollection, PlaneCollection, Canvas, Game,
+             InteractionManager, Utility) {
     var MissionModel = Backbone.Model.extend({
         initialize: function (enemySpawnFrequencyMs, areaIndex) {
             this.enemySpawnFrequencyMs = enemySpawnFrequencyMs;
@@ -43,11 +44,11 @@
                 PlaneCollection.chain()
                     .filter(function (planeModel) {
                         return bulletModel
-                            && planeModel.get('type') !== bulletModel.get('owner').get('type')
+                            && planeModel.get('type') !== bulletModel.get('type')
                             && Utility.checkCollision(bulletModel, planeModel);
                     })
                     .each(function (planeModel) {
-                        planeModel.takeDamage(bulletModel.get('owner').get('damage'));
+                        planeModel.takeDamage(bulletModel.get('damage'));
                         bulletModel.destroy();
                     });
             });
