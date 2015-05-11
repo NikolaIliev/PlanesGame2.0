@@ -3,7 +3,7 @@ define([
     "collections/PlaneCollection",
     "Engine/InteractionManager",
     "Engine/Missions/Mission",
-    'http://localhost:3000/socket.io/socket.io.js'
+    'socket.io'
 ], function (BulletCollection, PlaneCollection, InteractionManager, MissionModel, io) {
     return MissionModel.extend({
         initialize: function (areaIndex) {
@@ -12,9 +12,10 @@ define([
         },
 
         startMission: function () {
+            var ownId = PlaneCollection.findWhere({ type: "player" }).get('_id');
             MissionModel.prototype.startMission.apply(this, arguments);
 
-            this.socket = io('http://localhost:3000');
+            this.socket = io(prompt('Enter server ip:port') || 'http://localhost:3000');
             this.socket.on('change-bullet', function (model) {
                 var currentModel = BulletCollection.findWhere({_id: model._id});
 
@@ -38,7 +39,11 @@ define([
                 if (!currentModel) {
                     currentModel = PlaneCollection.add({ type: model.type }, { silent: true });
                 }
-                currentModel.set(model, { silent: true })
+                currentModel.set(model, { silent: true });
+
+                if (model._id === ownId) {
+                    currentModel.set('type', 'player', { silent: true });
+                }
             });
             this.socket.on('remove-plane', function (_id) {
                 var model = PlaneCollection.findWhere({ _id: _id });

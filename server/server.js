@@ -19,8 +19,7 @@ io.on('connection', function (socket) {
             BulletCollection.add(model);
         }
 
-        model.type = 'fighter';
-        socket.broadcast.emit('change-bullet', model);
+        socket.broadcast.emit('change-bullet', _.extend({}, model, { type: 'fighter' }));
     });
     socket.on('remove-bullet', function (_id) {
         console.log('remove-bullet');
@@ -40,8 +39,7 @@ io.on('connection', function (socket) {
             PlaneCollection.add(model);
         }
 
-        model.type = 'fighter';
-        socket.broadcast.emit('change-plane', model);
+        socket.broadcast.emit('change-plane', _.extend({}, model, { type: 'fighter' }));
     });
     socket.on('remove-plane', function (_id) {
         console.log('remove-plane');
