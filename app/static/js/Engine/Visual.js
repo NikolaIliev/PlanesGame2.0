@@ -159,7 +159,7 @@ define([
             }
             else {
                 $("#gameScreen").css({
-                    "cursor": "url(app/static/images/UI/pointerCursor.png),auto",
+                    "cursor": "url(app/static/images/UI/pointerCursor.png), auto",
                     "background-image": "none"
                 });
             }

@@ -42,10 +42,10 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('change-plane', _.extend({}, model, { type: 'fighter' }));
     });
     socket.on('remove-plane', function (_id) {
-        console.log('remove-plane');
         var model = PlaneCollection.findWhere({ _id: _id });
 
         if (model) {
+            console.log('remove-plane');
             PlaneCollection.remove(model);
             socket.broadcast.emit('remove-plane', _id);
         }

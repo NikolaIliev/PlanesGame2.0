@@ -54,16 +54,24 @@ define([
                 }
             });
             BulletCollection.on('add change', function (model) {
-                this.socket.emit('change-bullet', model.toJSON());
+                if (this.get('active')) {
+                    this.socket.emit('change-bullet', model.toJSON());
+                }
             }, this);
             BulletCollection.on('remove', function (model) {
-                this.socket.emit('remove-bullet', model.get('_id'));
+                if (this.get('active')) {
+                    this.socket.emit('remove-bullet', model.get('_id'));
+                }
             }, this);
             PlaneCollection.on('add change', function (model) {
-                this.socket.emit('change-plane', model.toJSON());
+                if (this.get('active')){
+                    this.socket.emit('change-plane', model.toJSON());
+                }
             }, this);
             PlaneCollection.on('remove', function (model) {
-                this.socket.emit('remove-plane', model.get('_id'))
+                if (this.get('active')) {
+                    this.socket.emit('remove-plane', model.get('_id'))
+                }
             }, this);
         },
 

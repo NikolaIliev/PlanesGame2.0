@@ -76,7 +76,7 @@ define([
             })
                 .appendTo("#gameScreen");
 
-            window.setTimeout(function () {
+            window.setTimeout(_.hitch(this, function () {
                 //Finalize mission
                 //Clear screen, update the area and mission statuses
                 Visual.adjustCSSofGameScreen(false);
@@ -84,7 +84,7 @@ define([
                 this.updateAreaStatus(starsWonForMission);
                 Visual.drawMap();
                 this.winScreen(starsWonForMission);
-            }, 1500);
+            }, 1500));
         },
 
         //Makes corrections to the activity of areas, and activates boss challenge, if neccesary

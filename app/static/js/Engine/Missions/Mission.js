@@ -54,13 +54,13 @@
             });
 
             if (this.checkWinConditions()) {
-                this.trigger("win");
                 this.endMission();
+                this.trigger("win");
             }
 
             if (this.checkLossConditions()) {
-                this.trigger("loss");
                 this.endMission();
+                this.trigger("loss");
             }
         },
 
