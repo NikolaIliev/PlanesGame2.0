@@ -1,7 +1,10 @@
 define([
+    "Engine/Missions/DominationMission",
+    "Engine/Missions/GauntletMission",
     "Engine/Missions/MultiplayerMission",
+    "Engine/Missions/SurvivalMission",
     "Engine/Visual"
-], function (MultiplayerMission, Visual) {
+], function (DominationMission, GauntletMission, MultiplayerMission, SurvivalMission, Visual) {
     //window.addEventListener("load", function () {
     //    var i;
     //    Visual.drawLoadingScreen();

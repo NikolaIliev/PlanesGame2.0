@@ -51,13 +51,6 @@
             }, this));
         },
 
-        unsetEvents: function () {
-            $(document).off(this.onKeyPressEvent);
-            $(document).off(this.onMouseDownEvent);
-            $(document).off(this.onMouseMoveEvent);
-            $(document).off(this.onMouseUpEvent);
-        },
-
         shoot: function () {
             if (this.get('isShooting') && this.tryShoot()) {
                 BulletCollection.add({

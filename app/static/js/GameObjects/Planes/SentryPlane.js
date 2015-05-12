@@ -26,11 +26,6 @@
             this.onKeyUpEvent = $(document).on('keyup', _.bind(this.onKeyUp, this));
         },
 
-        unsetEvents: function () {
-            $(document).off(this.onKeyDownEvent);
-            $(document).off(this.onKeyUpEvent);
-        },
-
         shoot: function () {
             if (this.tryShoot()) {
                 InteractionManager.spawnBullet(this.bulletType, this.leftCoord + (this.orientationDeg / 90 + 1) * this.width / 2, this.bottomCoord + (this.height - Math.abs((this.orientationDeg / 90) * this.height / 2)), this.orientationDeg, this);
