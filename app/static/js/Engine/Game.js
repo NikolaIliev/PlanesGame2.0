@@ -1,9 +1,10 @@
 define([
+    "collections/MissionCollection",
     "Engine/InteractionManager",
     "Engine/Visual",
     "UserInterface/loadout",
     "exports"
-], function (InteractionManager, Visual, Loadout, exports) {
+], function (MissionCollection, InteractionManager, Visual, Loadout, exports) {
     function MissionInfo(primary, secondary) {
         this.primary = primary;
         this.secondary = secondary;
@@ -41,6 +42,7 @@ define([
             InteractionManager.startTimer();
             this.addSkill();
             this.generateAreas();
+            MissionCollection.on("win loss", this.handleMissionWin, this);
         },
 
         //Skills
@@ -62,6 +64,27 @@ define([
             this.areas[2].active = true;
             this.areas[3].active = true;
             this.allUnlocked = true;
+        },
+
+        handleMissionWin: function () {
+            var starsWonForMission = 0;
+
+            MissionCollection.off(null, null, this);
+
+            $("<div/>", {
+                id: "effectScreen"
+            })
+                .appendTo("#gameScreen");
+
+            window.setTimeout(function () {
+                //Finalize mission
+                //Clear screen, update the area and mission statuses
+                Visual.adjustCSSofGameScreen(false);
+                Visual.clearScreen();
+                this.updateAreaStatus(starsWonForMission);
+                Visual.drawMap();
+                this.winScreen(starsWonForMission);
+            }, 1500);
         },
 
         //Makes corrections to the activity of areas, and activates boss challenge, if neccesary
