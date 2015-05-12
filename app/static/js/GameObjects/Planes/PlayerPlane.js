@@ -41,8 +41,8 @@
 
         img: $('<img src="app/static/images/planes/player.png"/>')[0],
         setEvents: function () {
-            MissionCollection.on("change:active", _.bind(function (active) {
-                if (active) {
+            MissionCollection.on("change:active", _.bind(function (mission, isActive) {
+                if (isActive) {
                     this.onKeyPressEvent = $(document).on('keypress', _.bind(this.onKeyPress, this));
                     this.onMouseDownEvent = $(document).on('mousedown', _.bind(this.onMouseDown, this));
                     this.onMouseMoveEvent = $(document).on('mousemove', _.bind(this.onMouseMove, this));

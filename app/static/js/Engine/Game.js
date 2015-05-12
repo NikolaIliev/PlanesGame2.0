@@ -73,17 +73,14 @@ define([
 
             $("<div/>", {
                 id: "effectScreen"
-            })
-                .appendTo("#gameScreen");
+            }).appendTo("#gameScreen");
 
             window.setTimeout(_.hitch(this, function () {
                 //Finalize mission
                 //Clear screen, update the area and mission statuses
                 Visual.adjustCSSofGameScreen(false);
                 Visual.clearScreen();
-                this.updateAreaStatus(starsWonForMission);
-                Visual.drawMap();
-                this.winScreen(starsWonForMission);
+                Visual.drawIntroScreen();
             }, 1500));
         },
 

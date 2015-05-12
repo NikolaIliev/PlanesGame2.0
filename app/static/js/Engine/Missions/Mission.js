@@ -65,9 +65,11 @@
         },
 
         endMission: function () {
+            this.set("active", false);
+            BulletCollection.reset();
+            PlaneCollection.reset();
             $(document).off(); //removes all event listeners
             window.clearInterval(this.mainLoopInterval);
-            this.set("active", false);
         },
         checkWinConditions: function () { },
         checkLossConditions: function () { },
